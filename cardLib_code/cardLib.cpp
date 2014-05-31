@@ -1,4 +1,4 @@
-#include "cardLib.h"
+#include "..\cardLib_code\cardLib.h"
 
 CardLib::CardLib()  //暂规定个数为63个，后期需修改
 {

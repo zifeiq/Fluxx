@@ -2,12 +2,12 @@
 #define FLUXXRULES_H
 
 #include <vector>
-#include "card.h"
+#include "..\cardLib_code\cardLib.h"
 #define CLOCKWISE false
 #define ANTTCLOCKWISE true
 
 enum specialRules {
-	none = 0, rich, pool, inflation, rotate, nohand, random, doublegoal
+	none = 0, rich, pool, inflation, rotate, nohand, random, doublegoals
 };
 class fluxxRules {
 public:

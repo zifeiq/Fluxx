@@ -1,4 +1,4 @@
-#include"mailBox.h"
+#include"..\mailbox\mailBox.h"
 using namespace std;
 
 ClientMB::ClientMB(string server_ip)

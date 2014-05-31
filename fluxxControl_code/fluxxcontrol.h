@@ -2,12 +2,10 @@
 #define FLUXXCONTROL_H
 
 #include <vector>
-#include "fluxxrules.h"
-#include "card.h"
-
+#include "..\fluxxControl_code\fluxxrules.h"
+#include "..\cardLib_code\cardLib.h"
+#include "..\mailbox\mailBox.h"
 class Player;
-class Msgmanager;
-
 typedef int ruleMsg;
 typedef int cardNum;
 
@@ -25,9 +23,10 @@ public:
 	~fluxxControl ();
 
 private:
+	MailBox communitor;
 	fluxxRules rule;
 	std::vector<Player> players;
-	std::vector<Card>& cards;
+	CardLib& cards;
 };
 
 #endif

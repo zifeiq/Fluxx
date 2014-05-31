@@ -1,6 +1,6 @@
-#include "fluxxcontrol.h"
+#include "..\fluxxControl_code\fluxxcontrol.h"
 
-fluxxControl::fluxxControl() {
+fluxxControl::fluxxControl():{
 	initcards();
 	initrules();
 }
