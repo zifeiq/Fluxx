@@ -1,25 +1,32 @@
 #include"clientMB.h"
 using namespace std;
 
-ClientMB::ClientMB(string server_ip)
+ClientMB::ClientMB()
 {
 	//初始化winsock  
 	WSADATA wsaD;
 	WSAStartup(MAKEWORD(1, 1), &wsaD);
 	//初始化客户端socket  
 	clientSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	//连接服务器  
-	sockaddr_in servAddr;
-	servAddr.sin_family = AF_INET;
-	servAddr.sin_addr.s_addr = inet_addr(server_ip.c_str()); //指定服务器ip 
-	servAddr.sin_port = htons(PORT);             //指定端口  
-	connect(clientSock, (struct sockaddr*)&servAddr, sizeof(servAddr)); //通过套接字连接主机
 }
 
 ClientMB::~ClientMB()
 {
 	closesocket(clientSock);
 	WSACleanup();
+}
+
+bool ClientMB::connectServer(string server_ip)
+{
+	//连接服务器  
+	sockaddr_in servAddr;
+	servAddr.sin_family = AF_INET;
+	servAddr.sin_addr.s_addr = inet_addr(server_ip.c_str()); //指定服务器ip 
+	servAddr.sin_port = htons(PORT);             //指定端口  
+	if (connect(clientSock, (struct sockaddr*)&servAddr, sizeof(servAddr)) == -1) //通过套接字连接主机
+		return false;
+	else
+		return true;
 }
 
 bool ClientMB::sendMsg(string s)
@@ -47,14 +54,7 @@ string ClientMB::recvMsg()
 	string s;
 	char buf[BUFFMAX];
 	memset(buf, 0, sizeof(buf));
-	int recvLen = 0;
 	if (recv(clientSock, buf, BUFFMAX, 0) != -1)
 		s = buf;
-	/*
-	do {
-		recvLen = recv(clientSock, buf, BUFFMAX, 0);
-		s += buf;
-		memset(buf, 0, sizeof(buf));
-	} while (recvLen > 0);*/
 	return s;
 }
