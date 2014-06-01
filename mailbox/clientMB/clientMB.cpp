@@ -1,4 +1,4 @@
-#include"..\mailbox\mailBox.h"
+#include"clientMB.h"
 using namespace std;
 
 ClientMB::ClientMB(string server_ip)
@@ -30,7 +30,7 @@ bool ClientMB::sendMsg(string s)
 	{
 		string temp = s.substr(index, BUFFMAX - 1);
 		memset(buf, 0, sizeof(buf));
-		strcpy(buf, temp.c_str());
+		strcpy_s(buf, temp.c_str());
 		if (send(clientSock, buf, strlen(buf) + 1, 0) == -1) //·¢ËÍ³ö´í
 			return false; 
 		else
@@ -48,10 +48,13 @@ string ClientMB::recvMsg()
 	char buf[BUFFMAX];
 	memset(buf, 0, sizeof(buf));
 	int recvLen = 0;
+	if (recv(clientSock, buf, BUFFMAX, 0) != -1)
+		s = buf;
+	/*
 	do {
 		recvLen = recv(clientSock, buf, BUFFMAX, 0);
 		s += buf;
 		memset(buf, 0, sizeof(buf));
-	} while (recvLen > 0);
+	} while (recvLen > 0);*/
 	return s;
 }
