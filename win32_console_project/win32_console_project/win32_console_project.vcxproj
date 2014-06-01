@@ -78,12 +78,15 @@
   <ItemGroup>
     <ClCompile Include="..\..\cardLib_code\cardLib.cpp" />
     <ClCompile Include="..\..\fluxxControl_code\fluxxcontrol.cpp" />
+    <ClCompile Include="..\..\fluxxControl_code\fluxxrules.cpp" />
+    <ClCompile Include="..\..\fluxxControl_code\player.cpp" />
     <ClCompile Include="..\..\mailbox\clientMB.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\cardLib_code\cardLib.h" />
     <ClInclude Include="..\..\fluxxControl_code\fluxxcontrol.h" />
     <ClInclude Include="..\..\fluxxControl_code\fluxxrules.h" />
+    <ClInclude Include="..\..\fluxxControl_code\player.h" />
     <ClInclude Include="..\..\mailbox\mailBox.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
