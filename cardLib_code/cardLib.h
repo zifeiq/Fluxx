@@ -59,7 +59,7 @@ public:
 		static CardLib allcards;
 		return allcards;
 	}
-	Card* getCard(int i) const{ return _cards[i]; }
+	Card& getCard(int i) const{ return *_cards[i]; }
 	int getCardNum() const { return _cardNum; }
 
 protected:
