@@ -37,7 +37,6 @@ public:
 private:
 	int cntDraw;
 	int cntPlay;
-	int cntDiscard;
 	int cntCardlimit;
 	int cntKeeperlimit;
 	bool Direction;
@@ -45,13 +44,5 @@ private:
 	Card secondGoal;
 	std::vector<specialRules> curRules; 
 };
-
-fluxxRules ::fluxxRules ()
-{
-}
-
-fluxxRules ::~fluxxRules ()
-{
-}
 
 #endif

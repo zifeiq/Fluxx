@@ -27,6 +27,9 @@
     <ClInclude Include="..\..\mailbox\mailBox.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\fluxxControl_code\player.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\cardLib_code\cardLib.cpp">
@@ -36,6 +39,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\..\mailbox\clientMB.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\fluxxControl_code\player.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\fluxxControl_code\fluxxrules.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
