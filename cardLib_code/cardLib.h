@@ -8,6 +8,7 @@ public:
 	Type getType() const{ return _type; } //返回本卡的属性
 	int getNum() const{ return _num; }  //返回本卡的编号
 	virtual ~Card(){}
+	bool operator==(const Card& c) const;
 protected:
 	Type _type;
 	int _num; //本卡牌的编号（两位）
