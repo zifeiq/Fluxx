@@ -2,31 +2,40 @@
 #define FLUXXCONTROL_H
 
 #include <vector>
+#inlcude <string>
+#include <time.h>
 #include "..\fluxxControl_code\fluxxrules.h"
 #include "..\cardLib_code\cardLib.h"
-#include "..\mailbox\mailBox.h"
-class Player;
-typedef int ruleMsg;
-typedef int cardNum;
+#include "..\mailbox\serverMB\serverMB.h"
+#include "player.h"
 
+typedef int ruleMsg;
+enum gameState{ 
+	WaitforPlayers,
+	PlayersTurns,
+};
 class fluxxControl {
 public:
 	fluxxControl ();
-	void initcards();//初始化手牌，从牌库获取引用过来，在默认构造函数中使用
 	void initrules();//初始化规则，在默认构造函数中使用
-	void addplayers(const Player&);//添加玩家，在默认构造函数和其他适当的时机使用
+	void addplayers();//添加玩家，在默认构造函数和其他适当的时机使用
+	void setpresentPlayer(Player&);
 	void shuffleCard();//洗牌
 	void dealCard(ruleMsg); //发牌,入口参数为从规则中得到的信息
 	void playCard(ruleMsg);//出牌阶段控制函数，入口参数为从规则中得到的信息
-	void settleCard(cardNum); //单张出牌与结算，入口参数为卡牌编码
+	void settleCard(); //单张出牌与结算，入口参数为卡牌编码
 	void dropCard(ruleMsg);//弃牌阶段控制函数，口参数为从规则中得到的信息
 	~fluxxControl ();
 
 private:
-	MailBox communitor;
+	ServerMB msgBox;
+	gameState presentState;
+	Player& presentPlayer;
 	fluxxRules rule;
-	std::vector<Player> players;
 	CardLib& cards;
+	std::vector<Player> players;
+	std::vector<const Card&> deck;
+	std::vector<const Card&> droppeddeck;
 };
 
 #endif

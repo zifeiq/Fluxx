@@ -24,10 +24,13 @@
     <ClInclude Include="..\..\fluxxControl_code\fluxxrules.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\mailbox\mailBox.h">
+    <ClInclude Include="..\..\fluxxControl_code\player.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\fluxxControl_code\player.h">
+    <ClInclude Include="..\..\mailbox\clientMB\clientMB.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\mailbox\serverMB\serverMB.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -38,13 +41,16 @@
     <ClCompile Include="..\..\fluxxControl_code\fluxxcontrol.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mailbox\clientMB.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\fluxxControl_code\player.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\..\fluxxControl_code\fluxxrules.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mailbox\clientMB\clientMB.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mailbox\serverMB\serverMB.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

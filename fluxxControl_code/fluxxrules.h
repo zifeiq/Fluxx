@@ -14,7 +14,6 @@ public:
 	fluxxRules ();
 	void draw(int);
 	void play(int);
-	void discard(int);
 	void cardlimitation(int);
 	void keeperlimitation(int);
 	void direction(bool);
@@ -24,7 +23,6 @@ public:
 
 	const int draw()const;
 	const int play () const;
-	const int discard() const;
 	const int cardlimitation() const;
 	const int keeperlimitation() const;
 	const bool direction() const;
@@ -40,8 +38,8 @@ private:
 	int cntCardlimit;
 	int cntKeeperlimit;
 	bool Direction;
-	Card firstGoal;
-	Card secondGoal;
+	Card& firstGoal;
+	Card& secondGoal;
 	std::vector<specialRules> curRules; 
 };
 
