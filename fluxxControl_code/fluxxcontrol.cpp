@@ -136,6 +136,20 @@ void fluxxControl::playCard(ruleMsg msg) {
 				}
 				settleCard(msgbufCards[0]);
 				presentPlayer.setConsumedcard(presentPlayer.getConsumedcard()+1);
+				//检查胜利结果
+				if (checkWinner()) {
+					for (int i = 0; i < players.size(); i++){
+						//msgbufMsgtype = GAMEOVER;
+						clientNum = i;
+						msgBox.creatMsg(msgbufMsgtype, msgbufString, clientNum, &msgbufCards, msgbufAdditional);
+						msgBox.sendMsg(i);
+						//msgbufMsgtype = ACK;
+						msgBox.recvMsg(i);
+						if(!msgBox.parseMsg(msgbufMsgtype, clientNum, &msgbufString, &msgbufCards)) {
+							//WRONG MESSAGE
+						}
+					}
+				}
 			}
 			else ｛
 				//手牌无效
@@ -187,5 +201,17 @@ void fluxxControl::dropCard(ruleMsg msg) {
 	}
 }
 void fluxxControl::settleCard(const Card& targetCard) {
-
+	//分析卡牌信息
+		//所有物卡更新所有物
+			//广播所有物
+		//新规则卡更新规则
+			//广播新规则
+		//新目标卡更新规则
+			//广播新规则（应该是所有大重新发送）
+		//行动牌结算行动牌
+			//结算行动牌：根据标号调用不同的函数
+}
+int fluxxControl::checkWinner() {
+	//遍历每个玩家的所有物，与当前的目标牌进行匹配
+	//完全匹配则返回玩家编号，没有匹配返回0；
 }
