@@ -14,10 +14,12 @@ public:
 	Player(std::string);
 	void addHand(const Card&);
 	bool consumeHand(const Card&);
+	int getHandcnt(){ return hand.size(); }
 	void addKeeper(const Card&);
 	bool removeKeeper(const Card&);
-	inline int getConsumedcard() { return cntConsumedcard; }
-	inline void setConsumedcard(int i) { cntConsumedcard = i; }
+	int getConsumedcard() { return cntConsumedcard; }
+	void setConsumedcard(int i) { cntConsumedcard = i; }
+	std::string getName() { return playerName; }
 private:
 	std::string playerName;
 	int cntConsumedcard;

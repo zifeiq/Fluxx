@@ -10,6 +10,7 @@
 #include "player.h"
 
 typedef int ruleMsg;
+extern enum msgType;
 enum gameState{ 
 	WaitforPlayers,
 	PlayersTurns,
@@ -23,16 +24,26 @@ public:
 	void shuffleCard();//洗牌
 	void dealCard(ruleMsg); //发牌,入口参数为从规则中得到的信息
 	void playCard(ruleMsg);//出牌阶段控制函数，入口参数为从规则中得到的信息
-	void settleCard(); //单张出牌与结算，入口参数为卡牌编码
+	void settleCard(const Card&); //单张出牌与结算，入口参数为卡牌的引用
 	void dropCard(ruleMsg);//弃牌阶段控制函数，口参数为从规则中得到的信息
+
+	int getclientnum(Player&);
 	~fluxxControl ();
 
 private:
-	ServerMB msgBox;
+	//单个回合控制相关
 	gameState presentState;
 	Player& presentPlayer;
 	fluxxRules rule;
+	//信息传递相关
+	int msgbufAdditional;
+	int clientNum;
+	msgType msgbufMsgtype;
+	std::string msgbufString;
+	std::vector<const Card&> msgbufCards;
+	//整局游戏控制相关
 	CardLib& cards;
+	ServerMB msgBox;
 	std::vector<Player> players;
 	std::vector<const Card&> deck;
 	std::vector<const Card&> droppeddeck;
