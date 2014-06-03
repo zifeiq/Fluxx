@@ -1,15 +1,35 @@
 #include "..\cardLib_code\cardLib.h"
 
-CardLib::CardLib()  //暂规定个数为63个，后期需修改
+CardLib::CardLib()  //鏆傝瀹氫釜鏁颁负63涓紝鍚庢湡闇�淇敼
 {
-	_cardNum = 63;
-	_cards.push_back(new RuleCard); //创建基本规则牌
-	for (int i = 1; i <= 21;i++)	//创建新规则牌
-		_cards.push_back(new RuleCard(i));
-	for (int i = 1; i <= 18;i++)//创建所有物牌
-		_cards.push_back(new KeeperCard(i));
-	for (int i = 1; i <= 23; i++)//创建所有物牌
-		_cards.push_back(new GoalCard(i));
+	int num_tmp;
+	std::ifstream carddata("..\cardLib_code\carddata.txt");
+	if(carddata)
+	{
+		for(_cardNum=0;!carddata.eof();_cardNum++)
+		{
+			carddata >> num_tmp;
+			if(num_tmp/100==0)
+			{
+				_cards.push_back((Card*)new BasicRuleCard);
+			}
+			else if(num_tmp/100==1)
+			{
+				_cards.push_back((Card*)new NewRuleCard(num_tmp));
+			}
+			else if(num_tmp/100==2)
+			{
+				_cards.push_back((Card*)new KeeperCard(num_tmp));
+			}
+			else if(num_tmp/100==3)
+			{
+				_cards.push_back((Card*)new GoalCard(num_tmp));
+			}
+		}
+		carddata.close();
+	}
+	else
+		_cardNum=0;
 }
 
 CardLib::~CardLib()
