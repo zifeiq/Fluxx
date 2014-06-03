@@ -1,3 +1,6 @@
+#ifndef CARDLIB_H
+#define CARDLIB_H
+
 #include <vector>
 #include <fstream>
 
@@ -69,3 +72,5 @@ protected:
 	std::vector<Card*> _cards;  //基本卡为63个, 行动卡和用户拓展卡(How????)  后期可加
 	int _cardNum;
 };
+
+#endif
