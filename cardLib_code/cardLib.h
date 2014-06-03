@@ -1,57 +1,58 @@
 #include <vector>
+#include <fstream>
 
-class Card  //¿¨ÅÆµÄ»ùÀà
+class Card  //ï¿½ï¿½ï¿½ÆµÄ»ï¿½ï¿½ï¿½
 {
 public:
-	Card() :_type(BASIC_RULE), _num(0){} //Ä¬ÈÏ¹¹Ôìº¯Êý
+	Card() :_type(BASIC_RULE), _num(0){} //Ä¬ï¿½Ï¹ï¿½ï¿½ìº¯ï¿½ï¿½
 	enum Type{BASIC_RULE, NEW_RULE, KEEPER, GOAL, ACTION};
-	Type getType() const{ return _type; } //·µ»Ø±¾¿¨µÄÊôÐÔ
-	int getNum() const{ return _num; }  //·µ»Ø±¾¿¨µÄ±àºÅ
+	Type getType() const{ return _type; } //ï¿½ï¿½ï¿½Ø±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+	int getNum() const{ return _num; }  //ï¿½ï¿½ï¿½Ø±ï¿½ï¿½ï¿½ï¿½Ä±ï¿½ï¿½ï¿½
 	virtual ~Card(){}
 	bool operator==(const Card& c) const;
 protected:
 	Type _type;
-	int _num; //±¾¿¨ÅÆµÄ±àºÅ£¨Á½Î»£©
+	int _num; //ï¿½ï¿½ï¿½ï¿½ï¿½ÆµÄ±ï¿½ï¿½Å£ï¿½ï¿½ï¿½Î»ï¿½ï¿½
 };
 
-class RuleCard :public Card  //¹æÔòÅÆ
+class RuleCard :public Card  //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 {
 public:
 	RuleCard() :Card(){}
 	RuleCard(int num){ _type = NEW_RULE; _num = num; }
 };
 
-class BasicRuleCard : public RuleCard //»ù±¾¹æÔòÅÆ
+class BasicRuleCard : public RuleCard //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 {
 public:
 	BasicRuleCard() :RuleCard(){}
 };
 
-class NewRuleCard :public RuleCard  //ÐÂ¹æÔòÅÆ
+class NewRuleCard :public RuleCard  //ï¿½Â¹ï¿½ï¿½ï¿½ï¿½ï¿½
 {
 public:
 	NewRuleCard(int num) :RuleCard(num){}
 };
 
-class KeeperCard :public Card  //ËùÓÐÎï¿¨ÅÆ
+class KeeperCard :public Card  //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿¨ï¿½ï¿½
 {
 public:
 	KeeperCard(int num) { _type = KEEPER; _num = num; }
 };
 
-class GoalCard :public Card  //Ä¿±êÅÆ
+class GoalCard :public Card  //Ä¿ï¿½ï¿½ï¿½ï¿½
 {
 public:
 	GoalCard(int num) { _type = GOAL; _num = num; }
 };
 
-class ActionCard :public Card  //ÐÐ¶¯ÅÆ
+class ActionCard :public Card  //ï¿½Ð¶ï¿½ï¿½ï¿½
 {
 public:
 	ActionCard(int num){ _type = ACTION; _num = num; }
 };
 
-class CardLib  //ÅÆ¿â£¬singletonÄ£Ê½
+class CardLib  //ï¿½Æ¿â£¬singletonÄ£Ê½
 {
 public:
 	static CardLib& getLib()
@@ -65,6 +66,6 @@ public:
 protected:
 	CardLib();
 	~CardLib();
-	std::vector<Card*> _cards;  //»ù±¾¿¨Îª63¸ö, ÐÐ¶¯¿¨ºÍÓÃ»§ÍØÕ¹¿¨(How????)  ºóÆÚ¿É¼Ó
+	std::vector<Card*> _cards;  //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª63ï¿½ï¿½, ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½Õ¹ï¿½ï¿½(How????)  ï¿½ï¿½ï¿½Ú¿É¼ï¿½
 	int _cardNum;
 };
