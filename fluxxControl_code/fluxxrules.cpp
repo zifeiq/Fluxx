@@ -1,7 +1,7 @@
 #include "fluxxrules.h"
 
 fluxxRules::fluxxRules()
-	: cntDraw(1),cntPlay(1),cntCardlimit(-1), cntKeeperlimit(-1){
+	: cntDraw(1),cntPlay(1),cntCardlimit(-1), cntKeeperlimit(-1), doubleGoals(false){
 		//目标牌的初始化没有确定
 }
 void fluxxRules::draw(int i) {

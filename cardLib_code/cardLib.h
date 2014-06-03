@@ -11,7 +11,10 @@ public:
 	enum Type{BASIC_RULE, NEW_RULE, KEEPER, GOAL, ACTION};
 	Type getType() const{ return _type; } //返回本卡的属性
 	int getNum() const{ return _num; }  //返回本卡的编号
-	virtual ~Card(){}
+	int getfirstIndex() { return _num%10; }
+	int getsecontIndex() { return ((_num-getfirstIndex())/10)%10; }
+	int getthirdIndex() { return (_num-getfirstIndex()-getsecontIndex()*10)/100; }
+	~Card(){}
 	bool operator==(const Card& c) const;
 protected:
 	Type _type;
@@ -47,6 +50,10 @@ class GoalCard :public Card  //目标牌
 {
 public:
 	GoalCard(int num) { _type = GOAL; _num = num; }
+	void setgoalkeeper(int i) { setgoalkeeper = i;}
+	int getgoalkeeper() { return goalkeeper; }
+private:
+	int goalkeeper;
 };
 
 class ActionCard :public Card  //行动牌

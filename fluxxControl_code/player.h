@@ -17,6 +17,7 @@ public:
 	int getHandcnt(){ return hand.size(); }
 	void addKeeper(const Card&);
 	bool removeKeeper(const Card&);
+	std::vector<const Card&>& getkeeper() { return keeper; }
 	int getConsumedcard() { return cntConsumedcard; }
 	void setConsumedcard(int i) { cntConsumedcard = i; }
 	std::string getName() { return playerName; }

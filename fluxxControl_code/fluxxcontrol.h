@@ -26,6 +26,7 @@ public:
 	void playCard(ruleMsg);//出牌阶段控制函数，入口参数为从规则中得到的信息
 	void settleCard(const Card&); //单张出牌与结算，入口参数为卡牌的引用
 	void dropCard(ruleMsg);//弃牌阶段控制函数，口参数为从规则中得到的信息
+	void removeCard(Player&);//移除手牌，需要指定目标
 	int checkWinner();
 
 	int getclientnum(Player&);
