@@ -1,4 +1,16 @@
-#include "..\cardLib_code\cardLib.h"
+#include "cardLib.h"
+
+bool Card::operator==(const Card& c) const
+{
+	return((_type == c.getType()) && (_num == c.getNum()));
+}
+
+Card& Card::operator=(const Card& c)
+{
+	_type = c.getType();
+	_num = c.getNum();
+	return *this;
+}
 
 CardLib::CardLib()  //暂规定个数为63个，后期需修改
 {

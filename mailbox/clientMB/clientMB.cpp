@@ -16,8 +16,10 @@ ClientMB::~ClientMB()
 	WSACleanup();
 }
 
-bool ClientMB::connectServer(string server_ip)
+bool ClientMB::connectServer(const string server_ip)
 {
+	if (!ipCheck(server_ip))   //ip地址的格式错误
+		return false;
 	//连接服务器  
 	sockaddr_in servAddr;
 	servAddr.sin_family = AF_INET;
@@ -57,4 +59,43 @@ string ClientMB::recvMsg()
 	if (recv(clientSock, buf, BUFFMAX, 0) != -1)
 		s = buf;
 	return s;
+}
+
+bool ClientMB::ipCheck(const string s) const
+{
+	int counter = 0, cnum = 0, cpoint = 0;
+	string numStr;
+	for (int i = 0; i < s.size(); i++)
+	{
+		if (isdigit(s[i]))
+			counter++;
+		else if (s[i] == '.')
+		{
+			cpoint++;
+			numStr = s.substr(i - counter, counter);
+		}
+		else                //包含除数字和'.'之外的字符
+			return false;
+		if (i == s.size() - 1)  //到达字符串末尾
+		{
+			if (numStr == "")
+				numStr = s.substr(i + 1 - counter, counter);
+			else                //末尾为'.'
+				return false;
+		}
+
+		if (numStr != "")   //检测到数字串
+		{
+			counter = 0;
+			int tempInt = atoi(numStr.c_str());
+			numStr = "";
+			if (tempInt < 0 || tempInt > 255)  //数字不在0~255范围内
+				return false;
+			else
+			{
+				cnum++;
+			}
+		}
+	}
+	return (cnum == 4 && cpoint == 3);      //检测是否包含4段数字和3个'.'
 }

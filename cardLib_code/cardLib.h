@@ -16,6 +16,7 @@ public:
 	int getthirdIndex() { return (_num-getfirstIndex()-getsecontIndex()*10)/100; }
 	~Card(){}
 	bool operator==(const Card& c) const;
+	Card& operator =(const Card& c);
 protected:
 	Type _type;
 	int _num; //本卡牌的编号（两位）
