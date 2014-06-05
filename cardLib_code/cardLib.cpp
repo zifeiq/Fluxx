@@ -15,7 +15,7 @@ Card& Card::operator=(const Card& c)
 CardLib::CardLib()  //暂规定个数为63个，后期需修改
 {
 	int num_tmp;
-	std::ifstream carddata("..\cardLib_code\carddata.txt");
+	std::ifstream carddata(FILENAME);
 	if(carddata)
 	{
 		for(_cardNum=0;!carddata.eof();_cardNum++)
@@ -27,15 +27,15 @@ CardLib::CardLib()  //暂规定个数为63个，后期需修改
 			}
 			else if(num_tmp/100==1)
 			{
-				_cards.push_back((Card*)new NewRuleCard(num_tmp));
+				_cards.push_back((Card*)new NewRuleCard(num_tmp-100));
 			}
 			else if(num_tmp/100==2)
 			{
-				_cards.push_back((Card*)new KeeperCard(num_tmp));
+				_cards.push_back((Card*)new KeeperCard(num_tmp-200));
 			}
 			else if(num_tmp/100==3)
 			{
-				_cards.push_back((Card*)new GoalCard(num_tmp));
+				_cards.push_back((Card*)new GoalCard(num_tmp-300));
 			}
 		}
 		carddata.close();
