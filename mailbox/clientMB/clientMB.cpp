@@ -61,6 +61,84 @@ string ClientMB::recvMsg()
 	return s;
 }
 
+bool ClientMB::createMsg(MsgType m, vector<string> relatedCards,string name)
+{
+	//解析参数并生成消息字符串
+	string s;
+	int num;
+	switch (m)
+	{
+	case REGISTER:
+		if (name == "")			//未传入玩家名字
+			return false;
+		else
+			s = "0" + name;
+		break;
+	case ACK:
+		s = "1";
+		break;
+	case NACK:
+		s = "2";
+		break;
+	case PLAY:
+		if (relatedCards.size() != 1)//未传入一张牌
+			return false;
+		else{
+			if (isEffectiveCard(relatedCards[0]))
+				s = "3" + relatedCards[0];
+			else
+				return false;
+			
+			break;
+		}
+	case DROPCARD:
+		if (relatedCards.size() == 0)//未传入卡牌消息
+			return false;
+		else{
+			s = "4";
+			for (int i = 0; i < relatedCards.size(); i++)
+			{
+				if (isEffectiveCard(relatedCards[i]))
+					s += relatedCards[i];
+				else
+					return false;
+			}
+			break;
+		}
+	case DROPKEEPER:
+		if (relatedCards.size() == 0)//未传入卡牌消息
+			return false;
+		else{
+			s = "5";
+			for (int i = 0; i < relatedCards.size(); i++)
+			{
+				//检测是否为有效的所有物牌编号
+				int j;
+				for (j = 0; j < relatedCards[i].size();j++)
+					if (!isdigit(relatedCards[i][j])) break; //检测到非数字
+				if (j != relatedCards[i].size())   //包含非数字的字符
+					return false;
+				num = atoi(relatedCards[i].c_str());
+				if (num / 100 == 2 && 0 < (num - 200) < 19) 
+					s += relatedCards[i];
+				else
+					return false;
+			}
+			break;
+		}
+	default: return false;
+	}
+	//发送消息
+	if (!sendMsg(s))
+		return false;
+	else
+		return true;
+}
+//bool ClientMB::getMsg(MsgType& m, std::string& name, int& playerNum, vector<int>& relatedCards, int& additional)
+//{
+//	string s = recvMsg()
+//}
+
 bool ClientMB::ipCheck(const string s) const
 {
 	int counter = 0, cnum = 0, cpoint = 0;
@@ -98,4 +176,47 @@ bool ClientMB::ipCheck(const string s) const
 		}
 	}
 	return (cnum == 4 && cpoint == 3);      //检测是否包含4段数字和3个'.'
+}
+
+bool ClientMB::isEffectiveCard(string s) const
+{
+	//检测是否仅包含数字
+	int j;
+	for (j = 0; j < s.size(); j++)
+		if (!isdigit(s[j])) break; //检测到非数字
+	if (j !=s.size())   //包含非数字的字符
+		return false;
+	int num = atoi(s.c_str());
+	int type = num / 100;
+	int ruleType,ruleNum;
+	switch (type)
+	{
+	case 0: return false; //不可传入基本规则牌或其他数字
+	case 1:               //新规则牌
+		ruleType = (num - 100) / 10;
+		ruleNum = num - 100 - ruleType * 10;
+		if (ruleType == 1 && 0 <= ruleNum <= 2) //手牌上限规则牌
+			return true;
+		else if (ruleType == 2 && 2 <= ruleNum <= 4)//所有物个数规则牌
+			return true;
+		else if (ruleType == 3 && 2 <= ruleNum <= 5)//抓牌张数规则牌
+			return true;
+		else if (ruleType == 4 && 2 <= ruleNum <= 4)//出牌张数规则牌
+			return true;
+		else if (ruleType == 5 && 1 <= ruleNum <= 8)//其他规则牌
+			return true;
+		else
+			return false;
+	case 2:       //所有物牌
+		if (1 <= (num - 200) <= 18)
+			return true;
+		else
+			return false;
+	case 3:     //目标牌
+		if (1 <= (num - 300) <= 23)
+			return true;
+		else
+			return false;
+	default: return false;
+	}
 }
