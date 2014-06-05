@@ -50,7 +50,7 @@ void remove_limitation() {
 	//取消上限
 }
 void redistribute_keeper() {
-	//轮转周牌
+	//轮转手牌
 }
 void remove_a_keeper() {
 	//丢弃
