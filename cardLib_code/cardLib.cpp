@@ -1,3 +1,13 @@
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+#include "..\cardLib_code\cardLib.h"
+#include <sstream>
+=======
+=======
+>>>>>>> FETCH_HEAD
+=======
+>>>>>>> FETCH_HEAD
 #include "cardLib.h"
 
 bool Card::operator==(const Card& c) const
@@ -11,6 +21,13 @@ Card& Card::operator=(const Card& c)
 	_num = c.getNum();
 	return *this;
 }
+<<<<<<< HEAD
+<<<<<<< HEAD
+>>>>>>> FETCH_HEAD
+=======
+>>>>>>> FETCH_HEAD
+=======
+>>>>>>> FETCH_HEAD
 
 CardLib::CardLib()  //暂规定个数为63个，后期需修改
 {
@@ -21,13 +38,30 @@ CardLib::CardLib()  //暂规定个数为63个，后期需修改
 		for(_cardNum=0;!carddata.eof();_cardNum++)
 		{
 			carddata >> num_tmp;
+			string s;
+			stringstream ss;
+			ss << num_tmp;
+			ss >> s;
 			if(num_tmp/100==0)
 			{
 				_cards.push_back((Card*)new BasicRuleCard);
 			}
 			else if(num_tmp/100==1)
 			{
+<<<<<<< HEAD
+<<<<<<< HEAD
+<<<<<<< HEAD
+				_cards.push_back((Card*)new NewRuleCard(num_tmp));
+				_cards.[_cards.size()].pixmapName = num_tmp.
+=======
 				_cards.push_back((Card*)new NewRuleCard(num_tmp-100));
+>>>>>>> FETCH_HEAD
+=======
+				_cards.push_back((Card*)new NewRuleCard(num_tmp-100));
+>>>>>>> FETCH_HEAD
+=======
+				_cards.push_back((Card*)new NewRuleCard(num_tmp-100));
+>>>>>>> FETCH_HEAD
 			}
 			else if(num_tmp/100==2)
 			{
@@ -37,6 +71,7 @@ CardLib::CardLib()  //暂规定个数为63个，后期需修改
 			{
 				_cards.push_back((Card*)new GoalCard(num_tmp-300));
 			}
+			_cards.back()->pixmapName = s + ".png" ;
 		}
 		carddata.close();
 	}
