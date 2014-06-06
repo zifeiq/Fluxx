@@ -3,19 +3,8 @@
 
 #include <vector>
 #include <fstream>
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
 #include <string>
-=======
 const std::string FILENAME = "carddata.txt";
->>>>>>> FETCH_HEAD
-=======
-const std::string FILENAME = "carddata.txt";
->>>>>>> FETCH_HEAD
-=======
-const std::string FILENAME = "carddata.txt";
->>>>>>> FETCH_HEAD
 
 class Card  //卡牌的基类
 {
