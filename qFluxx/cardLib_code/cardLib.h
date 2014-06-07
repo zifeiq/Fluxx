@@ -3,44 +3,41 @@
 
 #include <vector>
 #include <fstream>
-#include <string>
 const std::string FILENAME = "carddata.txt";
 
 class Card  //卡牌的基类
 {
 public:
-	Card() :_type(BASIC_RULE), _num(0){} //默认构造函数
+	Card() :_type(BASIC_RULE), _num(0){}//基类默认构造函数
+	Card(int num) :_type(BASIC_RULE), _num(num){} 
 	enum Type{BASIC_RULE, NEW_RULE, KEEPER, GOAL, ACTION};
 	Type getType() const{ return _type; } //返回本卡的属性
 	int getNum() const{ return _num; }  //返回本卡的编号
-	void setPixmap(std::string s) { _pixmapName = s; }
-	std::string getPic() const{ return _pixmapName; } //返回本卡的图片名
 	virtual ~Card(){}
 	bool operator==(const Card& c) const;
 	Card& operator =(const Card& c);
 protected:
 	Type _type;
 	int _num; //本卡牌的编号（两位）
-	std::string _pixmapName;
 };
 
 class RuleCard :public Card  //规则牌
 {
 public:
-	RuleCard() :Card(){}
-	RuleCard(int num){ _type = NEW_RULE; _num = num; }
+	RuleCard(): Card(){}
+	RuleCard(int num) : Card(num){}
 };
 
 class BasicRuleCard : public RuleCard //基本规则牌
 {
 public:
-	BasicRuleCard() :RuleCard(){}
+	BasicRuleCard(int num) :RuleCard(num){}
 };
 
 class NewRuleCard :public RuleCard  //新规则牌
 {
 public:
-	NewRuleCard(int num) :RuleCard(num){}
+	NewRuleCard(int num){ _type = NEW_RULE; _num = num;}
 };
 
 class KeeperCard :public Card  //所有物卡牌
