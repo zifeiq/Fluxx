@@ -18,23 +18,25 @@ enum gameState{
 class fluxxControl {
 public:
 	fluxxControl ();
+	//阶段处理函数
 	void initrules();//初始化规则
-	void addplayers();//添加玩家
-	void setpresentPlayer(Player&);
+	void addPlayers();//添加玩家
 	void shuffleCard();//洗牌
 	void dealCard(); //发牌
 	void playCard();//出牌
-	void settleCard(const Card&); //单张出牌与结算，入口参数为卡牌的引用
-	void dropCard();//弃牌阶段控制函数
-	void removeCard(Player&);//移除手牌
+	void dropCard();//弃牌
+	void setpresentPlayer(Player&);//回合控制
 	void stagecontrol();
-	void updateRules();
-	void updateKeepers();
-	int checkWinner();
 	int getclientnum(Player&);
+	void run();
 	~fluxxControl (){};
 
 private:
+	void _settleCard(const Card&); //单张出牌与结算，入口参数为卡牌的引用
+	void _removeCard(Player&);//移除手牌
+	void _updateRules();
+	void _updateKeepers();
+	int _checkWinner();
 	//单个回合控制相关
 	Player presentPlayer;
 	fluxxRules rule;
