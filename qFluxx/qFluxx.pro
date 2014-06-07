@@ -18,11 +18,16 @@ SOURCES += main.cpp\
     game.cpp \
     mode.cpp \
     register.cpp \
-    waiting.cpp
+    waiting.cpp \
+    cardLib_code/cardLib.cpp \
+    mailbox/clientMB/clientMB.cpp
 
 HEADERS  += mainwindow.h \
     client.h \
     game.h \
     mode.h \
     register.h \
-    waiting.h
+    waiting.h \
+    cardLib_code/cardLib.h \
+    config.h \
+    mailbox/clientMB/clientMB.h

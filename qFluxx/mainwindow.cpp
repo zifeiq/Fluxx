@@ -11,9 +11,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(reg->cancel,SIGNAL(clicked()),this,SLOT(reg_cancel_clicked()));
     reg->show();
 
-    mode = new Mode(this);
-    connect(mode->host,SIGNAL(clicked()),this,SLOT(mode_host_clicked()));
-    connect(mode->part,SIGNAL(clicked()),this,SLOT(mode_part_clicked()));
+    chooseMode = new Mode(this);
+    connect(chooseMode->host,SIGNAL(clicked()),this,SLOT(mode_host_clicked()));
+    connect(chooseMode->part,SIGNAL(clicked()),this,SLOT(mode_part_clicked()));
 
 //    waiting = new QVBoxLayout(this);
 //    waiting->addWidget(playerName[0]);
@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent)
 //    waiting->addWidget(playerName[2]);
 //    waiting->addWidget(playerName[3]);
 //    centralWidget()->setLayout(waiting);
-    connect(this,SIGNAL(gameStart()),this,SLOT(starting()));
+ //   connect(this,SIGNAL(gameStart()),this,SLOT(starting()));
 }
 
 MainWindow::~MainWindow()
@@ -31,10 +31,8 @@ MainWindow::~MainWindow()
 void MainWindow::reg_ok_clicked()
 {
     myName = reg->name->text();
-    std::cout << "SENDING YOUR NAME!!!!!" << std::endl;
-//    MailBox->sendMsg(name);
     reg->hide();
-    mode->show();
+    chooseMode->show();
 }
 
 void MainWindow::reg_cancel_clicked()
@@ -48,7 +46,7 @@ void MainWindow::mode_host_clicked()
     //send request to host
     //establishing connection
     //    connectServer("127.0.0.1");
-    host = true;
+    game = new Game(true,myName,"127.0.0.1")
     start = new QPushButton("START");
     start->setEnabled(false);
     connect(start,SIGNAL(clicked()),this,SLOT(start_clicked()));
@@ -58,7 +56,6 @@ void MainWindow::mode_host_clicked()
 
 void MainWindow::mode_part_clicked()
 {
-    host = false;
     bool ok = false;
     QString ip = QInputDialog::getText(this,"Fluxx","Please enter the IP address of your host",QLineEdit::Normal,QString::null,&ok);
     if(ok && !ip.isEmpty()){
@@ -68,6 +65,7 @@ void MainWindow::mode_part_clicked()
 //            register();
 //        else
         // error occurs
+        game = new Game(false,myName,ip);
     }
     else
     {
