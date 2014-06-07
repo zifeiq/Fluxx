@@ -3,16 +3,16 @@
 
 #include <vector>
 #include "..\cardLib_code\cardLib.h"
-//#define CLOCKWISE false
-//#define ANTTCLOCKWISE true
+#define CLOCKWISE false
+#define ANTTCLOCKWISE true
 
 class fluxxRules {
 public:
-	fluxxRules ();
+	fluxxRules (CardLib&);
 	//设定参数
 	void setdraw(int i) { cntDraw = i; }
 	void setplay(int i) { cntPlay = i; }
-	void setcardlimitation(int i) { cntCardlimit = i; }
+	void sethandlimitation(int i) { cntHandlimit = i; }
 	void setkeeperlimitation(int i) { cntKeeperlimit = i; }
 	void setorderreverse(bool b) { orderReverse = b; }
 	void setrichbonus(bool b) { richBonus = b; }
@@ -28,12 +28,12 @@ public:
 	void setfirstgoal(const GoalCard&);
 	void setsecondgoal(const GoalCard&);
 	//获取参数
-	const int getdraw()const;
-	const int getplay () const;
-	const int getcardlimitation() const;
-	const int getkeeperlimitation() const;
+	const int getdraw()const { return cntDraw; }
+	const int getplay () const {return cntPlay; }
+	const int gethandlimitation() const { return cntHandlimit; }
+	const int getkeeperlimitation() const {return cntKeeperlimit; }
 	const bool isorderreverse() const{ return orderReverse; }
-	const bool isdoublegoals() const {return doubleGoles;}
+	const bool isdoublegoals() const {return doubleGoals;}
 	const bool isrichBonus() const { return richBonus; }
 	const bool ispoorBonus() const { return poorBonus; }
 	const bool isinflation() const { return Inflation; }
@@ -42,9 +42,11 @@ public:
 	//获取卡牌
 	const Card& firstgoal() const;
 	const Card& secondgoal() const;
-	const std::vector<RuleCard&>& getrulecard();
+
 	
-	~fluxxRules ();
+	~fluxxRules (){
+	//没有申请过空间，使用自动生成的析构函数
+	};
 
 private:
 	//规则的标志位和对应的卡牌
@@ -52,13 +54,14 @@ private:
 	Card& DrawRule;
 	int cntPlay;//出牌数
 	Card& PlayRule;
-	int cntCardlimit;//手牌上限
-	Card& CardlimitRule;
+	int cntHandlimit;//手牌上限
+	Card& HandlimitRule;
 	int cntKeeperlimit;//所有物上限
-	Card& Cardlimiton;
+	Card& KeeperlimitRule;
 	bool orderReverse;//出牌方向
 	Card& c_orderReverse;
-	bool doubleGoles;//双重目标
+	bool doubleGoals;//双重目标
+	Card& c_doubleGoals;
 	Card& firstGoal;
 	Card& secondGoal;
 	bool richBonus;//富人奖励
@@ -70,7 +73,8 @@ private:
 	bool noHandbonus;//无手牌奖励
 	Card& c_noHandbonus;
 	bool randomStart;//随机开场
-	Card& c_noRandomstart;
+	Card& c_Randomstart;
+	CardLib& r_Cardlib;
 };
 
 #endif

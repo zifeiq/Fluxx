@@ -1,45 +1,56 @@
 #include "fluxxrules.h"
 
-fluxxRules::fluxxRules()
-	: cntDraw(1),cntPlay(1),cntCardlimit(-1), cntKeeperlimit(-1), doubleGoals(false){
-		//目标牌的初始化没有确定
+fluxxRules::fluxxRules(CardLib& r)
+	: cntDraw(1),
+	cntPlay(1),
+	cntHandlimit(-1), 
+	cntKeeperlimit(-1), 
+	orderReverse(CLOCKWISE),
+	doubleGoals(false),
+	richBonus(false),
+	poorBonus(false),
+	Inflation(false),
+	noHandbonus(false),
+	randomStart(false),
+	r_Cardlib(r),
+	DrawRule(*r.getCard(0)),
+	PlayRule(*r.getCard(0)),
+	HandlimitRule(*r.getCard(0)),
+	KeeperlimitRule(*r.getCard(0)),
+	firstGoal(*r.getCard(0)),
+	secondGoal(*r.getCard(0)),
+	c_richbonus(*r.getCard(14)),
+	c_poorBonus(*r.getCard(15)),
+	c_Inflation(*r.getCard(16)),
+	c_orderReverse(*r.getCard(17)),
+	c_noHandbonus(*r.getCard(18)),
+	c_Randomstart(*r.getCard(19)),
+	c_doubleGoals(*r.getCard(20))
+	{
+		// cntDraw=1;
+		// cntPlay=1;
+		// cntHandlimit=-1; 
+		// cntKeeperlimit=-1; 
+		// orderReverse=CLOCKWISE;
+		// doubleGoals=false;
+		// richBonus=false;
+		// poorBonus=false;
+		// Inflation=false;
+		// noHandbonus=false;
+		// randomStart=false;
+		// r_Cardlib = CardLib::getLib();
+		// DrawRule=*r.getCard(0);
+		// PlayRule=*r.getCard(0);
+		// HandlimitRule=*r.getCard(0);
+		// KeeperlimitRule=*r.getCard(0);
+		// firstGoal=*r.getCard(0);
+		// secondGoal=*r.getCard(0);
+		// c_richbonus=*r.getCard(0);
+		// c_poorBonus=*r.getCard(0);
+		// c_Inflation=*r.getCard(0);
+		// c_orderReverse=*r.getCard(0);
+		// c_noHandbonus=*r.getCard(0);
+		// c_Randomstart=*r.getCard(0);
+		// c_doubleGoals=*r.getCard(0);		
 }
-void fluxxRules::draw(int i) {
-	cntDraw = i;
-}
-void fluxxRules::play(int i) {
-	cntPlay = i;
-}
-void fluxxRules::cardlimitation(int i) {
-	cntCardlimit = i;
-}
-void fluxxRules::keeperlimitation(int i) {
-	cntKeeperlimit = i;
-}
-void fluxxRules::firstgoal(const Card& goal) {
-	firstGoal = goal;
-}
-void fluxxRules::secondgoal(const Card& goal) {
-	secondGoal = goal;
-}
-void fluxxRules::setspecialrule() {
-	//特殊规则的处理
-}
-const int fluxxRules::draw() const {
-	return cntDraw;
-}
-const int fluxxRules::play() const {
-	return cntPlay;
-}
-const int fluxxRules::cardlimitation() const {
-	return cntCardlimit;
-}
-const int fluxxRules::keeperlimitation() const {
-	return cntKeeperlimit;
-}
-const Card& fluxxRules::firstgoal() const {
-	return firstGoal;
-}
-const Card& fluxxRules::secondGoal() const {
-	return secondGoal;
-}
+

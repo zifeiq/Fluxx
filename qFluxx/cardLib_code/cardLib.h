@@ -13,14 +13,15 @@ public:
 	enum Type{BASIC_RULE, NEW_RULE, KEEPER, GOAL, ACTION};
 	Type getType() const{ return _type; } //返回本卡的属性
 	int getNum() const{ return _num; }  //返回本卡的编号
-	string getPic() const{ return _pixmapName; } //返回本卡的图片名
+	void setPixmap(std::string s) { _pixmapName = s; }
+	std::string getPic() const{ return _pixmapName; } //返回本卡的图片名
 	virtual ~Card(){}
 	bool operator==(const Card& c) const;
 	Card& operator =(const Card& c);
 protected:
 	Type _type;
 	int _num; //本卡牌的编号（两位）
-	string _pixmapName;
+	std::string _pixmapName;
 };
 
 class RuleCard :public Card  //规则牌

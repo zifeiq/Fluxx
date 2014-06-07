@@ -22,8 +22,8 @@ CardLib::CardLib()  //暂规定个数为63个，后期需修改
 		for(_cardNum=0;!carddata.eof();_cardNum++)
 		{
 			carddata >> num_tmp;
-			string s;
-			stringstream ss;
+			std::string s;
+			std::stringstream ss;
 			ss << num_tmp;
 			ss >> s;
 			if(num_tmp/100==0)
@@ -42,7 +42,7 @@ CardLib::CardLib()  //暂规定个数为63个，后期需修改
 			{
 				_cards.push_back((Card*)new GoalCard(num_tmp-300));
 			}
-			_cards.back()->pixmapName = s + ".png" ;
+			_cards.back()->setPixmap(s + ".png");
 		}
 		carddata.close();
 	}
