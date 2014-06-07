@@ -6,16 +6,12 @@
 #include <QList>
 #include <QLabel>
 #include <QLayout>
+
 //#include "mailBox.h"
 #include "register.h"
 #include "mode.h"
-
-#define PLAYER_NUM 4
-
-enum STATE{
-    WAITING,
-    PLAYING
-};
+#include "game.h"
+#include "config.h"
 
 class MainWindow : public QMainWindow
 {
@@ -24,6 +20,11 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
+
+    Register* reg;      //注册用户名界面
+    Mode* chooseMode;   //选择建立主机/加入游戏
+    Waiting* waiting;   //等待游戏开始
+    //playing
 
 signals:
     void gameStart();
@@ -39,32 +40,31 @@ private slots:
     void starting();
 
 private:
-    Register* reg;
-    Mode* mode;
-
-    QPushButton* start;
-
-    QLabel playerName[4];
-    int myNo;
+    Game* game;
     QString myName;
-    QList<QLabel*> cardNum;
-    QList<QLabel*> myCards;
-    QList<QLabel*> myKeepers;
-    QList<QLabel*> Keepers_1;
-    QList<QLabel*> Keepers_2;
-    QList<QLabel*> Keepers_3;
-    QLabel* Action;
-    QList<QLabel*> Rules;
+//    QPushButton* start;
 
-    QVBoxLayout* waiting;
-    QVBoxLayout* playing;
-    QHBoxLayout* myArea;
+//    QLabel playerName[4];
+//    int myNo;
+//    QString myName;
+//    QList<QLabel*> cardNum;
+//    QList<QLabel*> myCards;
+//    QList<QLabel*> myKeepers;
+//    QList<QLabel*> Keepers_1;
+//    QList<QLabel*> Keepers_2;
+//    QList<QLabel*> Keepers_3;
+//    QLabel* Action;
+//    QList<QLabel*> Rules;
+
+//    QVBoxLayout* waiting;
+//    QVBoxLayout* playing;
+//    QHBoxLayout* myArea;
 
 
-    void regist();
-    void awaitingStart();
-    int state;
-    bool host;
+//    void regist();
+//    void awaitingStart();
+//    int state;
+//    bool host;
 
 //    ClientMB* MailBox;
 
