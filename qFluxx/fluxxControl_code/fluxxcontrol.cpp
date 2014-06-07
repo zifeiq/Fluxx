@@ -1,52 +1,35 @@
 #include "..\fluxxControl_code\fluxxcontrol.h"
 
 extern enum gameState;
-extern enum msgType;
 
-bool msgBox::parseMsg(const msgType msgtype, int& senderNum, std::string name, std::vector<const Card&>& relatedCard);
-bool msgBox::creatMsg(const int msgtype, std::string name, int playerNum, std::vector<const Card&>& relatedCard, const int additionalMsg)
-
+//发送消息:客户端编号，消息类型，有关卡牌， 有关玩家， 附加信息， 有关字符串
+//接收消息:客户端编号，消息类型， 有关卡牌，有关字符串
 fluxxControl::fluxxControl():cards(CardLib::getLib()) {
 	for(int i = 0; i < cards.getCardNum(); i++)  {
 		droppeddeck.push_back(cards.getCard(i));
 	}//初始化牌堆
 	//从GUI获取主机玩家信息，创建第一个玩家
-	clientNum = 1;
+	clientNum = 0;
 	presentState = WaitforPlayers;
 	//等待其他玩家加入
 	while (presentState == WaitforPlayers) {
 		//等待玩家加入阶段，有新的玩家加入，收消息，转换消息，广播消息，告诉该玩家其他玩家信息
-		//msgbufMsgtype = REGISTER;
+		msgbufMsgtype = ADDPLAYER;
 		if(msgBox.acceptNewClient()) {
-			msgBox.recvMsg(clientNum);
-			if(msgBox.parseMsg(msgbufMsgtype, clientNum, &msgbufString, &msgbufCards)){
+			if(msgBox.getMsg(clientNum, msgbufMsgtype, msgbufCards, msgbufString)){
 				players.push_back(Player(msgbufString));
 			}
-			//msgbufMsgtype = ACK;
-			msgBox.creatMsg(msgbufMsgtype, msgbufString, msgbufString, clientNum, &msgbufCards, msgbufAdditional);
-			msgBox.sendMsg(clientNum);
-			//msgbufMsgtype = ADDPLAYER;
-			//broadcast new player info
-			for(int i = 0; i < players.size()-1, i++) {
-				msgBox.creatMsg(msgbufMsgtype, msgbufString, msgbufString, i, &msgbufCards, msgbufAdditional);
-				msgBox.sendMsg(i);
-				//msgbufMsgtype = ACK
-				msgBox.recvMsg(i);
-				if(!msgBox.parseMsg(msgbufMsgtype, clientNum, &msgbufString, &msgbufCards)) {
+			msgbufMsgtype = ACK;
+			msgBox.createMsg(clientNum, msgbufMsgtype, msgbufCards);
+			msgbufMsgtype = ADDPLAYER;
+			//广播新玩家信息
+			for(int i = 0; i < players.size()-1; i++) {
+				msgBox.createMsg(i,msgbufMsgtype, msgbufCards, clientNum, msgbufAdditional, msgbufString);
+				msgbufMsgtype = ACK;
+				if(!msgBox.createMsg(clientNum, msgbufMsgtype, msgbufCards)) {
 					//wrong message
 				}
-				//msgbufMsgtype = ADDPLAYER;
-			}
-			for(int i = 0; i< players.size()-1, i++) {
-				msgbufString = players[i].getName();
-				msgBox.creatMsg(msgbufMsgtype, msgbufString, clientNum, &msgbufCards, msgbufAdditional);
-				msgBox.sendMsg(clientNum);
-				//msgbufmSGTYPE = ACK
-				msgBox.recvMsg(clientNum);
-				if(!msgBox.parseMsg(msgbufMsgtype, clientNum, &msgbufString, &msgbufCards)) {
-					//WRONG MESSAGE
-				}
-				//msgbufMsgtype = ADDPLAYER;
+				msgbufMsgtype = ADDPLAYER;
 			}
 		}
 		if(clientNum == 4) {
@@ -61,13 +44,11 @@ fluxxControl::fluxxControl():cards(CardLib::getLib()) {
 	for(std::vector<Player>::iterator i = players.begin(); i != players.end(); i++) {
 		setpresentPlayer(*i);
 		dealCard(rule.draw());
-		//msgbufMsgtype = GAMESTART
+		msgbufMsgtype = GAMESTART;
 		clientNum = distance(players.begin(), i);
-		msgBox.creatMsg(msgbufMsgtype, msgbufString, clientNum, &msgbufCards, msgbufAdditional);
-		msgBox.sendMsg(clientNum);
-		//msgbufMsgtype = ACK
-		msgBox.recvMsg(clientNum);
-		if(!msgBox.parseMsg(msgbufMsgtype, clientNum, &msgbufString, &msgbufCards)) {
+		msgBox.createMsg(clientNum, msgbufMsgtype, msgbufCards);
+		msgbufMsgtype = ACK;
+		if(!msgBox.getMsg(clientNum, msgbufMsgtype, msgbufCards, msgbufString)) {
 				//WRONG MESSAGE
 		}
 	}
@@ -78,16 +59,50 @@ void fluxxControl::shuffleCard() {
 	deck = droppeddeck;
 	droppeddeck.clear();
 	for(int i = 0; i < deck.size(); i++) {
-		const Card& tempCard = deck[i];
+		const Card* tempCard = deck[i];
 		int temp = rand()%deck.size();
 		deck[i] = deck[temp];
 		deck[temp] = tempCard;
 	}
 }
-void fluxxControl::dealCard(ruleMsg msg) {
-	for(int i = 0; i < msg; i++) {
+void fluxxControl::dealCard() {
+	//1.计算摸牌量
+	int _dealcardnum = 0;
+	bool _isleast = true;
+	if(rule.isnohandbonus()) {
+		if(presentPlayer.gethand().empty()) {
+			if (rule.isinflation()) {
+				_dealcardnum = 4;
+			}
+			else 
+				_dealcardnum = 3;
+		}
+	}
+	for(int i = (getclientnum(presentPlayer)+1)%4; i != getclientnum(presentPlayer); i = (i+1)%4) {
+		if(players[i].getkeeper().size() <= presentPlayer.getkeeper().size()) {
+			_isleast = false;
+			break;
+		}
+	}
+	if (_isleast) {
+		if (rule.isinflation()) {
+			_dealcardnum += 2;
+		}
+		else {
+			_dealcardnum += 1;
+		}
+	}
+	if (rule.isinflation()) {
+		_dealcardnum += (rule.getdraw()+1);
+	}
+	else {
+		_dealcardnum += rule.getdraw();
+	}
+	//2.开始摸牌
+	msgbufCards.clear();
+	for(int i = 0; i < _dealcardnum; i++) {
 		if (!deck.empty()) {
-			presentPlayer.addHand(deck.back());
+			presentPlayer.addHand(*deck.back());
 			msgbufCards.push_back(deck.back());
 			deck.pop_back();
 		}
@@ -101,107 +116,180 @@ void fluxxControl::setpresentPlayer(Player& p) {
 	presentPlayer = p;
 	clientNum = getclientnum(p);
 }
-void fluxxControl::playCard(ruleMsg msg) {
-	while(presentPlayer.getConsumedcard() < msg) {
-		//出牌，通知回合开始，期待出牌信息
-		clientNum = getclientnum();
-		dealCard(rule.draw());
-		//msgbufMsgtype = ROUNDBEGIN;
-		msgBox.creatMsg(msgbufMsgtype, msgbufString, clientNum, &msgbufCards, msgbufAdditional);
-		msgBox.sendMsg(clientNum);
-		//msgbufMsgtype = ACK;
-		msgBox.recvMsg();
-		if(!msgBox.parseMsg(msgbufMsgtype, clientNum, &msgbufString, &msgbufCards)) {
-					//WRONG MESSAGE
+void fluxxControl::playCard() {
+	//1.计算出牌数量
+	int _playcardnum = 0;
+	bool _ismost = true;
+	for(int i = (getclientnum(presentPlayer)+1)%4; i != getclientnum(presentPlayer); i = (i+1)%4) {
+		if(players[i].getkeeper().size() >= presentPlayer.getkeeper().size()) {
+			_ismost = false;
+			break;
 		}
-		//msgbufMsgtype = PLAY
-		msgBox.recvMsg(clientNum);
-		if(!msgBox.parseMsg(msgbufMsgtype, clientNum, &msgbufString, &msgbufCards)) {
-					//WRONG MESSAGE
+	}
+	if (_ismost) {
+		if(rule.isinflation()) {
+			_playcardnum += 2;
 		}
 		else {
-			//RIGHT MESSAGE
+			_playcardnum += 1;
+		}
+	}
+	_playcardnum += rule.getplay();
+	//2.发送玩家手牌，通知玩家回合开始
+	if (rule.israndomstart()) {
+		int _card = rand()%msgbufCards.size();
+		Card* _tempcard = msgbufCards[_card];
+		msgbufCards.insert(msgbufCards.begin(),_tempcard);
+		msgbufAdditional = 1;
+		clientNum = getclientnum(presentPlayer);
+		msgbufMsgtype = DRAW;
+		msgBox.createMsg(clientNum, msgbufMsgtype, msgbufCards, 0, msgbufAdditional);
+	}
+	else {
+		msgbufAdditional = 0;
+		clientNum = getclientnum(presentPlayer);
+		msgbufMsgtype = DRAW;
+		msgBox.createMsg(clientNum, msgbufMsgtype, msgbufCards);
+	}
+	msgbufMsgtype = ACK;
+	if (!msgBox.getMsg(clientNum, msgbufMsgtype,msgbufCards,msgbufString)) {
+		//错误处理
+	}
+	//开始出牌循环
+	bool _isHandLimitchanged;
+	bool _isKeeperLimitchanged;
+	int _winnernum;
+	while(presentPlayer.getConsumedcard() < _playcardnum && !presentPlayer.gethand().empty()) {
+		_isHandLimitchanged = false;
+		_isKeeperLimitchanged = false;
+		//出牌，通知回合开始，期待出牌信息
+		clientNum = getclientnum(presentPlayer);
+		msgbufMsgtype = ROUNDBEGIN;
+		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards);
+		msgbufMsgtype = ACK;
+		if(!msgBox.getMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufString)) {
+					//错误处理
+		}
+		msgbufMsgtype = PLAY;
+		if(!msgBox.getMsg(clientNum, msgbufMsgtype,msgbufCards, msgbufString)) {
+					//错误处理
+		}
+		else {
 			//结算，通知信息有效，广播结算结果
-			if(presentPlayer.comsumeHand()){
+			if(presentPlayer.removeHand(*msgbufCards[0])){
 				//手牌有效,广播出牌信息
 				for( int i = (1+clientNum)%4; i != clientNum; i++) {
-					//msgbufMsgtype = CARDPLAYING;
-					msgBox.creatMsg(msgbufMsgtype, msgbufString, clientNum, &msgbufCards, msgbufAdditional);
-					msgBox.sendMsg(i);
-					//msgbufMsgtype = ACK;
-					msgBox.recvMsg(i);
-					if(!msgBox.parseMsg(msgbufMsgtype, clientNum, &msgbufString, &msgbufCards)) {
-						//WRONG MESSAGE
+					msgbufMsgtype = CARDPLAYING;
+					msgBox.createMsg(i,msgbufMsgtype,msgbufCards);
+					msgbufMsgtype = ACK;
+					if(!msgBox.getMsg(i, msgbufMsgtype, msgbufCards, msgbufString)) {
+						//错误处理
 					}
 				}
-				settleCard(msgbufCards[0]);
+				settleCard(*msgbufCards[0]);
 				presentPlayer.setConsumedcard(presentPlayer.getConsumedcard()+1);
-				//检查胜利结果
-				if (checkWinner()) {
+				//3.检查胜利情况
+				_winnernum = checkWinner();
+				if (_winnernum > 0) {
 					for (int i = 0; i < players.size(); i++){
-						//msgbufMsgtype = GAMEOVER;
+						msgbufMsgtype = GAMEOVER;
 						clientNum = i;
-						msgBox.creatMsg(msgbufMsgtype, msgbufString, clientNum, &msgbufCards, msgbufAdditional);
-						msgBox.sendMsg(i);
-						//msgbufMsgtype = ACK;
-						msgBox.recvMsg(i);
-						if(!msgBox.parseMsg(msgbufMsgtype, clientNum, &msgbufString, &msgbufCards)) {
-							//WRONG MESSAGE
+						msgbufAdditional = _winnernum;
+						msgBox.createMsg(i,msgbufMsgtype,msgbufCards,0,msgbufAdditional);
+						msgbufMsgtype = ACK;
+						if(!msgBox.getMsg(i,msgbufMsgtype,msgbufCards,msgbufString)) {
+							//错误处理
 						}
+					}//广播获胜信息结束
+				}//获胜情况处理结束
+			}//有效出牌处理结束
+			else {
+				//手牌无效
+			}//无效出牌处理结束
+		}//收到出牌消息结束
+		//4.检查上限类规则
+		if(_isHandLimitchanged) {
+			for (int i = 0; i < players.size(); i++) {
+				if(players[i].gethand().size > rule.getcardlimitation()) {
+					msgbufMsgtype = DROPCARD;
+					msgbufAdditional = players[i].gethand().size()-rule.getcardlimitation();
+					msgBox.createMsg(i,msgbufMsgtype,msgbufCards,0,msgbufAdditional);
+					msgbufMsgtype = DROPCARD;
+					msgBox.getMsg(i,msgbufMsgtype,msgbufCards,msgbufString);
+					for(int j = 0; j < msgbufCards.size(); j++) {
+						players[i].removeHand(*msgbufCards[j]);
+						droppeddeck.push_back(msgbufCards[j]);
+					}
+					for(int j = 0; j < players.size(); j++) {
+						msgbufMsgtype = DROPCARD;
+						msgBox.createMsg(j, msgbufMsgtype, msgbufCards);
 					}
 				}
+				msgbufCards.clear();
 			}
-			else ｛
-				//手牌无效
+		}//手牌上限检查完毕
+		if(_isKeeperLimitchanged) {
+			for (int i = 0; i < players.size(); i++) {
+				if (players[i].getkeeper().size() < rule.getkeeperlimitation()) {
+					msgbufMsgtype = DROPKEEPER;
+					msgbufAdditional = players[i].getkeeper().size()-rule.getkeeperlimitation();
+					msgBox.createMsg(i, msgbufMsgtype,msgbufCards);
+					msgBox.getMsg(i, msgbufMsgtype, msgbufCards, msgbufString);
+				}
+				for (int j = 0; j < players.size(); j++) {
+					players[i].removeKeeper(*msgbufCards[j]);
+					players[i].removeHand(*msgbufCards[j]);
+				}
+				for (int j = 0; j < players.size(); j++) {
+					msgbufMsgtype = DROPKEEPER;
+					msgBox.createMsg(j, msgbufMsgtype, msgbufCards);
+				}
 			}
-		}
-	}
+			msgbufCards.clear();
+		}//所有物上限检查完毕
+	}//一个玩家出完所有手牌
 }
-void fluxxControl::dropCard(ruleMsg msg) {
-	//弃牌，发送弃牌命令
-	//如果要弃的牌数大于1，等待传递弃牌信息
-	//广播弃牌信息
-	//msgbufMsgtype = DROPCARD;
-	if (msg < 0) {
-		return;//没有弃牌规则，直接退出
+void fluxxControl::dropCard() {
+	//1.计算应该弃牌数量
+	int _dropcardnum = 0;
+	_dropcardnum = presentPlayer.getHandcnt() - rule.getcardlimitation();
+	if (_dropcardnum > 0) {
+		return;
 	}
-	msgbufAdditional = presentPlayer.getHandcnt()-msg;//可能是负数！！！！
-	msgBox.creatMsg(msgbufMsgtype, msgbufString, clientNum, &msgbufCards, msgbufAdditional);
-	msgBox.sendMsg(clientNum);
-	//msgbufMsgtype = ACK;
-	msgBox.recvMsg();
-	if(!msgBox.parseMsg(msgbufMsgtype, clientNum, &msgbufString, &msgbufCards)) {
-				//WRONG MESSAGE
+	msgbufMsgtype = DROPCARD;
+	msgbufAdditional = _dropcardnum;
+	clientNum = getclientnum(presentPlayer);
+	msgBox.createMsg(clientNum, msgbufMsgtype, msgbufCards, 0, msgbufAdditional);
+	msgbufMsgtype = DROPCARD;
+	if(!msgBox.getMsg(clientNum, msgbufMsgtype, msgbufCards, msgbufString)) {
+				//不是弃牌信息
 	}
 	if (msgbufAdditional > 0) {
-		//msgbufMsgtype = DROPCARD
-		msgBox.recvMsg();
-		if(!msgBox.parseMsg(msgbufMsgtype, clientNum, &msgbufString, &msgbufCards)) {
+		msgbufMsgtype = DROPCARD;
+		if(!msgBox.getMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufString)) {
 			//WRONG MESSAGE
 		}
-		//广播弃牌信息
+		//处理弃牌信息
 		for(int i = 0; i < msgbufCards.size(); i++) {
-			if(presentPlayer.removeHand(msgbufCards[i])) {
+			if(presentPlayer.removeHand(*msgbufCards[i])) {
 				droppeddeck.push_back(msgbufCards[i]);
 			}
 			else {
 				//弃牌错误
 			}
 		}
-		//msgbufMsgtype = ACK
-		msgBox.creatMsg(msgbufMsgtype, msgbufString, clientNum, &msgbufCards, msgbufAdditional);
-		msgBox.sendMsg(clientNum);
+		msgbufMsgtype = ACK;
+		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards);
+		//广播弃牌信息
 		for(int i = (clientNum+1)%4; i != clientNum; i++) {
 			//msgbufmsgtype = OTHERDROPCARD
-			msgBox.creatMsg(msgbufMsgtype, msgbufString, clientNum, &msgbufCards, msgbufAdditional);
-			msgBox.sendMsg(i);
-			//msgbufMsgtype = ACK;
-			msgBox.recvMsg(i);
-			if(!msgBox.parseMsg(msgbufMsgtype, clientNum, &msgbufString, &msgbufCards)) {
+			msgBox.createMsg(i, msgbufMsgtype, msgbufCards);
+			msgbufMsgtype = ACK;
+			if(!msgBox.getMsg(msgbufMsgtype, clientNum, &msgbufString, &msgbufCards)) {
 				//WRONG MESSAGE
 			}
-		}
-	}
+		}//广播弃牌信息结束
+	}//整个弃牌处理结束
 }
 void fluxxControl::settleCard(const Card& targetCard) {
 	//分析卡牌信息
@@ -280,14 +368,14 @@ void fluxxControl::settleCard(const Card& targetCard) {
 }
 int fluxxControl::checkWinner() {
 	//遍历每个玩家的所有物，与当前的目标牌进行匹配
-	//完全匹配则返回玩家编号，没有匹配返回0；
+	//完全匹配则返回玩家编号，没有匹配返回-1
 	int keeperone;
 	int keepertwo;
 	int keeperban;
 	bool chk1 = false;
 	bool chk2 = false;
 	bool ban = true;
-	for(int i = 1; i <= players.size(); i++) {
+	for(int i = 0; i < players.size(); i++) {
 		if (!players[i].getkeeper().empty()) {
 			std::vector<const Card&>::const_interator i;
 			for (i = players[i].keeper.begin(), i != keeper.end(); i++) {
@@ -337,5 +425,5 @@ int fluxxControl::checkWinner() {
 		chk1 = false;
 		chk2 = false;
 	}
-	return 0;
+	return -1;
 }
