@@ -1,4 +1,3 @@
-#include <sstream>
 #include "cardLib.h"
 
 bool Card::operator==(const Card& c) const
@@ -22,13 +21,9 @@ CardLib::CardLib()  //暂规定个数为63个，后期需修改
 		for(_cardNum=0;!carddata.eof();_cardNum++)
 		{
 			carddata >> num_tmp;
-			std::string s;
-			std::stringstream ss;
-			ss << num_tmp;
-			ss >> s;
 			if(num_tmp/100==0)
 			{
-				_cards.push_back((Card*)new BasicRuleCard);
+				_cards.push_back((Card*)new BasicRuleCard(num_tmp));
 			}
 			else if(num_tmp/100==1)
 			{
@@ -42,7 +37,10 @@ CardLib::CardLib()  //暂规定个数为63个，后期需修改
 			{
 				_cards.push_back((Card*)new GoalCard(num_tmp-300));
 			}
-			_cards.back()->setPixmap(s + ".png");
+			else if (num_tmp/100 == 4)
+			{
+				_cards.push_back((Card*)new ActionCard(num_tmp - 400));
+			}
 		}
 		carddata.close();
 	}
