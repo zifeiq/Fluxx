@@ -15,21 +15,28 @@ using std::string;
 class Client
 {
 public:
-    Client(QString name, QString ip);
+    Client(QString name);
     void addPlayer(int no, QString name);
-    bool isSuccess();
-private:
+
+    bool connect(QString ip);
+    bool join();
     ClientMB msgBox;
 
-    vector<Card*> myHands;
-    vector<vector<Card*>> keepers;
+private:
+    vector<const Card*> myHands;
+    vector<vector<const Card*>> keepers;
     int handsNum[PLAYER_NUM];
 
     QString playerName[PLAYER_NUM];
     QString myName;
     int myNo;
 
-    bool success;
+    //用于接收消息的临时变量
+    MsgType tmsg;
+    int relatedPlayer;
+    string tname;
+    int relatedInfo;
+    vector<const Card*> tcards;
 
     //QString与string间转换
     QString s2q(const string& s) { return QString(QString::fromLocal8Bit(s.c_str())); }

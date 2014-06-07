@@ -6,11 +6,20 @@
 #include <QList>
 #include <QLabel>
 #include <QLayout>
+#include <QGraphicsPixmapItem>
+
+#include <string>
+#include <vector>
+using std::string;
+using std::vector;
 
 //#include "mailBox.h"
 #include "register.h"
 #include "mode.h"
-#include "game.h"
+#include "waiting.h"
+//#include "client.h"
+#include "./cardLib_code/cardLib.h"
+#include "./mailbox/clientMB/clientMB.h"
 #include "config.h"
 
 class MainWindow : public QMainWindow
@@ -24,12 +33,13 @@ public:
     Register* reg;      //注册用户名界面
     Mode* chooseMode;   //选择建立主机/加入游戏
     Waiting* waiting;   //等待游戏开始
+
     //playing
+    QList<QGraphicsPixmapItem>
+
 
 signals:
-    void gameStart();
-//protected:
-//    void mousePressEvent(QMouseEvent *event);
+    void roomFull();
 
 private slots:
     void reg_ok_clicked();
@@ -40,36 +50,28 @@ private slots:
     void starting();
 
 private:
-    Game* game;
+    Server* server;
+//    Client* player;
+
+    ClientMB msgBox;
+    int handsNum[PLAYER_NUM];
+    QString playerName[PLAYER_NUM];
     QString myName;
-//    QPushButton* start;
+    int myNo;
 
-//    QLabel playerName[4];
-//    int myNo;
-//    QString myName;
-//    QList<QLabel*> cardNum;
-//    QList<QLabel*> myCards;
-//    QList<QLabel*> myKeepers;
-//    QList<QLabel*> Keepers_1;
-//    QList<QLabel*> Keepers_2;
-//    QList<QLabel*> Keepers_3;
-//    QLabel* Action;
-//    QList<QLabel*> Rules;
+    //用于接收消息的临时变量
+    MsgType tmsg;
+    int relatedPlayer;
+    string tname;
+    int relatedInfo;
+    vector<const Card*> tcards;
 
-//    QVBoxLayout* waiting;
-//    QVBoxLayout* playing;
-//    QHBoxLayout* myArea;
+    //QString与string间转换
+    QString s2q(const string& s) { return QString(QString::fromLocal8Bit(s.c_str())); }
+    string q2s(const QString& s) { return string((const char *)s.toLocal8Bit()); }
 
-
-//    void regist();
-//    void awaitingStart();
-//    int state;
-//    bool host;
-
-//    ClientMB* MailBox;
-
-//    MailBox->receiveMsg(palyerName);
-
+    void awaitOthers();            //waiting for other players
+    void awaitStart();      //waiting for gamestart msg
 };
 
 #endif // MAINWINDOW_H
