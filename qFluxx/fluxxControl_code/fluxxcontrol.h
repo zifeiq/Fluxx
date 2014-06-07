@@ -12,30 +12,31 @@
 typedef int ruleMsg;
 extern enum MsgType;
 enum gameState{ 
-	WaitforPlayers,
-	PlayersTurns,
+	WAIT_FOR_PLAYERS,
+	DEAL_ORIGINAL_CARD,
 };
 class fluxxControl {
 public:
 	fluxxControl ();
-	void initrules();//初始化规则，在默认构造函数中使用
-	void addplayers();//添加玩家，在默认构造函数和其他适当的时机使用
+	void initrules();//初始化规则
+	void addplayers();//添加玩家
 	void setpresentPlayer(Player&);
 	void shuffleCard();//洗牌
-	void dealCard(); //发牌,入口参数为从规则中得到的信息
-	void playCard();//出牌阶段控制函数，入口参数为从规则中得到的信息
+	void dealCard(); //发牌
+	void playCard();//出牌
 	void settleCard(const Card&); //单张出牌与结算，入口参数为卡牌的引用
-	void dropCard();//弃牌阶段控制函数，口参数为从规则中得到的信息
-	void removeCard(Player&);//移除手牌，需要指定目标
+	void dropCard();//弃牌阶段控制函数
+	void removeCard(Player&);//移除手牌
+	void stagecontrol();
+	void updateRules();
+	void updateKeepers();
 	int checkWinner();
-
 	int getclientnum(Player&);
-	~fluxxControl ();
+	~fluxxControl (){};
 
 private:
 	//单个回合控制相关
-	gameState presentState;
-	Player& presentPlayer;
+	Player presentPlayer;
 	fluxxRules rule;
 	//信息传递相关
 	int msgbufAdditional;//附加消息编号
@@ -46,6 +47,7 @@ private:
 	//整局游戏控制相关
 	CardLib& cards;
 	ServerMB msgBox;
+	gameState presentState;
 	std::vector<Player> players;//所有玩家
 	std::vector<Card*> deck;//牌堆
 	std::vector<Card*> droppeddeck;//弃牌堆
