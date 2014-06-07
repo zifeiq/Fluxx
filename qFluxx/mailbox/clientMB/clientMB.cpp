@@ -1,7 +1,8 @@
 #include"clientMB.h"
 using namespace std;
 
-ClientMB::ClientMB()
+ClientMB::ClientMB():
+	_cards(CardLib::getLib())
 {
 	//初始化winsock  
 	WSADATA wsaD;
@@ -60,52 +61,63 @@ string ClientMB::recvMsg()
 		s = buf;
 	return s;
 }
-
-bool ClientMB::createMsg(MsgType m, vector<string> relatedCards,string name)
+//发送ACK、NACK消息
+bool ClientMB::createMsg(MsgType m)  
+{
+	//解析参数并生成消息字符串
+	string s;
+	switch(m)
+	{
+		case ACK: s = "1"; break;
+		case NACK: s = "2"; break;
+		default: return false;
+	}
+	//发送消息
+	if (!sendMsg(s))
+		return false;
+	else
+		return true;
+}
+//发送REGISTER消息
+bool ClientMB::createMsg(MsgType m, std::string name)
+{
+	//解析参数并生成消息字符串
+	string s;
+	if(m != REGISTER||name == "")//消息类型错误或未传入玩家名字
+		return false;
+	else 
+		s = "0"+name;
+	//发送消息
+	if (!sendMsg(s))
+		return false;
+	else
+		return true;
+}
+//发送PLAY,DROP_CARD_I,DROP_KEEPER_I消息
+bool ClientMB::createMsg(MsgType m, vector<const Card*>relatedCards)
 {
 	//解析参数并生成消息字符串
 	string s;
 	int num;
 	switch (m)
 	{
-	case REGISTER:
-		if (name == "")			//未传入玩家名字
-			return false;
-		else
-			s = "0" + name;
-		break;
-	case ACK:
-		s = "1";
-		break;
-	case NACK:
-		s = "2";
-		break;
-	case PLAY:
+		case PLAY:
 		if (relatedCards.size() != 1)//未传入一张牌
 			return false;
 		else{
-			if (isEffectiveCard(relatedCards[0]))
-				s = "3" + relatedCards[0];
-			else
-				return false;
-			
+			s = "3" + card2Str(relatedCards[0]);							
 			break;
 		}
-	case DROPCARD:
+	case DROP_CARD_I:
 		if (relatedCards.size() == 0)//未传入卡牌消息
 			return false;
 		else{
 			s = "4";
 			for (int i = 0; i < relatedCards.size(); i++)
-			{
-				if (isEffectiveCard(relatedCards[i]))
-					s += relatedCards[i];
-				else
-					return false;
-			}
+				s += card2Str(relatedCards[i]);
 			break;
 		}
-	case DROPKEEPER:
+	case DROP_KEEPER_I:
 		if (relatedCards.size() == 0)//未传入卡牌消息
 			return false;
 		else{
@@ -113,14 +125,8 @@ bool ClientMB::createMsg(MsgType m, vector<string> relatedCards,string name)
 			for (int i = 0; i < relatedCards.size(); i++)
 			{
 				//检测是否为有效的所有物牌编号
-				int j;
-				for (j = 0; j < relatedCards[i].size();j++)
-					if (!isdigit(relatedCards[i][j])) break; //检测到非数字
-				if (j != relatedCards[i].size())   //包含非数字的字符
-					return false;
-				num = atoi(relatedCards[i].c_str());
-				if (num / 100 == 2 && 0 < (num - 200) < 19) 
-					s += relatedCards[i];
+				if(relatedCards[i]->getType() == Card::KEEPER && 0<relatedCards[i]->getNum()<19) 
+					s += card2Str(relatedCards[i]);
 				else
 					return false;
 			}
@@ -134,10 +140,168 @@ bool ClientMB::createMsg(MsgType m, vector<string> relatedCards,string name)
 	else
 		return true;
 }
-//bool ClientMB::getMsg(MsgType& m, std::string& name, int& playerNum, vector<int>& relatedCards, int& additional)
-//{
-//	string s = recvMsg()
-//}
+//期待接收ACK消息
+bool ClientMB::getMsg(MsgType m) 
+{
+	//等待接受消息
+	string s = recvMsg();
+	//解析消息
+	switch (s[0])
+	{	
+	case '2': return false;
+	case '1': if(m == ACK) return true;
+	default: 	
+		//接收消息与期待不匹配
+		createMsg(NACK); 
+		return false;
+	}
+
+}
+//期待接收ADD_PLAYER消息
+bool ClientMB::getMsg(MsgType m, int& relatedPlayer, std::string& name)
+{
+	//等待接受消息
+	string s = recvMsg();
+	//解析消息
+	switch (s[0])
+	{
+	case '2': return false;
+	case '0': 
+		if(m == ADD_PLAYER){
+			relatedPlayer = s[1];
+			name = s.substr(2); 
+			return true;
+		}
+	default: 
+		//接收消息与期待不匹配
+		createMsg(NACK); 
+		return false;
+	}
+}
+//期待接收GAME_START,RULE消息
+bool ClientMB::getMsg(MsgType m, std::vector<const Card*>& relatedCards)
+{
+	//等待接受消息
+	string s = recvMsg();
+	//解析消息
+	switch (s[0])
+	{
+	case '2': return false;
+	case '3': if(m == GAME_START) break;
+			  else {
+				  createMsg(NACK);
+				  return false;
+			  }
+	case 'B': if(m == RULE) break;
+	default:
+		//接收消息与期待不匹配
+		createMsg(NACK); 
+		return false;
+	}
+	for (int i = 1; i < s.size(); i += 3)
+		relatedCards.push_back(str2Card(s.substr(i, 3)));
+	return true;
+}
+//期待接收ROUND_BEGIN,DROP_CARD_C,DROP_KEEPER_C,GAME_OVER消息
+bool ClientMB::getMsg(MsgType m, int& relatedInfo)
+{
+	//等待接受消息
+	string s = recvMsg();
+	//解析消息
+	switch (s[0])
+	{
+	case '2': return false;
+	case '4': if(m == ROUND_BEGIN)break;
+			  else {
+				  createMsg(NACK);
+				  return false;
+			  }
+	case '6': if(m == DROP_CARD_C) break;
+			else {
+				  createMsg(NACK);
+				  return false;
+			  }
+	case '7': if(m == DROP_KEEPER_C) break;
+			  else{
+				  createMsg(NACK);
+				  return false;
+			  }
+	case 'A': if(m == GAME_OVER) break;
+	default:  createMsg(NACK);
+			  return false;
+	}
+	relatedInfo = atoi(s.substr(1).c_str());
+	return true;
+}
+//期待接收DRAW,CARD_PLAYED,CARD_DROPED消息
+bool ClientMB::getMsg(MsgType m, std::vector<const Card*>& relatedCards,int& relatedInfo)
+{
+	//等待接受消息
+	string s = recvMsg();
+	//解析消息
+	switch (s[0])
+	{
+	case '2': return false;
+	case '5': if(m == DRAW) break;
+			  else{
+				  createMsg(NACK);
+				  return false;
+			  }
+	case '9': if(m == CARD_PLAYED) break;
+			  else{
+				  createMsg(NACK);
+				  return false;
+			  }
+	case 'D': if(m == CARD_DROPED) break;
+	default: createMsg(NACK);
+			  return false;
+	}
+	relatedInfo = atoi(s.substr(1,1).c_str());
+	for(int i = 2; i < s.size(); i += 3)
+		relatedCards.push_back(str2Card(s.substr(i, 3)));
+	return true;
+}
+//期待接收CARD_NUM消息
+bool ClientMB::getMsg(MsgType m, int& relatedPlayer, int& additional)
+{
+	//等待接受消息
+	string s = recvMsg();
+	//解析消息
+	switch (s[0])
+	{
+	case '2': return false;
+	case '8': 
+		if(m== CARD_NUM){
+		relatedPlayer = s[1];
+		additional = atoi(s.substr(2).c_str());
+		return true;
+		}
+	default:createMsg(NACK);
+			return false;
+	}
+
+}
+//期待接收KEEPER_UPDATE消息
+bool ClientMB::getMsg(MsgType m, std::vector<const Card*>& relatedCards,int& relatedPlayer, int& additional)
+{
+	//等待接受消息
+	string s = recvMsg();
+	//解析消息
+	switch (s[0])
+	{
+	case '2': if( m== NACK) return false;
+	case 'C': 
+		if(m== KEEPER_UPDATE){
+		relatedPlayer = atoi(s.substr(1,1).c_str());
+		additional = atoi(s.substr(2,1).c_str());
+		for(int i = 3; i < s.size(); i += 3)
+			relatedCards.push_back(str2Card(s.substr(i, 3)));
+		return true;
+		}
+	default: createMsg(NACK);
+			 return false;
+	}
+}
 
 bool ClientMB::ipCheck(const string s) const
 {
@@ -178,45 +342,49 @@ bool ClientMB::ipCheck(const string s) const
 	return (cnum == 4 && cpoint == 3);      //检测是否包含4段数字和3个'.'
 }
 
-bool ClientMB::isEffectiveCard(string s) const
+string ClientMB::card2Str(const Card* c)
 {
-	//检测是否仅包含数字
-	int j;
-	for (j = 0; j < s.size(); j++)
-		if (!isdigit(s[j])) break; //检测到非数字
-	if (j !=s.size())   //包含非数字的字符
-		return false;
-	int num = atoi(s.c_str());
-	int type = num / 100;
-	int ruleType,ruleNum;
-	switch (type)
+	string s;
+	stringstream ss;
+	ss << c->getNum();
+	switch (c->getType())
 	{
-	case 0: return false; //不可传入基本规则牌或其他数字
-	case 1:               //新规则牌
-		ruleType = (num - 100) / 10;
-		ruleNum = num - 100 - ruleType * 10;
-		if (ruleType == 1 && 0 <= ruleNum <= 2) //手牌上限规则牌
-			return true;
-		else if (ruleType == 2 && 2 <= ruleNum <= 4)//所有物个数规则牌
-			return true;
-		else if (ruleType == 3 && 2 <= ruleNum <= 5)//抓牌张数规则牌
-			return true;
-		else if (ruleType == 4 && 2 <= ruleNum <= 4)//出牌张数规则牌
-			return true;
-		else if (ruleType == 5 && 1 <= ruleNum <= 8)//其他规则牌
-			return true;
-		else
-			return false;
-	case 2:       //所有物牌
-		if (1 <= (num - 200) <= 18)
-			return true;
-		else
-			return false;
-	case 3:     //目标牌
-		if (1 <= (num - 300) <= 23)
-			return true;
-		else
-			return false;
-	default: return false;
+	case Card::NEW_RULE: s = "1" + ss.str(); break;
+	case Card::KEEPER: 
+		s = "2" + (c->getNum() < 10 ? "0" + ss.str() : ss.str()); break;
+	case Card::GOAL:
+		s = "3" + (c->getNum() < 10 ? "0" + ss.str() : ss.str()); break;
+	case Card::ACTION:
+		s = "4" + (c->getNum() < 10 ? "0" + ss.str() : ss.str()); break;
+	default: break;
+	}
+	return s;
+}
+
+const Card* ClientMB::str2Card(string s)
+{
+	switch (s[0])
+	{
+	case '0':  //基本规则牌
+		return _cards.getCard(atoi(s.c_str()));
+	case '1':  //新规则牌
+		if (s[1] == '1')      //手牌上限
+			return _cards.getCard(atoi(s.c_str()) - 108);
+		else if (s[1] == '2')  //所有物上限
+			return _cards.getCard(atoi(s.c_str()) - 117);
+		else if (s[1] == '3')//抓牌数量
+			return _cards.getCard(atoi(s.c_str()) - 124);
+		else if (s[1] == '4')//出牌数量
+			return _cards.getCard(atoi(s.c_str()) - 130);
+		else                //其他新规则
+			return _cards.getCard(atoi(s.c_str()) - 136);
+	case '2':  //所有物牌
+		return _cards.getCard(atoi(s.c_str()) - 178);
+	case '3':  //目标牌
+		return _cards.getCard(atoi(s.c_str()) - 260);
+	case '4':  //行动牌
+		return _cards.getCard(atoi(s.c_str()) - 337);
+	default:   //不会进入此
+		return _cards.getCard(0);
 	}
 }
