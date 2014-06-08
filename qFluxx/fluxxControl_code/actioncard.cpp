@@ -4,8 +4,6 @@
 void fluxxControl::actioncard(Card& act_card)
 {
 	std::vector<const Card*> player_cards;	//临时存放玩家手牌或所有物或弃牌堆里有用的牌
-	//std::vector<const Card*> player_cards_tmp;	//作为中转用
-	//std::vector<const Card*> player_cards_tmp2;	//作为中转用
 	std::vector<const Card*>::const_iterator ii = droppeddeck.begin();	//case6中用到，从弃牌堆中删除某张牌
 	std::vector<int> cnt;	//临时记录玩家所有物数量或其他牌数量的计数器
 	int tmp;
