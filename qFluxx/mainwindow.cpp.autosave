@@ -17,6 +17,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(chooseMode->part,SIGNAL(clicked()),this,SLOT(mode_part_clicked()));
 
     server = NULL;
+    
+    connect(this,SIGNAL(gameStart()),this,SLOT(initGame())
 }
 
 MainWindow::~MainWindow()
@@ -66,13 +68,13 @@ void MainWindow::mode_part_clicked()
         }
         else
             break;
+        }
     }
 }
 
 void MainWindow::awaitOthers()
 {
     connect(this,SIGNAL(roomFull()),waiting,SLOT(enableStart()));
-
     //receiving information of myself
     if(msgBox.createMsg(REGISTER,q2s(myName))){
         if(msgBox.getMsg(tmsg,myNo,tname)){
@@ -130,7 +132,8 @@ void MainWindow::awaitOthers()
           awaitStart();
 }
 
-void MainWindow::start_clicked(){
+void MainWindow::start_clicked()
+{
     if(msgBox.createMsg(ACK))
         awaitStart();
     else
@@ -140,22 +143,15 @@ void MainWindow::start_clicked(){
 void MainWindow::awaitStart(){
     if(msgBox.getMsg(tmsg,tcards)){
         if(tmsg == GAME_START)
-            ;//game start
+            emit gameStart();//game start
         else
             ;//error handling
     }
     else
         ;//error handling
-    
+
 }
 
-void MainWindow::starting(){
-//    waiting->removeWidget(playerName[0]);
-//    waiting->removeWidget(playerName[1]);
-//    waiting->removeWidget(playerName[2]);
-//    waiting->removeWidget(playerName[3]);
-    for(int i = 0; i != PLAYER_NUM; i++){
-        //排列玩家信息,包括初始手牌数
-    }
-    //get my cards
+void MainWindow::initGame(){
+    
 }
