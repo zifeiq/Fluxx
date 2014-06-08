@@ -41,10 +41,11 @@ public:
     QGraphicsScene sHands;
     QList<QGraphicsPixmapItem*> myHands;
     QList<QList<QGraphicsPixmapItem*>> keepers;
-
+    QGraphicsPixmapItem* icons[PLAYER_NUM];
 
 
 signals:
+    void serverConnected();
     void roomFull();
     void gameStart();
 
@@ -53,6 +54,7 @@ private slots:
     void reg_cancel_clicked();
     void mode_host_clicked();
     void mode_part_clicked();
+
     void start_clicked();
     void initGame();
 
@@ -62,12 +64,13 @@ private:
 
     ClientMB msgBox;
     int handsNum[PLAYER_NUM];
-    QString playerName[PLAYER_NUM];
+    QList<QString> playerName;
     QString myName;
     int myNo;
 
     //用于接收消息的临时变量
     MsgType tmsg;
+    int tno;
     int relatedPlayer;
     string tname;
     int relatedInfo;
@@ -77,9 +80,12 @@ private:
     QString s2q(const string& s) { return QString(QString::fromLocal8Bit(s.c_str())); }
     string q2s(const QString& s) { return string((const char *)s.toLocal8Bit()); }
 
-    void awaitOthers();            //waiting for other players
-    void awaitStart();      //waiting for gamestart msg
-    void startGame();
+//    void awaitOthers();            //waiting for other players
+//    void awaitStart();      //waiting for gamestart msg
+//    void startGame();
+
+    void processMsg();//等待接收消息的函数,游戏结束前每个动作处理完均要回到该函数
+    void addPlayer();
 };
 
 #endif // MAINWINDOW_H

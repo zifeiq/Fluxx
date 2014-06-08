@@ -13,12 +13,14 @@ public:
 	enum Type{BASIC_RULE, NEW_RULE, KEEPER, GOAL, ACTION};
 	Type getType() const{ return _type; } //返回本卡的属性
 	int getNum() const{ return _num; }  //返回本卡的编号
+    std::string getAddr() const{ return _addr; } //return card file address
 	virtual ~Card(){}
 	bool operator==(const Card& c) const;
 	Card& operator =(const Card& c);
 protected:
 	Type _type;
 	int _num; //本卡牌的编号（两位）
+    std::string _addr;
 };
 
 class RuleCard :public Card  //规则牌
@@ -68,7 +70,7 @@ public:
 	}
 	Card* getCard(int i) const{ return _cards[i]; }
 	int getCardNum() const { return _cardNum; }
-
+	void getInfo(const Card* goal, std::vector<const Card*>& keepers) const;//查询目标卡对应的所有物卡
 protected:
 	CardLib();
 	~CardLib();
