@@ -15,7 +15,6 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     client.cpp \
-    game.cpp \
     mode.cpp \
     register.cpp \
     waiting.cpp \
@@ -24,7 +23,6 @@ SOURCES += main.cpp\
 
 HEADERS  += mainwindow.h \
     client.h \
-    game.h \
     mode.h \
     register.h \
     waiting.h \

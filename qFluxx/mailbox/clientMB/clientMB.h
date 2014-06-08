@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <string>  
+#include <sstream>
 #include <cctype>
 #include <winsock2.h>  
 #include "cardLib.h"
@@ -46,13 +47,13 @@ public:
 	bool createMsg(MsgType m, std::vector<const Card*>relatedCards);//发送PLAY,DROP_CARD_I,DROP_KEEPER_I消息
 
 		//getMsg函数重载以实现多种调用方式
-	bool getMsg(int playerNum, MsgType& m); //发送ACK,NACK消息
-	bool getMsg(int playerNum, MsgType& m, int& relatedPlayer, std::string& name);//发送ADD_PLAYER消息
-	bool getMsg(int plaerNum, MsgType& m, std::vector<const Card*>& relatedCards);//发送GAME_START,RULE消息
-	bool getMsg(int playerNum, MsgType& m, int relatedInfo); //发送ROUND_BEGIN,DROP_CARD_C,DROP_KEEPER_C,GAME_OVER消息
-	bool getMsg(int playerNum, MsgType& m, std::vector<const Card*> relatedCards,int relatedInfo); //发送DRAW,CARD_PLAYED,CARD_DROPED消息
-	bool getMsg(int playerNum, MsgType& m, int relatedPlayer, int additional); //发送CARD_NUM消息
-	bool getMsg(int playerNum, MsgType& m, std::vector<const Card*> relatedCards,int relatedPlayer, int additional); //发送KEEPER_UPDATE消息
+	bool getMsg(MsgType m); //接收ACK,NACK消息
+	bool getMsg(MsgType m, int& relatedPlayer, std::string& name);//接收ADD_PLAYER,NACK消息
+	bool getMsg(MsgType m, std::vector<const Card*>& relatedCards);//接收GAME_START,RULE,NACK消息
+	bool getMsg(MsgType m, int& relatedInfo); //接收ROUND_BEGIN,DROP_CARD_C,DROP_KEEPER_C,GAME_OVER,NACK消息
+	bool getMsg(MsgType m, std::vector<const Card*>& relatedCards,int& relatedInfo); //接收DRAW,CARD_PLAYED,CARD_DROPED,NACK消息
+	bool getMsg(MsgType m, int& relatedPlayer, int& additional); //接收CARD_NUM,NACK消息
+	bool getMsg(MsgType m, std::vector<const Card*>& relatedCards,int& relatedPlayer, int& additional); //接收KEEPER_UPDATE,NACK消息
 private:
 	SOCKET clientSock;
 	CardLib& _cards;
