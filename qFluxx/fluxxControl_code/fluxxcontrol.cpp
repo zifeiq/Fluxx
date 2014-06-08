@@ -494,18 +494,6 @@ void fluxxControl::dealCard(int totalDraw) {
 			i--;
 		}
 	}
-	//广播ROUNDBEGIN啦！！
-	msgbufMsgtype = ROUND_BEGIN;
-	if (rule.israndomstart()) {
-		msgbufAdditional = 1;
-	}
-	else {
-		msgbufAdditional = 0;
-	}
-	for(int i = 0; i < players.size(); i++) {
-		msgBox.createMsg(i, msgbufMsgtype);
-		msgBox.createMsg(i, msgbufMsgtype, clientNum, msgbufAdditional);
-	}
 	//随机开场的调整
 	if (rule.israndomstart()) {
 		std::vector<const Card*> _temp  =presentPlayer.gethand();
@@ -516,7 +504,15 @@ void fluxxControl::dealCard(int totalDraw) {
 	//发手牌啦！！！！
 	msgbufMsgtype = CARD_UPDATE;
 	msgbufAdditional = 1;
+	msgBox.createMsg(clientNum, msgbufMsgtype);
 	msgBox.createMsg(clientNum, msgbufMsgtype, msgbufCards, msgbufAdditional);
+	//广播手牌更新啦！！！！！
+	msgbufMsgtype = CARD_NUM;
+	msgbufAdditional = presentPlayer.getHandcnt();
+	for (int i = (clientNum+1)%4; i != clientNum; i = (i+1)%4) {
+		msgBox.createMsg(i, msgbufMsgtype);
+		msgBox.createMsg(i, msgbufMsgtype, clientNum, msgbufAdditional);
+	}
 	presentState = PLAYING_CARD;
 }
 void fluxxControl::setpresentPlayer(int nextPlayer) {
@@ -619,7 +615,6 @@ void fluxxControl::dropCard(int totalDrop) {
 	}//整个弃牌处理结束
 }
 void fluxxControl::fluxxRun() {
-	bool _isRoundbegin = false;
 	while(1) {
 		if (presentState == WAIT_FOR_PLAYERS) {
 			msgbufMsgtype = REGISTER;
@@ -628,6 +623,18 @@ void fluxxControl::fluxxRun() {
 			}
 		}
 		else if (presentState == ROUND_PREPARE) {
+			//广播ROUNDBEGIN啦！！
+			msgbufMsgtype = ROUND_BEGIN;
+			if (rule.israndomstart()) {
+				msgbufAdditional = 1;
+			}
+			else {
+				msgbufAdditional = 0;
+			}
+			for(int i = 0; i < players.size(); i++) {
+				msgBox.createMsg(i, msgbufMsgtype);
+				msgBox.createMsg(i, msgbufMsgtype, clientNum, msgbufAdditional);
+			}
 			dealCard(_checkCntdraw());
 		}
 		else if (presentState == PLAYING_CARD) {
