@@ -29,3 +29,6 @@ HEADERS  += mainwindow.h \
     cardLib_code/cardLib.h \
     config.h \
     mailbox/clientMB/clientMB.h
+
+RESOURCES += \
+    data.qrc

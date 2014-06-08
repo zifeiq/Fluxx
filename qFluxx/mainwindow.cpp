@@ -17,6 +17,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(chooseMode->part,SIGNAL(clicked()),this,SLOT(mode_part_clicked()));
 
     server = NULL;
+
+    connect(this,SIGNAL(gameStart()),this,SLOT(initGame())
 }
 
 MainWindow::~MainWindow()
@@ -44,7 +46,11 @@ void MainWindow::mode_host_clicked()
     msgBox.connectServer(q2s("127.0.0.1"));
     waiting = new Waiting(true);
     waiting->show();
-    awaitOthers();
+//    awaitOthers();
+    if(!msgBox.createMsg(REGISTER,q2s(myName)))
+        ;//error handling
+//    emit serverConnected();
+    processMsg();
 }
 
 void MainWindow::mode_part_clicked()
@@ -61,76 +67,120 @@ void MainWindow::mode_part_clicked()
                 chooseMode->hide();
                 waiting = new Waiting(false);
                 waiting->show();
-                awaitOthers();
+//                awaitOthers();
+                if(!msgBox.createMsg(REGISTER,q2s(myName)))
+                    ;//error handling
+                processMsg();
                 return;
         }
         else
             break;
+        }
     }
 }
 
-void MainWindow::awaitOthers()
-{
-    connect(this,SIGNAL(roomFull()),waiting,SLOT(enableStart()));
-
-    //receiving information of myself
-    if(msgBox.createMsg(REGISTER,q2s(myName))){
-        if(msgBox.getMsg(tmsg,myNo,tname)){
-            if(tmsg == ADD_PLAYER)
-                playerName[myNo] = s2q(tname);
-            else{
-                msgBox.createMsg(NACK);
-                ;//error handling
-            }
-        }
-        else
+void MainWindow::processMsg(){
+        if(!msgBox.getMsg(tmsg))
             ;//error handling
+        switch(tmsg){
+        case ADD_PLAYER:    addPlayer();
+
+        }
+}
+
+void MainWindow::addPlayer(){
+    if(msgBox.getMsg(ADD_PLAYER,tno,tname)){
+        if(tname == q2s(myName)){
+            myNo = tno;
+            for(int i = 0; i != myNo; i++){
+                if(msgBox.getMsg(ADD_PLAYER,tno,tname)){
+                    playerName.push_back(s2q(tname));
+                    waiting->addPlayer(s2q(tname));
+                }
+                else
+                    ;//error handling
+            }
+            playerName[myNo] = s2q(myName);
+            waiting->addPlayer(myName);
+        }
+        else{
+            player[tno] = s2q(tname);
+            waiting->addPlayer(s2q(tname));
+        }
     }
     else
         ;//error handling
+    if(!server && playerName.size() == PLAYER_NUM)
+        emit roomFull();
+}
 
-    //receiving information of other players entered before
-    //and adding the namelist to GUI
-    for(int i = 0; i != myNo; i++){
-        if(msgBox.getMsg(tmsg,relatedPlayer,tname)){
-            if(tmsg == ADD_PLAYER){
-                waiting->addPlayer(tname);
-                playerName[relatedPlayer] = s2q(tname);
-            }
-            else{
-                msgBox.createMsg(NACK);
-                ;//error handling
-            }
-        }
-        else
-            ;//error handling
-    }
-    waiting->addPlayer(myName);
+//void MainWindow::awaitOthers()
+//{
+//    connect(this,SIGNAL(roomFull()),waiting,SLOT(enableStart()));
+//    //receiving information of myself
+//    if(msgBox.createMsg(REGISTER,q2s(myName))){
+//        if(msgBox.getMsg(tmsg,myNo,tname)){
+//            if(tmsg == ADD_PLAYER)
+//                playerName[myNo] = s2q(tname);
+//            else{
+//                msgBox.createMsg(NACK);
+//                ;//error handling
+//            }
+//        }
+//        else
+//            ;//error handling
+//        if(msgBox.getMsg(tmsg)){
 
-    //waiting for the room to be full
+//        }
+//        else
+//            ;//error handling
+//    }
+//    else
+//        ;//error handling
+
+//    //receiving information of other players entered before
+//    //and adding the namelist to GUI
+//    for(int i = 0; i != myNo; i++){
+//        if(msgBox.getMsg(tmsg,relatedPlayer,tname)){
+//            if(tmsg == ADD_PLAYER){
+//                waiting->addPlayer(tname);
+//                playerName[relatedPlayer] = s2q(tname);
+//            }
+//            else{
+//                msgBox.createMsg(NACK);
+//                ;//error handling
+//            }
+//        }
+//        else
+//            ;//error handling
+//    }
+//    waiting->addPlayer(myName);
+
+//    //waiting for the room to be full
 //    if(myNo == PLAYER_NUM-1)
 //        emit roomFull();
 //    else
-      for(int i = 0; myNo+i != PLAYER_NUM-1; i++){
-          if(msgBox.getMsg(ADD_PLAYER,relatedPlayer,tname)){
-              if(tmsg == ADD_PLAYER){
-                  ing->addPlayer(tname);
-                  playerName[relatedPlayer] = s2q(tname);
-              }
-              else{
-                  msgBox.createMsg(NACK);
-                  ;//error handling
-              }
-          }
-          else
-              ;//error handling
-      }
-      emit roomFull();
-      if(!server)
-          awaitStart();
-}
+//      for(int i = 0; myNo+i != PLAYER_NUM-1; i++){
+//          if(msgBox.getMsg(ADD_PLAYER,relatedPlayer,tname)){
+//              if(tmsg == ADD_PLAYER){
+//                  ing->addPlayer(tname);
+//                  playerName[relatedPlayer] = s2q(tname);
+//              }
+//              else{
+//                  msgBox.createMsg(NACK);
+//                  ;//error handling
+//              }
+//          }
+//          else
+//              ;//error handling
+//      }
+//      emit roomFull();
+//      if(!server)
+//          awaitStart();
+//}
 
-void MainWindow::start_clicked(){
+void MainWindow::start_clicked()
+{
     if(msgBox.createMsg(ACK))
         awaitStart();
     else
@@ -140,7 +190,7 @@ void MainWindow::start_clicked(){
 void MainWindow::awaitStart(){
     if(msgBox.getMsg(tmsg,tcards)){
         if(tmsg == GAME_START)
-            ;//game start
+            emit gameStart();//game start
         else
             ;//error handling
     }
@@ -149,13 +199,6 @@ void MainWindow::awaitStart(){
 
 }
 
-void MainWindow::starting(){
-//    waiting->removeWidget(playerName[0]);
-//    waiting->removeWidget(playerName[1]);
-//    waiting->removeWidget(playerName[2]);
-//    waiting->removeWidget(playerName[3]);
-    for(int i = 0; i != PLAYER_NUM; i++){
-        //排列玩家信息,包括初始手牌数
-    }
-    //get my cards
+void MainWindow::initGame(){
+
 }

@@ -1,4 +1,5 @@
 #include "cardLib.h"
+#include <sstream>
 using namespace std;
 bool Card::operator==(const Card& c) const
 {
@@ -41,6 +42,9 @@ CardLib::CardLib()  //暂规定个数为63个，后期需修改
 			{
 				_cards.push_back((Card*)new ActionCard(num_tmp - 400));
 			}
+            stringstream ss;
+            ss << num_tmp;
+            ss >> _addr;
 		}
 		carddata.close();
 	}
