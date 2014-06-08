@@ -138,7 +138,14 @@ void MainWindow::start_clicked(){
 }
 
 void MainWindow::awaitStart(){
-    if(msgBox.getMsg(GAME_START,tcards))
+    if(msgBox.getMsg(tmsg,tcards)){
+        if(tmsg == GAME_START)
+            ;//game start
+        else
+            ;//error handling
+    }
+    else
+        ;//error handling
 
 }
 
