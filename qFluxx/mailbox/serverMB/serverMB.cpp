@@ -203,7 +203,7 @@ bool ServerMB::createMsg(int playerNum, MsgType m)
 	case DROP_CARD_C: s = "B"; break;
 	case DROP_KEEPER_C: s = "C"; break;
 	case GAME_OVER: s = "D"; break;
-	case CARD_STOLEN: s = "E"; break;
+	//case CARD_STOLEN: s = "E"; break;
 	case CHOOSE_PLAYER_C:s = "F"; break;
 	case CHOOSE_KEEPER_C: s = "G"; break;
 	case EXCHANGE_KEEPER_C: s = "H"; break;
@@ -236,7 +236,7 @@ bool ServerMB::createMsg(int playerNum, MsgType m, int relatedPlayer, std::strin
 	else
 		return true;
 }
-//发送GAME_START,RULE,CARD_STOLEN消息
+//发送GAME_START,RULE消息
 bool ServerMB::createMsg(int playerNum, MsgType m, std::vector<const Card*> relatedCards)
 {
 	//解析参数并生成消息字符串
@@ -262,10 +262,11 @@ bool ServerMB::createMsg(int playerNum, MsgType m, std::vector<const Card*> rela
 		}
 		s = "9";
 		break;
-	case CARD_STOLEN:
+	/*case CARD_STOLEN:
 		if (relatedCards.size() != 1) return false;
 		s = "E";
 		break;
+	*/
 	default: return false;
 	}
 	for (int i = 0; i < relatedCards.size(); i++)

@@ -27,7 +27,7 @@ enum MsgType{
 	DROP_CARD_C,//弃牌命令
 	DROP_KEEPER_C,//弃所有物命令
 	GAME_OVER,//游戏结束
-	CARD_STOLEN,//抽取的其他玩家卡牌（需要立刻打出），用于行动牌“取而用之”
+	//CARD_STOLEN,//抽取的其他玩家卡牌（需要立刻打出），用于行动牌“取而用之”
 	CHOOSE_PLAYER_C, //选择一位玩家的命令，用于行动牌“交换手牌”“取而用之”
 	CHOOSE_KEEPER_C, //选择一张其他玩家的行动牌命令，用于行动牌“丢弃”“偷窃”
 	EXCHANGE_KEEPER_C, //选择交换一张所有物，用于行动牌“交换所有物”
@@ -62,7 +62,7 @@ public:
 		//getMsg函数重载以实现多种调用方式
 	bool getMsg(MsgType& m); //接收所有消息类型
 	bool getMsg(MsgType m, int& relatedPlayer, std::string& name);//接收ADD_PLAYER消息
-	bool getMsg(MsgType m, std::vector<const Card*>& relatedCards);//接收GAME_START,RULE,CARD_STOLEN消息
+	bool getMsg(MsgType m, std::vector<const Card*>& relatedCards);//接收GAME_START,RULE消息
 	bool getMsg(MsgType m, int& relatedInfo); //接收DROP_CARD_C,DROP_KEEPER_C,GAME_OVER,DROP_RULE_C消息
 	bool getMsg(MsgType m, std::vector<const Card*>& relatedCards,int& relatedInfo); //接收CARD_PLAYED,CARD_DROPED,CARD_UPDATE消息
 	bool getMsg(MsgType m, int& relatedPlayer, int& additional); //接收ROUND_BEGIN，CARD_NUM消息

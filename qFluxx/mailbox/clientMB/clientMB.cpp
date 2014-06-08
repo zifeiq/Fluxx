@@ -224,7 +224,7 @@ bool ClientMB::getMsg(MsgType& m)
 	case 'B': m = DROP_CARD_C; break;
 	case 'C': m = DROP_KEEPER_C; break;
 	case 'D': m = GAME_OVER; break;
-	case 'E': m = CARD_STOLEN; break;
+	//case 'E': m = CARD_STOLEN; break;
 	case 'F':m = CHOOSE_PLAYER_C; break;
 	case 'G': m = CHOOSE_KEEPER_C; break;
 	case 'H': m = EXCHANGE_KEEPER_C; break;
@@ -255,7 +255,7 @@ bool ClientMB::getMsg(MsgType m, int& relatedPlayer, std::string& name)
 		return false;
 	}
 }
-//期待接收GAME_START,RULE,CARD_STOLEN消息
+//期待接收GAME_START,RULE消息
 bool ClientMB::getMsg(MsgType m, std::vector<const Card*>& relatedCards)
 {
 	//等待接受消息
@@ -274,7 +274,7 @@ bool ClientMB::getMsg(MsgType m, std::vector<const Card*>& relatedCards)
 				  createMsg(NACK);
 				  return false;
 			  }
-	case 'E': if(m==CARD_STOLEN) break;
+	//case 'E': if(m==CARD_STOLEN) break;
 	default:
 		//接收消息与期待不匹配
 		createMsg(NACK); 
