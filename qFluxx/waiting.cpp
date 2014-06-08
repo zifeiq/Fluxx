@@ -31,3 +31,4 @@ void Waiting::enableStart()
 {
     start->setEnabled(true);
 }
+

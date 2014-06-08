@@ -26,7 +26,6 @@ signals:
 
 public slots:
     void enableStart();
-
 };
 
 #endif // WAITING_H

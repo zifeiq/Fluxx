@@ -2,6 +2,7 @@
 #include <iostream>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QPixmap>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -79,11 +80,37 @@ void MainWindow::mode_part_clicked()
     }
 }
 
+
 void MainWindow::processMsg(){
         if(!msgBox.getMsg(tmsg))
             ;//error handling
         switch(tmsg){
-        case ADD_PLAYER:    addPlayer();
+        case ADD_PLAYER:    addPlayer();break;
+        case GAME_START:    initGame();break;
+        case ROUND_BEGIN:   roundBegin();break;
+
+
+        //commands MODIFICATION
+        case PLAY_C:        playCard();break;
+        case DROP_CARD_C:   dropCard();break;
+        case DROP_KEEPER_C: dropKeeper();break;
+        case DROP_RULE_C:   dropRule();break;
+        case CHOOSE_PLAYER_C:choosePlayer();break;
+        case CHOOSE_KEEPER_C:chooseKeeper();break;
+        case EXCHANGE_KEEPER_C:exchangeKeeper();break;
+        case CHOOSE_GOAL_C: chooseGoal();break;
+
+        //updates
+        case CARD_NUM:      cardnumUpdate();break;
+        case RULE:          ruleUpdate();break;
+        case KEEPER_UPDATE: keeperUpdate();break;
+        case CARD_UPDATE:   cardUpdate();break;
+
+        //information
+        case CARD_PLAYED:   cardPlayed();break;
+        case CARD_DROPED:   cardDropped();break;
+//        case CARD_STOLEN:   cardStoled();break;
+        case GAME_OVER:     gameOver();break;
 
         }
 }
@@ -110,9 +137,228 @@ void MainWindow::addPlayer(){
     }
     else
         ;//error handling
-    if(!server && playerName.size() == PLAYER_NUM)
+    if(server && playerName.size() == PLAYER_NUM)
         emit roomFull();
+    processMsg();
 }
+
+void MainWindow::initGame(){
+    //waiting for modification
+    waiting->hide();
+    this->show();
+    if(msgBox.getMsg(GAME_START,tcards)){
+        for(int i = 0; i != PLAYER_NUM; i++)
+            handsNum[i] = tcards.size();
+        sHands.setSceneRect(0,480,650,120);
+        vHands.setScene(sHands);
+        for(int i = 0; i != tcards.size(); i++){
+            QGraphicsPixmapItem* temp = new QGraphicsPixmapItem(QPixmap(s2q(tcards[i]->getAddr())));
+            myHands.push_back(temp);
+            sHands.addItem(temp);
+            temp->setPos(15+95*i,0);
+        }
+
+    }
+    else
+        ;//error handling
+    processMsg();
+}
+
+void MainWindow::roundBegin(){
+    if(msgBox.getMsg(ROUND_BEGIN,tno,tinfo)){
+        bool random = tinfo?true:false;
+        if(tno == myNo){
+            if(msgBox.getMsg(CARD_UPDATE,tcards,tinfo)){
+                if(random){
+                    msgBox.createMsg(PLAY_I,tcards[0]);
+                    for(int i = 1; i != tcards.size(); i++)
+                        myHands.push_back(tcards[i]);
+                    ;//GUI
+                }
+                else{
+                    for(int i = 0; i != tcards.size(); i++)
+                        myHands.push_back(tcards[i]);
+                    ;//GUI
+                }
+            }
+            else
+                ;//error handling
+        }
+        else{
+            if(msgBox.getMsg(CARD_NUM,tno,tinfo)){
+                handsNum[tno] = tinfo;
+                ;//GUI
+            }
+            else
+                ;//error handling
+        }
+    }
+    else
+        ;//error handling
+    processMsg();
+}
+
+void MainWindow::cardPlayed(){
+    if(msgBox.getMsg(CARD_PLAYED,tno,tcards)){
+        handsNum[tno]--;
+        ;//GUI
+    }
+    else
+        ;//error handling
+    processMsg();
+}
+//waiting for modification
+void MainWindow::playCard(){
+    //enableHands();
+    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice(PLAY_I)));
+}
+
+void MainWindow::dropCard(){
+    //enableHands();
+    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice(DROP_CARD_I)));
+}
+
+void MainWindow::dropKeeper(){
+    //enableKeeper();
+    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice(DROP_KEEPER_I)));
+}
+
+void MainWindow::dropRule(){
+    //enableRules();
+    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice(DROP_RULE_I)));
+}
+
+void MainWindow::choosePlayer(){
+    //enablePlayers();
+    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice(CHOOSE_PLAYER_I)));
+}
+
+void MainWindow::chooseKeeper(){
+    //enableKeepers();
+    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice(CHOOSE_KEEPER_I)));
+}
+
+void MainWindow::exchangeKeeper(){
+}
+
+void MainWindow::chooseGoal(){
+
+}
+// END OF MODIFICATION
+
+//updates
+void MainWindow::cardnumUpdate(){
+    if(msgBox.getMsg(CARD_NUM,tno,tinfo)){
+        handsNum[tno] = tinfo;
+        //GUI
+    }
+    else
+        ;//error handling
+    processMsg();
+}
+
+void MainWindow::ruleUpdate(){
+    if(msgBox.getMsg(RULE,tcards)){
+        for(int i = 0; i != tcards.size(); i++){
+            switch(tcards[i]->_type){
+            case Card::BASIC_RULE:
+            case Card::NEW_RULE:
+                //更新当前规则
+            case Card::GOAL:
+                //更新当前目标
+            }
+        }
+    }
+    else
+        ;//error handling
+    processMsg();
+}
+
+void MainWindow::keeperUpdate(){
+    if(msgBox.getMsg(KEEPER_UPDATE,tno,tcards,tinfo)){
+        //update keepers
+        //keepers usually deleted with notification
+    }
+    else
+        ;//error handling
+    processMsg();
+}
+
+void MainWindow::cardUpdate(){
+    if(msgBox.getMsg(CARD_UPDATE,tcards,tinfo)){
+        switch(tinfo){
+        case 0:
+            myHands.clear();
+            for(int i = 0; i != tcards.size(); i++){
+                myHands.push_back(tcards[i]);
+                //adding hands
+            }
+            break;
+        case 1:
+            for(int i = 0; i != tcards.size(); i++){
+                //
+                myHands.push_back(tcards[i]);
+            }
+            break;
+        case 2:
+            ;//find and delete
+            ;//usually with notification
+            break;
+        }
+    }
+    else
+        ;//error handling
+    processMsg();
+}
+
+void MainWindow::cardDropped(){
+    if(msgBox.getMsg(CARD_DROPED,tno,tcards)){
+        if(tno == myNo){
+            ;//find and delete my hands
+            ;//GUI
+        }
+        else{
+            handsNum[tno] -= tcards.size();
+            ;//GUI
+        }
+    }
+    else
+        ;//error handling
+    processMsg();
+}
+
+//void MainWindow::cardStoled(){
+
+//}
+
+void MainWindow::gameOver(){
+    if(msgBox.getMsg(GAME_OVER,tno)){
+        ;//game over handling
+    }
+    else
+        ;//error handling
+}
+
+// the following are slots function
+void MainWindow::sendChoice(MsgType type){
+    if(type == CHOOSE_PLAYER_I){
+        int temp;
+        ;//get the no you choose
+        msgBox.createMsg(CHOOSE_PLAYER_I,temp);
+    }
+    else{
+        vector<const Card*> temp;
+        ;//get cards you select
+        msgBox.createMsg(type,temp);
+    }
+
+    ;//get and send information about hand to be played
+    disconnect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice(MsgType)));
+    processMsg();
+}
+
+
+
 
 //void MainWindow::awaitOthers()
 //{
@@ -179,26 +425,24 @@ void MainWindow::addPlayer(){
 //          awaitStart();
 //}
 
-void MainWindow::start_clicked()
-{
-    if(msgBox.createMsg(ACK))
-        awaitStart();
-    else
-        ;//error handling
-}
+//void MainWindow::start_clicked()
+//{
+//    if(msgBox.createMsg(ACK))
+//        awaitStart();
+//    else
+//        ;//error handling
+//}
 
-void MainWindow::awaitStart(){
-    if(msgBox.getMsg(tmsg,tcards)){
-        if(tmsg == GAME_START)
-            emit gameStart();//game start
-        else
-            ;//error handling
-    }
-    else
-        ;//error handling
+//void MainWindow::awaitStart(){
+//    if(msgBox.getMsg(tmsg,tcards)){
+//        if(tmsg == GAME_START)
+//            emit gameStart();//game start
+//        else
+//            ;//error handling
+//    }
+//    else
+//        ;//error handling
 
-}
+//}
 
-void MainWindow::initGame(){
 
-}

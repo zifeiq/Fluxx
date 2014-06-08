@@ -39,9 +39,12 @@ public:
     //playing
     QGraphicsScene sKeepers;
     QGraphicsScene sHands;
+    QGraphicsView vHands;
     QList<QGraphicsPixmapItem*> myHands;
     QList<QList<QGraphicsPixmapItem*>> keepers;
+    QGraphicsPixmapItem* icons[PLAYER_NUM];
 
+    QPushButton* confirm;
 
 
 signals:
@@ -58,6 +61,8 @@ private slots:
     void start_clicked();
     void initGame();
 
+    void sendChoice(MsgType type);
+
 private:
     Server* server;
 //    Client* player;
@@ -71,9 +76,8 @@ private:
     //用于接收消息的临时变量
     MsgType tmsg;
     int tno;
-    int relatedPlayer;
+    int tinfo;
     string tname;
-    int relatedInfo;
     vector<const Card*> tcards;
 
     //QString与string间转换
@@ -84,8 +88,33 @@ private:
 //    void awaitStart();      //waiting for gamestart msg
 //    void startGame();
 
+//    void enableHands();//unfinished
+
     void processMsg();//等待接收消息的函数,游戏结束前每个动作处理完均要回到该函数
     void addPlayer();
+    void roundBegin();
+    void cardPlayed();
+    void cardDropped();
+//    void cardStoled();
+    void gameOver();
+
+    //responce command
+    void playCard();
+    void dropCard();
+    void dropKeeper();
+    void dropRule();
+    void choosePlayer();
+    void chooseKeeper();
+    void exchangeKeeper();
+    void chooseGoal();
+
+    //updates
+    void cardnumUpdate();
+    void ruleUpdate();
+    void keeperUpdate();
+    void cardUpdate();
+
+    //
 };
 
 #endif // MAINWINDOW_H
