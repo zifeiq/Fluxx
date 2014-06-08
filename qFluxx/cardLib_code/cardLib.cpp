@@ -10,41 +10,44 @@ Card& Card::operator=(const Card& c)
 {
 	_type = c.getType();
 	_num = c.getNum();
+	_addr = c.getAddr();
 	return *this;
 }
 
 CardLib::CardLib()  //暂规定个数为63个，后期需修改
 {
 	int num_tmp;
+	std::string addr_tmp;
 	std::ifstream carddata(FILENAME);
 	if(carddata)
 	{
 		for(_cardNum=0;!carddata.eof();_cardNum++)
 		{
 			carddata >> num_tmp;
+			stringstream ss;
+            ss << num_tmp;
+            ss >> addr_tmp;
 			if(num_tmp/100==0)
 			{
-				_cards.push_back((Card*)new BasicRuleCard(num_tmp));
+				_cards.push_back((Card*)new BasicRuleCard(num_tmp,addr_tmp));
 			}
 			else if(num_tmp/100==1)
 			{
-				_cards.push_back((Card*)new NewRuleCard(num_tmp-100));
+				_cards.push_back((Card*)new NewRuleCard(num_tmp-100,addr_tmp));
 			}
 			else if(num_tmp/100==2)
 			{
-				_cards.push_back((Card*)new KeeperCard(num_tmp-200));
+				_cards.push_back((Card*)new KeeperCard(num_tmp-200,addr_tmp));
 			}
 			else if(num_tmp/100==3)
 			{
-				_cards.push_back((Card*)new GoalCard(num_tmp-300));
+				_cards.push_back((Card*)new GoalCard(num_tmp-300,addr_tmp));
 			}
 			else if (num_tmp/100 == 4)
 			{
-				_cards.push_back((Card*)new ActionCard(num_tmp - 400));
+				_cards.push_back((Card*)new ActionCard(num_tmp - 400,addr_tmp));
 			}
-            stringstream ss;
-            ss << num_tmp;
-            ss >> _addr;
+
 		}
 		carddata.close();
 	}
