@@ -8,7 +8,7 @@ const std::string FILENAME = "carddata.txt";
 class Card  //卡牌的基类
 {
 public:
-	Card() :_type(BASIC_RULE), _num(0){}//基类默认构造函数
+	Card() :_type(BASIC_RULE), _num(0),_addr(""){}//基类默认构造函数
 	Card(int num,std::string addr) :_type(BASIC_RULE), _num(num), _addr(addr){} 
 	enum Type{BASIC_RULE, NEW_RULE, KEEPER, GOAL, ACTION};
 	Type getType() const{ return _type; } //返回本卡的属性
