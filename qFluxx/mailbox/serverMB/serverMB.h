@@ -58,7 +58,7 @@ public:
 	//bool getMsg(int playerNum, MsgType m);
 	bool getMsg(int playerNum,MsgType m, std::string& name);
 	bool getMsg(int playerNum, MsgType m, std::vector<const Card*>& relatedCards);
-	bool getMsg(int PlayerNum, MsgType m, int relatedPlayer);
+	bool getMsg(int playerNum, MsgType m, int& relatedPlayer);
 	//createMsg函数重载以实现多种调用方式
 	bool createMsg(int playerNum, MsgType m); //发送所有消息
 	bool createMsg(int playerNum, MsgType m, int relatedPlayer, std::string name);//发送ADD_PLAYER消息

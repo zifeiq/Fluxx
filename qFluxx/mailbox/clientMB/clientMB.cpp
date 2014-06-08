@@ -61,17 +61,19 @@ string ClientMB::recvMsg()
 		s = buf;
 	return s;
 }
-//发送ACK、NACK消息
+//发送NACK消息
 bool ClientMB::createMsg(MsgType m)  
 {
 	//解析参数并生成消息字符串
 	string s;
-	switch(m)
+	if(m == NACK) s = "0";
+	else return false;
+	/*switch(m)
 	{
 		case ACK: s = "1"; break;
 		case NACK: s = "2"; break;
 		default: return false;
-	}
+	}*/
 	//发送消息
 	if (!sendMsg(s))
 		return false;
@@ -86,33 +88,32 @@ bool ClientMB::createMsg(MsgType m, std::string name)
 	if(m != REGISTER||name == "")//消息类型错误或未传入玩家名字
 		return false;
 	else 
-		s = "0"+name;
+		s = "1"+name;
 	//发送消息
 	if (!sendMsg(s))
 		return false;
 	else
 		return true;
 }
-//发送PLAY,DROP_CARD_I,DROP_KEEPER_I消息
+//发送PLAY_I,DROP_CARD_I,DROP_KEEPER_I,CHOOSE_KEEPER_I,DROP_RULE_I,CHOOSE_GOAL_I消息
 bool ClientMB::createMsg(MsgType m, vector<const Card*>relatedCards)
 {
 	//解析参数并生成消息字符串
 	string s;
-	int num;
 	switch (m)
 	{
-		case PLAY:
+		case PLAY_I:
 		if (relatedCards.size() != 1)//未传入一张牌
 			return false;
 		else{
-			s = "3" + card2Str(relatedCards[0]);							
+			s = "2" + card2Str(relatedCards[0]);							
 			break;
 		}
 	case DROP_CARD_I:
 		if (relatedCards.size() == 0)//未传入卡牌消息
 			return false;
 		else{
-			s = "4";
+			s = "3";
 			for (int i = 0; i < relatedCards.size(); i++)
 				s += card2Str(relatedCards[i]);
 			break;
@@ -121,7 +122,7 @@ bool ClientMB::createMsg(MsgType m, vector<const Card*>relatedCards)
 		if (relatedCards.size() == 0)//未传入卡牌消息
 			return false;
 		else{
-			s = "5";
+			s = "4";
 			for (int i = 0; i < relatedCards.size(); i++)
 			{
 				//检测是否为有效的所有物牌编号
@@ -132,6 +133,48 @@ bool ClientMB::createMsg(MsgType m, vector<const Card*>relatedCards)
 			}
 			break;
 		}
+	case CHOOSE_KEEPER_I:
+		if (relatedCards.size() != 1 &&relatedCards.size() != 2)//未传入有效卡牌消息
+			return false;
+		else{
+			s = "5";
+			for (int i = 0; i < relatedCards.size(); i++)
+			{
+				//检测是否为有效的所有物牌
+				if(relatedCards[i]->getType() == Card::KEEPER && 0<relatedCards[i]->getNum()<19) 
+					s += card2Str(relatedCards[i]);
+				else
+					return false;
+			}
+			break;
+		}
+	case DROP_RULE_I:
+		if(relatedCards.size()==0)//未传入有效卡牌消息
+			return false;
+		else{
+			s = "6";
+			for(int i = 0; i < relatedCards.size();i++)
+			{
+				//检测是否为有效的规则牌
+				if(relatedCards[i]->getType() == Card::NEW_RULE)
+					s += card2Str(relatedCards[i]);
+				else 
+					return false;
+			}
+			break;
+		}
+	case CHOOSE_GOAL_I:
+		if(relatedCards.size()!=1)//未传入有效卡牌消息
+			return false;
+		else{
+			s = "7";
+			//检测是否为有效的目标牌
+			if(relatedCards[0]->getType() == Card::GOAL)
+				s += card2Str(relatedCards[0]);
+			else 
+				return false;
+			break;
+		}
 	default: return false;
 	}
 	//发送消息
@@ -140,22 +183,56 @@ bool ClientMB::createMsg(MsgType m, vector<const Card*>relatedCards)
 	else
 		return true;
 }
-//期待接收ACK消息
-bool ClientMB::getMsg(MsgType m) 
+
+//发送CHOOSE_PLAYER_I消息
+bool ClientMB::createMsg(MsgType m, int relatedPlayer)
+{
+	string s;
+	stringstream ss;
+	if(m != CHOOSE_PLAYER_I) //消息类型不匹配
+		return false;
+	else{
+		ss<<relatedPlayer;
+		s = "8"+ss.str();
+		//发送消息
+		if (!sendMsg(s))
+			return false;
+		else
+			return true;
+	}
+}
+
+//接收所有消息
+bool ClientMB::getMsg(MsgType& m) 
 {
 	//等待接受消息
 	string s = recvMsg();
 	//解析消息
 	switch (s[0])
-	{	
-	case '2': return false;
-	case '1': if(m == ACK) return true;
-	default: 	
-		//接收消息与期待不匹配
-		createMsg(NACK); 
-		return false;
+	{
+	case '0': m = NACK; return false;
+	case '1': m = ADD_PLAYER; break;
+	case '2': m = GAME_START; break;
+	case '3': m = ROUND_BEGIN; break;
+	case '4': m = CARD_UPDATE; break;
+	case '5': m = PLAY_C; break;
+	case '6': m = CARD_NUM; break;
+	case '7': m = CARD_PLAYED; break;
+	case '8': m = CARD_DROPED; break;
+	case '9': m = RULE; break;
+	case 'A': m = KEEPER_UPDATE; break;
+	case 'B': m = DROP_CARD_C; break;
+	case 'C': m = DROP_KEEPER_C; break;
+	case 'D': m = GAME_OVER; break;
+	case 'E': m = CARD_STOLEN; break;
+	case 'F':m = CHOOSE_PLAYER_C; break;
+	case 'G': m = CHOOSE_KEEPER_C; break;
+	case 'H': m = EXCHANGE_KEEPER_C; break;
+	case 'I': m = DROP_RULE_C; break;
+	case 'J': m = CHOOSE_GOAL_C ; break;
+	default: return false;
 	}
-
+	return true;
 }
 //期待接收ADD_PLAYER消息
 bool ClientMB::getMsg(MsgType m, int& relatedPlayer, std::string& name)
@@ -165,8 +242,8 @@ bool ClientMB::getMsg(MsgType m, int& relatedPlayer, std::string& name)
 	//解析消息
 	switch (s[0])
 	{
-	case '2': return false;
-	case '0': 
+	case '0': return false;
+	case '1': 
 		if(m == ADD_PLAYER){
 			relatedPlayer = s[1];
 			name = s.substr(2); 
@@ -178,7 +255,7 @@ bool ClientMB::getMsg(MsgType m, int& relatedPlayer, std::string& name)
 		return false;
 	}
 }
-//期待接收GAME_START,RULE消息
+//期待接收GAME_START,RULE,CARD_STOLEN消息
 bool ClientMB::getMsg(MsgType m, std::vector<const Card*>& relatedCards)
 {
 	//等待接受消息
@@ -186,13 +263,18 @@ bool ClientMB::getMsg(MsgType m, std::vector<const Card*>& relatedCards)
 	//解析消息
 	switch (s[0])
 	{
-	case '2': return false;
-	case '3': if(m == GAME_START) break;
+	case '0': return false;
+	case '2': if(m == GAME_START) break;
 			  else {
 				  createMsg(NACK);
 				  return false;
 			  }
-	case 'B': if(m == RULE) break;
+	case '9': if(m == RULE) break;
+			  else {
+				  createMsg(NACK);
+				  return false;
+			  }
+	case 'E': if(m==CARD_STOLEN) break;
 	default:
 		//接收消息与期待不匹配
 		createMsg(NACK); 
@@ -202,7 +284,7 @@ bool ClientMB::getMsg(MsgType m, std::vector<const Card*>& relatedCards)
 		relatedCards.push_back(str2Card(s.substr(i, 3)));
 	return true;
 }
-//期待接收ROUND_BEGIN,DROP_CARD_C,DROP_KEEPER_C,GAME_OVER消息
+//期待接收DROP_CARD_C,DROP_KEEPER_C,GAME_OVER,DROP_RULE_C消息
 bool ClientMB::getMsg(MsgType m, int& relatedInfo)
 {
 	//等待接受消息
@@ -210,30 +292,30 @@ bool ClientMB::getMsg(MsgType m, int& relatedInfo)
 	//解析消息
 	switch (s[0])
 	{
-	case '2': return false;
-	case '4': if(m == ROUND_BEGIN)break;
+	case '0': return false;
+	case 'I': if(m == DROP_RULE_C)break;
 			  else {
 				  createMsg(NACK);
 				  return false;
 			  }
-	case '6': if(m == DROP_CARD_C) break;
+	case 'B': if(m == DROP_CARD_C) break;
 			else {
 				  createMsg(NACK);
 				  return false;
 			  }
-	case '7': if(m == DROP_KEEPER_C) break;
+	case 'C': if(m == DROP_KEEPER_C) break;
 			  else{
 				  createMsg(NACK);
 				  return false;
 			  }
-	case 'A': if(m == GAME_OVER) break;
+	case 'D': if(m == GAME_OVER) break;
 	default:  createMsg(NACK);
 			  return false;
 	}
 	relatedInfo = atoi(s.substr(1).c_str());
 	return true;
 }
-//期待接收DRAW,CARD_PLAYED,CARD_DROPED消息
+//期待接收CARD_PLAYED,CARD_DROPED,CARD_UPDATE消息
 bool ClientMB::getMsg(MsgType m, std::vector<const Card*>& relatedCards,int& relatedInfo)
 {
 	//等待接受消息
@@ -241,18 +323,18 @@ bool ClientMB::getMsg(MsgType m, std::vector<const Card*>& relatedCards,int& rel
 	//解析消息
 	switch (s[0])
 	{
-	case '2': return false;
-	case '5': if(m == DRAW) break;
+	case '0': return false;
+	case '4': if(m == CARD_UPDATE) break;
 			  else{
 				  createMsg(NACK);
 				  return false;
 			  }
-	case '9': if(m == CARD_PLAYED) break;
+	case '7': if(m == CARD_PLAYED) break;
 			  else{
 				  createMsg(NACK);
 				  return false;
 			  }
-	case 'D': if(m == CARD_DROPED) break;
+	case '8': if(m == CARD_DROPED) break;
 	default: createMsg(NACK);
 			  return false;
 	}
@@ -261,7 +343,7 @@ bool ClientMB::getMsg(MsgType m, std::vector<const Card*>& relatedCards,int& rel
 		relatedCards.push_back(str2Card(s.substr(i, 3)));
 	return true;
 }
-//期待接收CARD_NUM消息
+//期待接收ROUND_BEGIN，CARD_NUM消息
 bool ClientMB::getMsg(MsgType m, int& relatedPlayer, int& additional)
 {
 	//等待接受消息
@@ -269,17 +351,19 @@ bool ClientMB::getMsg(MsgType m, int& relatedPlayer, int& additional)
 	//解析消息
 	switch (s[0])
 	{
-	case '2': return false;
-	case '8': 
-		if(m== CARD_NUM){
-		relatedPlayer = s[1];
-		additional = atoi(s.substr(2).c_str());
-		return true;
-		}
+	case '0': return false;
+	case '3': if(m == ROUND_BEGIN) break;
+			  else{
+				  createMsg(NACK);
+				  return false;
+			  }
+	case '6': if(m== CARD_NUM) break;
 	default:createMsg(NACK);
 			return false;
 	}
-
+	relatedPlayer = atoi(s.substr(1,1).c_str());
+	additional = atoi(s.substr(2).c_str());
+	return true;
 }
 //期待接收KEEPER_UPDATE消息
 bool ClientMB::getMsg(MsgType m, std::vector<const Card*>& relatedCards,int& relatedPlayer, int& additional)
