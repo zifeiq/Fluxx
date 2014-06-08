@@ -68,7 +68,7 @@ public:
 	}
 	Card* getCard(int i) const{ return _cards[i]; }
 	int getCardNum() const { return _cardNum; }
-
+	void getInfo(const Card* goal, std::vector<const Card*>& keepers) const;//查询目标卡对应的所有物卡
 protected:
 	CardLib();
 	~CardLib();
