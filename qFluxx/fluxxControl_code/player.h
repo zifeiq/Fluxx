@@ -15,6 +15,7 @@ public:
 	void addHand(const Card&);
 	bool consumeHand(const Card&);
 	int getHandcnt(){ return hand.size(); }
+	int getKeepercnt() { return keeper.size(); }
 	void addKeeper(const Card&);
 	bool removeKeeper(const Card&);
 	bool removeHand(const Card&);

@@ -79,6 +79,217 @@ int fluxxControl::_checkCntdrop(){
 		return _dropcardnum;
 	}
 }
+int fluxxControl::_checkWinner() {
+	//遍历每个玩家的所有物，与当前的目标牌进行匹配
+	//完全匹配则返回玩家编号，没有匹配返回-1
+	if (rule.firstgoal().getNum == 0) {
+		return -1;
+	}
+	int _subValue = rule.firstgoal().getNum();
+	int _winNum;
+	bool _chk1 = false;
+	bool _chk2 = false;
+	bool _ban = true;
+	if (_subValue == 22) {//五件所有物
+		for (int i = 0; i < players.size(); i++) {
+			if(players[i].getKeepercnt() >= 5) {
+				_chk1 = true;
+				break;
+			}
+		}
+		if (_chk1) {
+			Player _tempwinner = players[0];
+			_chk2 = true;
+			_winNum = 0;
+			for (int i = 1; 1 < players.size(); i++) {
+				if(players[i].getKeepercnt() > _tempwinner.getKeepercnt()) {
+					_tempwinner = players[i];
+					_chk2 = true;
+					_winNum = i;
+				}
+				else if (players[i].getKeepercnt() == _tempwinner.getKeepercnt()) {
+					_chk2 = false;
+				}
+			}
+		}
+		if(_chk1 && _chk2) {
+			return _winNum;
+		}
+		else {
+			return -1;
+		}		
+	}//所有物最多检查完毕
+	else if (_subValue == 23) {//手牌最多
+		for (int i = 0; i < players.size(); i++) {
+			if(players[i].getHandcnt() >= 10) {
+				_chk1 = true;
+				break;
+			}
+		}
+		if (_chk1) {
+			Player _tempwinner = players[0];
+			_chk2 = true;
+			_winNum = 0;
+			for (int i = 1; 1 < players.size(); i++) {
+				if(players[i].getHandcnt() > _tempwinner.getHandcnt()) {
+					_tempwinner = players[i];
+					_chk2 = true;
+					_winNum = i;
+				}
+				else if (players[i].getHandcnt() == _tempwinner.getHandcnt()) {
+					_chk2 = false;
+				}
+			}
+		}
+		if(_chk1 && _chk2) {
+			return _winNum;
+		}
+		else {
+			return -1;
+		}		
+	}//手牌最多检查完毕
+	else {//匹配所有物
+		std::vector<const Card*> _tempKeeper;
+		const Card* _keep1 = cards.getCard(0);
+		const Card* _keep2 = cards.getCard(0);
+		const Card* _keeperban = cards.getCard(0);
+		cards.getInfo(&rule.firstgoal(),_tempKeeper);
+		_keep1 = _tempKeeper[0];
+		if (rule.firstgoal().getNum() == 20 || rule.firstgoal().getNum() == 21) {
+			_keeperban = _tempKeeper[1];
+		}
+		else {
+			_keep2 = _tempKeeper[1];
+		}
+		for(int i = 0; i < players.size(); i++) {
+			if (!players[i].getkeeper().empty()) {
+				std::vector<const Card*>::const_iterator j;
+				for (j = players[i].getkeeper().begin(); j != players[i].getkeeper().end(); j++) {
+					if (**j == *_keep1) {
+						_chk1 = true;
+					}
+					if (**j == *_keep2) {
+						_chk2 = true;
+					}
+					if (**j == *_keep2) {
+						_ban = false;
+					}
+				}
+				if (_chk1 && _chk2 && _ban) {
+					return i;
+				}
+			}
+			if(!_ban) {
+				break;
+			}
+			else {
+			_chk1 = false;
+			_chk2 = false;
+			}
+		}
+	}
+	if (rule.isdoublegoals()) {
+		if (_subValue == 22) {//五件所有物
+			for (int i = 0; i < players.size(); i++) {
+				if(players[i].getKeepercnt() >= 5) {
+					_chk1 = true;
+					break;
+				}
+			}
+			if (_chk1) {
+				Player _tempwinner = players[0];
+				_chk2 = true;
+				_winNum = 0;
+				for (int i = 1; 1 < players.size(); i++) {
+					if(players[i].getKeepercnt() > _tempwinner.getKeepercnt()) {
+						_tempwinner = players[i];
+						_chk2 = true;
+						_winNum = i;
+					}
+					else if (players[i].getKeepercnt() == _tempwinner.getKeepercnt()) {
+						_chk2 = false;
+					}
+				}
+			}
+			if(_chk1 && _chk2) {
+				return _winNum;
+			}
+			else {
+				return -1;
+			}		
+		}//所有物最多检查完毕
+		else if (_subValue == 23) {//手牌最多
+			for (int i = 0; i < players.size(); i++) {
+				if(players[i].getHandcnt() >= 10) {
+					_chk1 = true;
+					break;
+				}
+			}
+			if (_chk1) {
+				Player _tempwinner = players[0];
+				_chk2 = true;
+				_winNum = 0;
+				for (int i = 1; 1 < players.size(); i++) {
+					if(players[i].getHandcnt() > _tempwinner.getHandcnt()) {
+						_tempwinner = players[i];
+						_chk2 = true;
+						_winNum = i;
+					}
+					else if (players[i].getHandcnt() == _tempwinner.getHandcnt()) {
+						_chk2 = false;
+					}
+				}
+			}
+			if(_chk1 && _chk2) {
+				return _winNum;
+			}
+			else {
+				return -1;
+			}		
+		}//手牌最多检查完毕
+		else {//匹配所有物
+			std::vector<const Card*> _tempKeeper;
+			const Card* _keep1 = cards.getCard(0);
+			const Card* _keep2 = cards.getCard(0);
+			const Card* _keeperban = cards.getCard(0);
+			cards.getInfo(&rule.firstgoal(),_tempKeeper);
+			_keep1 = _tempKeeper[0];
+			if (rule.firstgoal().getNum() == 20 || rule.firstgoal().getNum() == 21) {
+				_keeperban = _tempKeeper[1];
+			}
+			else {
+				_keep2 = _tempKeeper[1];
+			}
+			for(int i = 0; i < players.size(); i++) {
+				if (!players[i].getkeeper().empty()) {
+					std::vector<const Card*>::const_iterator j;
+					for (j = players[i].getkeeper().begin(); j != players[i].getkeeper().end(); j++) {
+						if (**j == *_keep1) {
+							_chk1 = true;
+						}
+						if (**j == *_keep2) {
+							_chk2 = true;
+						}
+						if (**j == *_keep2) {
+							_ban = false;
+						}
+					}
+					if (_chk1 && _chk2 && _ban) {
+						return i;
+					}
+				}
+				if(!_ban) {
+					break;
+				}
+				else {
+				_chk1 = false;
+				_chk2 = false;
+				}
+			}//单个玩家检查完毕
+		}//第二目标所有物匹配检查完毕
+	}//第二目标所有可能检查完毕
+	return -1;
+}
 void fluxxControl::_shuffleCard() {
 	deck = droppeddeck;
 	droppeddeck.clear();
@@ -89,71 +300,142 @@ void fluxxControl::_shuffleCard() {
 		deck[temp] = tempCard;
 	}
 }
+void fluxxControl::_updateRules() {
+	msgbufCards.push_back(&rule.getCcntdraw());
+	msgbufCards.push_back(&rule.getCcntplay());
+	if (rule.gethandlimitation()) {
+		msgbufCards.push_back(&rule.getChandlimit());
+	}
+	if (rule.getkeeperlimitation()) {
+		msgbufCards.push_back(&rule.getCkeeperlimit());
+	}
+	if (rule.isorderreverse()) {
+		msgbufCards.push_back(&rule.getCorderreverse());
+	}
+	if (rule.isinflation()) {
+		msgbufCards.push_back(&rule.getCinflation());
+	}
+	if (rule.isnohandbonus()) {
+		msgbufCards.push_back(&rule.getCnohandbonus());
+	}
+	if (rule.isrichBonus()) {
+		msgbufCards.push_back(&rule.getCrichbonus());
+	}
+	if (rule.ispoorBonus()) {
+		msgbufCards.push_back(&rule.getCpoorbonus());
+	}
+	if (rule.israndomstart()) {
+		msgbufCards.push_back(&rule.getCrandomstart());
+	}
+	if(!(rule.firstgoal() == *cards.getCard(0))) {
+		msgbufCards.push_back(&rule.firstgoal());
+	}
+	if (rule.isdoublegoals()) {
+		msgbufCards.push_back(&rule.secondgoal());
+	}
+}
 void fluxxControl::_settleCard(const Card& targetCard) {
 	//分析卡牌信息
 	Card::Type cardType = targetCard.getType();
 	switch (cardType) {
-		case 1:{
-			//规则牌
-			switch (secondIndex) {
-				case 1: {
-					//手牌上限相关
-					if (rule.handlimitation() >=0 ) {
-						//原来已经有了,替换
-						rule.sethandlimrule(targetCard);
-					}
-					rule.handlimitation(firstIndex);
-					break;
-				}
-				case 2: {
-					//所有物上限相关
-					if (rule.keeperlimitiation() >= 0) {
-						rule,setkeeperlimrule(targetCard);
-					}
-					rule.keeperlimitiation(firstIndex);
-					break;
-				}
-				case 3: {
-					//摸牌相关
-					if (rule.draw() >= 0){
-						rule.setdrawrule(targetCard);
-					}
-					rule.darw(firstIndex);
-					break;
-				}
-				case 4: {
-					//行动牌相关
-					break;
-				}
+	case 1:{ int _subType = targetCard.getNum()/10;//规则牌
+		int _subValue = targetCard.getNum()%10;
+		switch(_subType) {
+		case 1:{//手牌上限相关
+			if(rule.gethandlimitation() >= 0) {
+				droppeddeck.push_back(&rule.getChandlimit());
 			}
+			rule.sethandlimitation(_subValue);
+			rule.setdrawrule(targetCard);
 			break;
-		}
+			   }
 		case 2: {
-			//所有物
-			presentPlayer.addKeeper(targetCard);
+				//所有物上限相关
+			if (rule.getkeeperlimitation() >= 0) {
+				droppeddeck.push_back(&rule.getCkeeperlimit());
+			}
+			rule.setkeeperlimitation(_subValue);
+			rule.setkeeperlimrule(targetCard);
 			break;
-		}
-		case 3: {
-			//目标卡
-			if (rule.isdoublegoals) {
-				//双重目标情况下
-				if (rule.firstgoal().getCardNum() == 0) {
-					rule.firstgoal(targetCard);
 				}
-				else if (rule.secondgoal().getCardNum() == 0) {
-					rule.secondgoal(targetCard);
+		case 3: {
+				//摸牌相关
+			if (rule.getdraw() > 1){
+				droppeddeck.push_back(&rule.getdrawrule());
+			}
+			rule.setdraw(_subValue);
+			rule.setdrawrule(targetCard);
+			break;
+				}
+		case 4: {
+				//出牌相关
+			if (rule.getplay() > 1){
+				droppeddeck.push_back(&rule.getplayrule());
+			}
+			rule.setplay(_subValue);
+			rule.setplayrule(targetCard);
+			break;
+				}
+		case 5:{ //特殊规则
+			switch(_subValue) {
+				case 1: { if (rule.getplay() > 1){ droppeddeck.push_back(&rule.getplayrule()); } 
+						rule.setplay(100);
+						rule.setplayrule(targetCard);
+						break;
+						}//出光手牌
+				case 2: { rule.setrichbonus(true); break; } //富人奖励
+				case 3: { rule.setpoorbonus(true); break; } //穷人奖励
+				case 4: { rule.setinflation(true); break; } //通货膨胀
+				case 5: { rule.setorderreverse(true); break; } //顺序反转
+				case 6: { rule.setnohandbonus(true); break; } //无手牌奖励
+				case 7: { rule.setrandomstart(true); break; } //随机开场
+				case 8: { rule.setdoublegoals(true); break; } //双重开场
+				}
+			}//特殊规则处理完毕
+		}//规则牌处理完毕
+		//广播新规则啦！！！(准备数据先= =+）
+		msgbufMsgtype = RULE;
+		msgbufCards.clear();
+		_updateRules();
+		for (int i = 0; i < players.size(); i++) {
+			msgBox.createMsg(i,msgbufMsgtype);//通知
+			msgBox.createMsg(i,msgbufMsgtype,msgbufCards);//数据
+		}
+	}//规则牌结算完毕
+	case 2: { presentPlayer.addKeeper(targetCard);//所有物
+		msgbufMsgtype = KEEPER_UPDATE;
+		msgbufAdditional = 1;
+		for(int i = 0; i < players.size(); i++) {
+			msgBox.createMsg(i,msgbufMsgtype);//通知
+			msgBox.createMsg(i,msgbufMsgtype,msgbufCards,clientNum,msgbufAdditional);//信息
+		}
+		break;
+		}
+	case 3: {//目标卡
+			if (rule.isdoublegoals()) {
+				//双重目标情况下
+				if (rule.firstgoal().getNum == 0) {
+					rule.setfirstgoal(targetCard);
+				}
+				else if (rule.secondgoal().getNum() == 0) {
+					rule.setsecondgoal(targetCard);
 				}
 				else {
-					if (additionalMsg == 1) {
-						rule.firstgoal(targetCard);
-					}
-					else {
-						ruleMsg.secondgoal(targetCard);
-					}
+					
 				}
 			}
 			else {
-				ruleMsg.firstgoal(targetCard);
+				if (rule.firstgoal().getNum == 0) {
+				}
+				else {
+				}
+			}
+			msgbufMsgtype = RULE;//与规则广播的消息相同
+			msgbufCards.clear();
+			_updateRules();
+			for (int i = 0; i < players.size(); i++) {
+				msgBox.createMsg(i,msgbufMsgtype);//通知
+				msgBox.createMsg(i,msgbufMsgtype,msgbufCards);//数据
 			}
 			break;
 		}
@@ -335,67 +617,6 @@ void fluxxControl::dropCard(int totalDrop) {
 			msgBox.createMsg(i, msgbufMsgtype, msgbufCards);
 		}//广播弃牌信息结束
 	}//整个弃牌处理结束
-}
-int fluxxControl::_checkWinner() {
-	//遍历每个玩家的所有物，与当前的目标牌进行匹配
-	//完全匹配则返回玩家编号，没有匹配返回-1
-	int keeperone;
-	int keepertwo;
-	int keeperban;
-	bool chk1 = false;
-	bool chk2 = false;
-	bool ban = true;
-	for(int i = 0; i < players.size(); i++) {
-		if (!players[i].getkeeper().empty()) {
-			std::vector<const Card&>::const_interator i;
-			for (i = players[i].keeper.begin(), i != keeper.end(); i++) {
-				if ((*i).getCardNum() == keeperone) {
-					chk1 = true;
-				}
-				if ((*i).getCardNum() == keepertwo) {
-					chk2 = true;
-				}
-				if ((*i).getCardNum() == keeperban) {
-					ban = false;
-				}
-			}
-			if (chk1 && chk2 && ban) {
-				return i;
-			}
-		}
-		chk1 = false;
-		chk2 = false;
-	}
-	if (rule.isdoublegoals()) {
-		keeperone;
-		keepertwo;
-		keeperban;
-		chk1 = false;
-		chk2 = false;
-		ban = true;
-		for (int i = 0; i <players.size(); i++) {
-			if (!players[i].getkeeper().empty()) {
-				std::vector<const Card&>::const_interator i;
-				for (i = players[i].keeper.begin(), i != keeper.end(); i++) {
-					if ((*i).getCardNum() == keeperone) {
-						chk1 = true;
-					}
-					if ((*i).getCardNum() == keepertwo) {
-						chk2 = true;
-					}
-					if ((*i).getCardNum() == keeperban) {
-						ban = false;
-					}
-				}
-				if (chk1 && chk2 && ban) {
-					return i;
-				}
-			}
-		}
-		chk1 = false;
-		chk2 = false;
-	}
-	return -1;
 }
 void fluxxControl::fluxxRun() {
 	bool _isRoundbegin = false;

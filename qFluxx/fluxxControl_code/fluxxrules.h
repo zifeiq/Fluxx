@@ -26,8 +26,8 @@ public:
 	void setplayrule(const Card&);
 	void sethandlimrule(const Card&);
 	void setkeeperlimrule(const Card&);
-	void setfirstgoal(const GoalCard&);
-	void setsecondgoal(const GoalCard&);
+	void setfirstgoal(const Card&);
+	void setsecondgoal(const Card&);
 	//获取参数
 	const int getdraw()const { return cntDraw; }
 	const int getplay () const {return cntPlay; }
@@ -43,15 +43,17 @@ public:
 	//获取卡牌
 	const Card& firstgoal() const;
 	const Card& secondgoal() const;
+	const Card& getdrawrule() const { return DrawRule; }
+	const Card& getplayrule() const { return PlayRule; }
 	const Card& getCdoublegoals() const { return c_doubleGoals; }
 	const Card& getChandlimit() const { return HandlimitRule; }
 	const Card& getCkeeperlimit() const { return KeeperlimitRule; }
-	const Card& getCorderreverse() const { return C_orderReverse; }
+	const Card& getCorderreverse() const { return c_orderReverse; }
 	const Card& getCrichbonus() const { return c_richbonus; }
 	const Card& getCpoorbonus() const { return c_poorBonus; }
 	const Card& getCinflation() const { return c_Inflation; }
 	const Card& getCnohandbonus() const { return c_noHandbonus; }
-	const Card& getCrandomstart() const { return c_Randomestart; }
+	const Card& getCrandomstart() const { return c_Randomstart; }
 
 
 	

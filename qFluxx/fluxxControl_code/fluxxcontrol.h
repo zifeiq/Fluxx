@@ -14,8 +14,9 @@ enum gameState{
 	WAIT_FOR_PLAYERS,
 	DEAL_ORIGINAL_CARD,
 	ROUND_PREPARE,
-	GAME_RUNNING,
-	WAIT_FOR_ACK
+	PLAYING_CARD,
+	DROPING_CARD,
+	GAME_END;
 };
 class fluxxControl {
 public:
