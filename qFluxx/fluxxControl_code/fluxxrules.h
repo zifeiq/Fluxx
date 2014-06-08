@@ -15,6 +15,7 @@ public:
 	void sethandlimitation(int i) { cntHandlimit = i; }
 	void setkeeperlimitation(int i) { cntKeeperlimit = i; }
 	void setorderreverse(bool b) { orderReverse = b; }
+	void setdoublegoals(bool b) { doubleGoals = b; }
 	void setrichbonus(bool b) { richBonus = b; }
 	void setpoorbonus(bool b) { poorBonus = b; }
 	void setinflation(bool b) { Inflation = b; }
@@ -42,6 +43,16 @@ public:
 	//获取卡牌
 	const Card& firstgoal() const;
 	const Card& secondgoal() const;
+	const Card& getCdoublegoals() const { return c_doubleGoals; }
+	const Card& getChandlimit() const { return HandlimitRule; }
+	const Card& getCkeeperlimit() const { return KeeperlimitRule; }
+	const Card& getCorderreverse() const { return C_orderReverse; }
+	const Card& getCrichbonus() const { return c_richbonus; }
+	const Card& getCpoorbonus() const { return c_poorBonus; }
+	const Card& getCinflation() const { return c_Inflation; }
+	const Card& getCnohandbonus() const { return c_noHandbonus; }
+	const Card& getCrandomstart() const { return c_Randomestart; }
+
 
 	
 	~fluxxRules (){
