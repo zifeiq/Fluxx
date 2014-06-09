@@ -33,7 +33,7 @@ bool ServerMB::sendMsg(int num,string s)
 	if (num >= _clientNum)   //参数不正确
 		return false;
 	char buf[MAXBUFF];
-	int index = 0;
+	unsigned int index = 0;
 	while (1)
 	{
 		string temp = s.substr(index, MAXBUFF - 1);
@@ -158,7 +158,7 @@ bool ServerMB::getMsg(int playerNum, MsgType m, vector<const Card*>& relatedCard
 		createMsg(playerNum, NACK);
 		return false;
 	}
-	for (int i = 1; i < s.size(); i += 3)
+	for (unsigned int i = 1; i < s.size(); i += 3)
 		relatedCards.push_back(str2Card(s.substr(i, 3)));
 	return true;
 }
@@ -255,7 +255,7 @@ bool ServerMB::createMsg(int playerNum, MsgType m, std::vector<const Card*> rela
 	case RULE:
 		if (relatedCards.size() <2)//未传入当前规则的有效信息
 			return false;
-		for (int i = 0; i < relatedCards.size(); i++)  //检测是否传入的均为规则牌和目标牌
+		for (unsigned int i = 0; i < relatedCards.size(); i++)  //检测是否传入的均为规则牌和目标牌
 		{
 			Card::Type type = relatedCards[i]->getType();
 			if (type != Card::BASIC_RULE&&type != Card::NEW_RULE&&type != Card::GOAL)
@@ -270,7 +270,7 @@ bool ServerMB::createMsg(int playerNum, MsgType m, std::vector<const Card*> rela
 	*/
 	default: return false;
 	}
-	for (int i = 0; i < relatedCards.size(); i++)
+	for (unsigned int i = 0; i < relatedCards.size(); i++)
 		s += card2Str(relatedCards[i]);
 	//发送消息
 	if (!sendMsg(playerNum, s))
@@ -356,7 +356,7 @@ bool ServerMB::createMsg(int playerNum, MsgType m, std::vector<const Card*> rela
 	}
 	ss << relatedInfo;
 	s += ss.str();
-	for (int i = 0; i < relatedCards.size(); i++)
+	for (unsigned int i = 0; i < relatedCards.size(); i++)
 		s += card2Str(relatedCards[i]);
 	//发送消息
 	if (!sendMsg(playerNum, s))
@@ -406,7 +406,7 @@ bool ServerMB::createMsg(int playerNum, MsgType m, std::vector<const Card*> rela
 		return false;
 	ss << relatedPlayer<< additional;
 	s = "A" + ss.str();
-	for (int i = 0; i < relatedCards.size(); i++)
+	for (unsigned int i = 0; i < relatedCards.size(); i++)
 		s += card2Str(relatedCards[i]);
 	//发送消息
 	if (!sendMsg(playerNum, s))

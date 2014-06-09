@@ -3,7 +3,7 @@
 #include <string>  
 #include <sstream>
 #include <winsock2.h>  
-#include "CardLib.h"
+#include "..\..\cardLib_code\CardLib.h"
 #pragma comment(lib,"ws2_32.lib") 
 const int PORT = 1234; //Ä¬ÈÏPORT NUMBER = 1234
 const int MAXBUFF = 512;

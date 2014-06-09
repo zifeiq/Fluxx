@@ -16,7 +16,7 @@ enum gameState{
 	ROUND_PREPARE,
 	PLAYING_CARD,
 	DROPING_CARD,
-	GAME_END;
+	GAME_END,
 };
 class fluxxControl {
 public:
@@ -28,6 +28,7 @@ public:
 	void dropCard(int);//弃牌
 	/***************************************/
 	void setpresentPlayer(int);//修改当前前面函数的作用对象
+	void actioncard(Card& act_card);
 	//整局游戏控制
 	void fluxxRun();
 

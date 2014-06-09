@@ -22,17 +22,17 @@ public:
 	void setnohandbonus(bool b) { noHandbonus = b; }
 	void setrandomstart(bool b) { randomStart = b; }
 	//设定有关卡牌
-	void setdrawrule(const Card&);
-	void setplayrule(const Card&);
-	void sethandlimrule(const Card&);
-	void setkeeperlimrule(const Card&);
-	void setfirstgoal(const Card&);
-	void setsecondgoal(const Card&);
+	void setdrawrule(const Card& c){ DrawRule = c; }
+	void setplayrule(const Card& c) { PlayRule = c; }
+	void sethandlimrule(const Card& c){ HandlimitRule = c; }
+	void setkeeperlimrule(const Card& c) { KeeperlimitRule = c; }
+	void setfirstgoal(const Card& c) { firstGoal = c; }
+	void setsecondgoal(const Card& c) { secondGoal = c; }
 	//获取参数
 	const int getdraw()const { return cntDraw; }
 	const int getplay () const {return cntPlay; }
-	const int gethandlimitation() const { return cntHandlimit; }
-	const int getkeeperlimitation() const {return cntKeeperlimit; }
+	const unsigned int gethandlimitation() const { return cntHandlimit; }
+	const unsigned int getkeeperlimitation() const {return cntKeeperlimit; }
 	const bool isorderreverse() const{ return orderReverse; }
 	const bool isdoublegoals() const {return doubleGoals;}
 	const bool isrichBonus() const { return richBonus; }
@@ -41,8 +41,8 @@ public:
 	const bool isnohandbonus() const { return noHandbonus; }
 	const bool israndomstart() const { return randomStart; }
 	//获取卡牌
-	const Card& firstgoal() const;
-	const Card& secondgoal() const;
+	const Card& firstgoal() const { return firstGoal; }
+	const Card& secondgoal() const { return secondGoal; }
 	const Card& getdrawrule() const { return DrawRule; }
 	const Card& getplayrule() const { return PlayRule; }
 	const Card& getCdoublegoals() const { return c_doubleGoals; }

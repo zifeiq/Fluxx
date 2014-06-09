@@ -12,18 +12,18 @@ class Player {
 public:
 	Player(){};
 	Player(std::string);
-	void addHand(const Card&);
-	bool consumeHand(const Card&);
 	int getHandcnt(){ return hand.size(); }
 	int getKeepercnt() { return keeper.size(); }
+	int getConsumedcard() { return cntConsumedcard; }
+	void addHand(const Card&);
 	void addKeeper(const Card&);
-	bool removeKeeper(const Card&);
+	void setConsumedcard(int i) { cntConsumedcard = i; }
 	bool removeHand(const Card&);
+	bool consumeHand(const Card&);
+	bool removeKeeper(const Card&);
+	std::string getName() { return playerName; }
 	std::vector<const Card*>& getkeeper() { return keeper; }
 	std::vector<const Card*>& gethand() { return hand; }
-	int getConsumedcard() { return cntConsumedcard; }
-	void setConsumedcard(int i) { cntConsumedcard = i; }
-	std::string getName() { return playerName; }
 private:
 	std::string playerName;
 	int cntConsumedcard;
