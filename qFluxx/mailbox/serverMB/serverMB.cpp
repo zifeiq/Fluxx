@@ -123,6 +123,7 @@ bool ServerMB::getMsg(int playerNum, MsgType m, vector<const Card*>& relatedCard
 	//等待接受消息
 	string s = recvMsg(playerNum);
 	//解析消息
+	relatedCards.clear();
 	switch (s[0])
 	{
 	case '0': return false;

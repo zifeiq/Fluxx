@@ -320,6 +320,7 @@ bool ClientMB::getMsg(MsgType m, std::vector<const Card*>& relatedCards,int& rel
 {
 	//等待接受消息
 	string s = recvMsg();
+	relatedCards.clear();
 	//解析消息
 	switch (s[0])
 	{
@@ -370,6 +371,7 @@ bool ClientMB::getMsg(MsgType m, std::vector<const Card*>& relatedCards,int& rel
 {
 	//等待接受消息
 	string s = recvMsg();
+	relatedCards.clear();
 	//解析消息
 	switch (s[0])
 	{
