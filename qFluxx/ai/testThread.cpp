@@ -4,6 +4,17 @@ using namespace std;
 DWORD WINAPI threadAI(LPVOID lpParameter);
 DWORD WINAPI threadServer(LPVOID lpParameter);
 extern string convert(MsgType m);
+
+int main()
+{
+	string ip;
+	AI ai(0);
+	ai.run();
+}
+
+
+/*
+//test 多线程成功~~~
 int main()
 {
 	ClientMB client;
@@ -25,7 +36,7 @@ int main()
 	client.getMsg(m);
 	cout << playerName << ": 接收server消息 " << m << endl;
 
-}
+}*/
 
 DWORD WINAPI threadAI(LPVOID lpParameter)
 {
