@@ -31,8 +31,8 @@ public:
 	//获取参数
 	const int getdraw()const { return cntDraw; }
 	const int getplay () const {return cntPlay; }
-	const unsigned int gethandlimitation() const { return cntHandlimit; }
-	const unsigned int getkeeperlimitation() const {return cntKeeperlimit; }
+	const int gethandlimitation() const { return cntHandlimit; }
+	const int getkeeperlimitation() const {return cntKeeperlimit; }
 	const bool isorderreverse() const{ return orderReverse; }
 	const bool isdoublegoals() const {return doubleGoals;}
 	const bool isrichBonus() const { return richBonus; }

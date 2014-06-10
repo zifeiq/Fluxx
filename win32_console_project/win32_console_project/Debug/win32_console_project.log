@@ -1,4 +1,4 @@
-﻿生成启动时间为 6/9/2014 9:49:17 PM。
+﻿生成启动时间为 6/10/2014 10:40:26 PM。
      1>项目“C:\Users\Ivan\Documents\GitHub\Fluxx\win32_console_project\win32_console_project\win32_console_project.vcxproj”在节点 2 上(Build 个目标)。
      1>ClCompile:
          D:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\bin\CL.exe /c /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc110.pdb" /Gd /TP /analyze- /errorReport:prompt ..\..\qFluxx\fluxxControl_code\fluxxcontrol.cpp
@@ -18,4 +18,4 @@
 
 生成成功。
 
-已用时间 00:00:05.16
+已用时间 00:00:02.23

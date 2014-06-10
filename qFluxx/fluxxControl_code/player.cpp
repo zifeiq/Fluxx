@@ -43,3 +43,16 @@ bool Player::removeHand(const Card& removedhand) {
 	}
 	return false;
 }
+void Player::infoPlayer() {
+	std::cout << "当前玩家信息： " << std::endl;
+	std::cout << "玩家姓名：" << this->getNameref() << std::endl;
+	std::cout << "玩家手牌：" ;
+	for (unsigned int i = 0; i < this->hand.size(); i++) {
+		std::cout << hand[i]->getNum() << "\t";
+	}
+	std::cout << "\n所有物信息：";
+	for (unsigned int i = 0; i < this->keeper.size(); i++) {
+		std::cout << keeper[i]->getNum() << "\t" ;
+	}
+	std::cout << "\n";
+}

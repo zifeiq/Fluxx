@@ -9,7 +9,7 @@
 #include "..\mailbox\serverMB\serverMB.h"
 #include "..\fluxxControl_code\player.h"
 
-extern enum MsgType;
+//extern enum MsgType;
 enum gameState{ 
 	WAIT_FOR_PLAYERS,
 	DEAL_ORIGINAL_CARD,
@@ -32,13 +32,16 @@ public:
 	//整局游戏控制
 	void fluxxRun();
 
-	~fluxxControl (){};
+	~fluxxControl ();
 
 private:
 	void _shuffleCard();//洗牌
 	void _settleCard(const Card&); //单张结算
 	void _updateRules();
 	void _updateKeepers();
+	void _settleKeepercard(const Card&);
+	void _settleRulecard(const Card&);
+	void _settleGoalcard(const Card&);
 	int _checkCntdraw();//计算摸牌量
 	int _checkCntplay();//计算出牌量
 	int _checkCntdrop();
@@ -57,7 +60,7 @@ private:
 	CardLib& cards;
 	ServerMB msgBox;
 	gameState presentState;
-	std::vector<Player> players;//所有玩家
+	std::vector<Player*> players;//所有玩家
 	std::vector<const Card*> deck;//牌堆
 	std::vector<const Card*> droppeddeck;//弃牌堆
 };
