@@ -34,18 +34,18 @@ bool ClientMB::connectServer(const string server_ip)
 
 bool ClientMB::sendMsg(string s)
 {
-	char buf[BUFFMAX];
+	char buf[BUFF_MAX];
 	int index = 0;
 	while (1)
 	{
-		string temp = s.substr(index, BUFFMAX - 1);
+		string temp = s.substr(index, BUFF_MAX - 1);
 		memset(buf, 0, sizeof(buf));
 		strcpy_s(buf, temp.c_str());
 		if (send(clientSock, buf, strlen(buf) + 1, 0) == -1) //发送出错
 			return false; 
 		else
 		{
-			index += BUFFMAX - 1;
+			index += BUFF_MAX - 1;
 			if (index >= s.size())  //已发完字符串所有内容
 				return true;
 		}
@@ -55,9 +55,9 @@ bool ClientMB::sendMsg(string s)
 string ClientMB::recvMsg()
 {
 	string s;
-	char buf[BUFFMAX];
+	char buf[BUFF_MAX];
 	memset(buf, 0, sizeof(buf));
-	if (recv(clientSock, buf, BUFFMAX, 0) != -1)
+	if (recv(clientSock, buf, BUFF_MAX, 0) != -1)
 		s = buf;
 	return s;
 }
@@ -102,7 +102,7 @@ bool ClientMB::createMsg(MsgType m, vector<const Card*>relatedCards)
 	string s;
 	switch (m)
 	{
-		case PLAY_I:
+	case PLAY_I:
 		if (relatedCards.size() != 1)//未传入一张牌
 			return false;
 		else{

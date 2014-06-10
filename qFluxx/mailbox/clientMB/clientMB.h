@@ -4,12 +4,15 @@
 #include <sstream>
 #include <cctype>
 #include <winsock2.h>  
-#include "cardLib.h"
+//#include "cardLib.h"
+#include "../../cardLib_code/cardLib.h"
+#include "../../config.h"
 #pragma comment(lib,"ws2_32.lib") 
-const int PORT = 1234; //默认PORT NUMBER = 1234
-const int BUFFMAX = 512;
-
-enum MsgType{
+//const int PORT = 1234; //默认PORT NUMBER = 1234
+//const int BUFFMAX = 512;
+extern const int PORT;
+//extern enum MsgType;
+/*enum MsgType{
 	NACK,//错误信号, 客户端和服务器共用
 	//服务器发送的消息类型
 	ADD_PLAYER,//增加玩家
@@ -43,8 +46,8 @@ enum MsgType{
 	DROP_RULE_I,//选择的规则牌信息，用于行动牌“取消规则”“简化一下”
 	CHOOSE_PLAYER_I, //选择的玩家编号， 用于行动牌“交换手牌”“取而用之”
 	CHOOSE_GOAL_I
-};
-
+};*/
+extern enum MsgType;
 class ClientMB  //客户端信箱
 {
 public:

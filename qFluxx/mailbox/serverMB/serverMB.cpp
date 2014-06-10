@@ -17,7 +17,7 @@ _cards(CardLib::getLib())
 	servAddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	bind(serverSock, (struct sockaddr *)&servAddr, sizeof(servAddr));
 	//启动监听  
-	listen(serverSock, MAXCLIENT);   //最多同时建立4个连接
+	listen(serverSock, CLIENT_MAX);   //最多同时建立4个连接
 }
 
 ServerMB::~ServerMB()
@@ -32,18 +32,18 @@ bool ServerMB::sendMsg(int num,string s)
 {
 	if (num >= _clientNum)   //参数不正确
 		return false;
-	char buf[MAXBUFF];
+	char buf[BUFF_MAX];
 	unsigned int index = 0;
 	while (1)
 	{
-		string temp = s.substr(index, MAXBUFF - 1);
+		string temp = s.substr(index, BUFF_MAX - 1);
 		memset(buf, 0, sizeof(buf));
 		strcpy_s(buf, temp.c_str());
 		if (send(clientSock[num], buf, strlen(buf) + 1, 0) == -1) //发送出错
 			return false;
 		else
 		{
-			index += MAXBUFF - 1;
+			index += BUFF_MAX - 1;
 			if (index >= s.size())  //已发完字符串所有内容
 				return true;
 		}
@@ -56,17 +56,17 @@ string ServerMB::recvMsg(int num)
 		return "";
 
 	string s;
-	char buf[MAXBUFF];
+	char buf[BUFF_MAX];
 	memset(buf, 0, sizeof(buf));
 	int recvLen = 0;
-	if (recv(clientSock[num], buf, MAXBUFF, 0) != -1)
+	if (recv(clientSock[num], buf, BUFF_MAX, 0) != -1)
 		s = buf;
 	return s;
 }
 
 bool ServerMB::acceptNewClient()
 {
-	if (_clientNum == MAXCLIENT)
+	if (_clientNum == CLIENT_MAX)
 		return false;
 
 	SOCKADDR_IN clientAddr;
