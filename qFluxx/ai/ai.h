@@ -1,6 +1,10 @@
-#include "../cardLib_code/cardLib.h"
-#include "../fluxxControl_code/player.h"
+#include <iostream>
+//#include <windows.h>
+//#include "../fluxxControl_code/player.h"
 
+#include "../mailbox/serverMB/serverMB.h"
+#include "../mailbox/clientMB/clientMB.h"
+/*
 class AI : public Player
 {
 public:
@@ -11,4 +15,4 @@ public:
 protected:
 
 
-};
+};*/
