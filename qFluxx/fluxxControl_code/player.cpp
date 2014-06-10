@@ -2,6 +2,8 @@
 
 extern int cntPlayer;
 Player::Player(std::string name = "FluxxPlayer" + cntPlayer) : playerName(name) {
+	cntConsumedcard = 0;
+	cntPlayer++;
 }
 
 bool Player::consumeHand(const Card& targetCard) {

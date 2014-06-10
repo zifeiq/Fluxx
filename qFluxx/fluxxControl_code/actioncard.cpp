@@ -1,7 +1,7 @@
 #include "fluxxcontrol.h"
 #include<time.h>
 
-void fluxxControl::actioncard(Card& act_card)
+void fluxxControl::actioncard(const Card& act_card)
 {
 	std::vector<const Card*> player_cards;	//临时存放玩家手牌或所有物或弃牌堆里有用的牌
 	std::vector<const Card*>::const_iterator ii = droppeddeck.begin();	//case6中用到，从弃牌堆中删除某张牌
@@ -13,7 +13,7 @@ void fluxxControl::actioncard(Card& act_card)
 	case 1://抓2用2
 	{
 		//将手牌放到一边
-		std::vector<const Card*>& player_cards_tmp=presentPlayer.gethand();
+		std::vector<const Card*>& player_cards_tmp=presentPlayer->gethand();
 		player_cards=player_cards_tmp;
 		//清空原手牌
 		player_cards_tmp.clear();	
@@ -21,7 +21,7 @@ void fluxxControl::actioncard(Card& act_card)
 		msgbufMsgtype=CARD_UPDATE;
 		msgBox.createMsg(clientNum,msgbufMsgtype);
 		msgbufMsgtype=CARD_UPDATE;
-		msgbufCards=presentPlayer.gethand();
+		msgbufCards=presentPlayer->gethand();
 		msgbufAdditional=2;
 		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
 		//抓两张牌，包含了广播
@@ -41,7 +41,7 @@ void fluxxControl::actioncard(Card& act_card)
 		msgbufMsgtype=CARD_UPDATE;
 		msgBox.createMsg(clientNum,msgbufMsgtype);
 		msgbufMsgtype=CARD_UPDATE;
-		msgbufCards=presentPlayer.gethand();
+		msgbufCards=presentPlayer->gethand();
 		msgbufAdditional=2;
 		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
 		break;
@@ -49,14 +49,14 @@ void fluxxControl::actioncard(Card& act_card)
 	case 2://弃牌重抓
 	{
 		//弃光手牌
-		std::vector<const Card*>& player_cards_tmp=presentPlayer.gethand();
+		std::vector<const Card*>& player_cards_tmp=presentPlayer->gethand();
 		tmp=player_cards_tmp.size();
 		player_cards_tmp.clear();
 		//告诉玩家手牌现在为空
 		msgbufMsgtype=CARD_UPDATE;
 		msgBox.createMsg(clientNum,msgbufMsgtype);
 		msgbufMsgtype=CARD_UPDATE;
-		msgbufCards=presentPlayer.gethand();
+		msgbufCards=presentPlayer->gethand();
 		msgbufAdditional=2;
 		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
 		//抓等量的牌，包含告诉玩家抓了哪些牌
@@ -158,7 +158,7 @@ void fluxxControl::actioncard(Card& act_card)
 	case 4://抓3用2
 	{
 		//将手牌放到一边
-		std::vector<const Card*>& player_cards_tmp=presentPlayer.gethand();
+		std::vector<const Card*>& player_cards_tmp=presentPlayer->gethand();
 		player_cards=player_cards_tmp;
 		//清空原手牌
 		player_cards_tmp.clear();	
@@ -166,7 +166,7 @@ void fluxxControl::actioncard(Card& act_card)
 		msgbufMsgtype=CARD_UPDATE;
 		msgBox.createMsg(clientNum,msgbufMsgtype);
 		msgbufMsgtype=CARD_UPDATE;
-		msgbufCards=presentPlayer.gethand();
+		msgbufCards=presentPlayer->gethand();
 		msgbufAdditional=2;
 		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
 		//抓三张牌，包含广播
@@ -188,7 +188,7 @@ void fluxxControl::actioncard(Card& act_card)
 		msgbufMsgtype=CARD_UPDATE;
 		msgBox.createMsg(clientNum,msgbufMsgtype);
 		msgbufMsgtype=CARD_UPDATE;
-		msgbufCards=presentPlayer.gethand();
+		msgbufCards=presentPlayer->gethand();
 		msgbufAdditional=2;
 		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
 		break;
@@ -210,7 +210,7 @@ void fluxxControl::actioncard(Card& act_card)
 		//随机抽一张，偷偷加入其手牌中，并从弃牌堆中删掉，然后偷偷给他打出
 		srand(int(time(NULL)));
 		tmp=rand()%(player_cards.size());
-		presentPlayer.addHand(*player_cards[tmp]);
+		presentPlayer->addHand(*player_cards[tmp]);
 		
 		for(; ii != droppeddeck.end(); ii++) 
 			if ((**ii) == *player_cards[tmp]) 
@@ -390,8 +390,8 @@ void fluxxControl::actioncard(Card& act_card)
 				break;
 		}
 		//在自己这里拿走所有物和增添所有物
-		presentPlayer.removeKeeper(*msgbufCards[1]);
-		presentPlayer.addKeeper(*msgbufCards[0]);
+		presentPlayer->removeKeeper(*msgbufCards[1]);
+		presentPlayer->addKeeper(*msgbufCards[0]);
 		//告诉每个玩家这两个人的所有物信息
 		for(unsigned int i=0;i<players.size();i++)
 		{
@@ -428,7 +428,7 @@ void fluxxControl::actioncard(Card& act_card)
 		msgbufMsgtype=CHOOSE_KEEPER_I;
 		msgBox.getMsg(clientNum,msgbufMsgtype,msgbufCards);
 		//把所有物添加到当前玩家面前
-		presentPlayer.addKeeper(*msgbufCards[0]);
+		presentPlayer->addKeeper(*msgbufCards[0]);
 		//把所有物从目标玩家面前删除
 		tmp=-1;
 		for(unsigned int i=0;i<players.size();i++)
@@ -476,7 +476,7 @@ void fluxxControl::actioncard(Card& act_card)
 			if(players[i].getHandcnt()==0)	//如果这个玩家没有手牌，则不抽
 				continue;
 			tmp=rand()%(players[i].getHandcnt());
-			presentPlayer.addHand(*players[i].gethand()[tmp]);
+			presentPlayer->addHand(*players[i].gethand()[tmp]);
 			players[i].removeHand(*players[i].gethand()[tmp]);
 		}
 		//广播更新手牌信息
@@ -627,7 +627,7 @@ void fluxxControl::actioncard(Card& act_card)
 		msgBox.getMsg(clientNum,msgbufMsgtype,msgbufAdditional);
 		//交换
 		tmp=msgbufAdditional;
-		std::vector<const Card*>& player_cards_tmp=presentPlayer.gethand();
+		std::vector<const Card*>& player_cards_tmp=presentPlayer->gethand();
 		std::vector<const Card*>& player_cards_tmp2=players[tmp].gethand();
 		player_cards=player_cards_tmp;
 		player_cards_tmp=player_cards_tmp2;
@@ -732,7 +732,7 @@ void fluxxControl::actioncard(Card& act_card)
 			}
 		}
 		//将该手牌偷偷加入本玩家手牌中并偷偷打出
-		presentPlayer.addHand(*tmp_card);
+		presentPlayer->addHand(*tmp_card);
 		playCard(*tmp_card);
 		break;
 	}

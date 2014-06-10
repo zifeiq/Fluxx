@@ -1,14 +1,17 @@
 #include "..\fluxxControl_code\fluxxcontrol.h"
+#include <iostream>
 
 extern enum gameState;
 extern enum Card::Type;
 
-fluxxControl::fluxxControl():cards(CardLib::getLib()), presentPlayer(players[0]){
-	rule(cards);
+fluxxControl::fluxxControl(fluxxRules& r):cards(CardLib::getLib()), rule(r){
+	
 	for(int i = 0; i < cards.getCardNum(); i++)  {
-		droppeddeck.push_back(cards.getCard(i));
+		if (i >= 2) {
+			droppeddeck.push_back(cards.getCard(i));
+		}
 	}//初始化牌堆
-	clientNum  = -1;
+	clientNum  = 0;
 	presentState = WAIT_FOR_PLAYERS;
 }
 int fluxxControl::_checkCntdraw() {
@@ -19,7 +22,7 @@ int fluxxControl::_checkCntdraw() {
 	}
 	else {
 		if(rule.isnohandbonus()) {
-			if(presentPlayer.gethand().empty()) {
+			if(presentPlayer->gethand().empty()) {
 				if (rule.isinflation()) {
 					_dealcardnum = 4;
 				}
@@ -28,7 +31,7 @@ int fluxxControl::_checkCntdraw() {
 			}
 		}
 		for(int i = (clientNum+1)%4; i != clientNum; i = (i+1)%4) {
-			if(players[i].getkeeper().size() <= presentPlayer.getkeeper().size()) {
+			if(players[i].getkeeper().size() <= presentPlayer->getkeeper().size()) {
 				_isleast = false;
 				break;
 			}
@@ -54,7 +57,7 @@ int fluxxControl::_checkCntplay() {
 	int _playcardnum = 0;
 	bool _ismost = true;
 	for(int i = (clientNum+1)%4; i != clientNum; i = (i+1)%4) {
-		if(players[i].getkeeper().size() >= presentPlayer.getkeeper().size()) {
+		if(players[i].getkeeper().size() >= presentPlayer->getkeeper().size()) {
 			_ismost = false;
 			break;
 		}
@@ -72,7 +75,7 @@ int fluxxControl::_checkCntplay() {
 }
 int fluxxControl::_checkCntdrop(){
 	int _dropcardnum = 0;
-	_dropcardnum = presentPlayer.getHandcnt() - rule.gethandlimitation();
+	_dropcardnum = presentPlayer->getHandcnt() - rule.gethandlimitation();
 	if (_dropcardnum < 0) {
 		return -1;
 	}
@@ -328,10 +331,13 @@ void fluxxControl::_updateRules() {
 	if (rule.israndomstart()) {
 		msgbufCards.push_back(&rule.getCrandomstart());
 	}
+	if (rule.isdoublegoals()) {
+		msgbufCards.push_back(&rule.secondgoal());
+	}
 	if(!(rule.firstgoal() == *cards.getCard(0))) {
 		msgbufCards.push_back(&rule.firstgoal());
 	}
-	if (rule.isdoublegoals()) {
+	if(!(rule.secondgoal() == *cards.getCard(0))) {
 		msgbufCards.push_back(&rule.secondgoal());
 	}
 }
@@ -390,7 +396,7 @@ void fluxxControl::_settleCard(const Card& targetCard) {
 				case 5: { rule.setorderreverse(true); break; } //顺序反转
 				case 6: { rule.setnohandbonus(true); break; } //无手牌奖励
 				case 7: { rule.setrandomstart(true); break; } //随机开场
-				case 8: { rule.setdoublegoals(true); break; } //双重开场
+				case 8: { rule.setdoublegoals(true); break; } //双重目标
 				}
 			}//特殊规则处理完毕
 		}//规则牌处理完毕
@@ -403,7 +409,7 @@ void fluxxControl::_settleCard(const Card& targetCard) {
 			msgBox.createMsg(i,msgbufMsgtype,msgbufCards);//数据
 		}
 	}//规则牌结算完毕
-	case 2: { presentPlayer.addKeeper(targetCard);//所有物
+	case 2: { presentPlayer->addKeeper(targetCard);//所有物
 		msgbufMsgtype = KEEPER_UPDATE;
 		msgbufAdditional = 1;
 		for(unsigned int i = 0; i < players.size(); i++) {
@@ -442,6 +448,8 @@ void fluxxControl::_settleCard(const Card& targetCard) {
 		}
 		case 4: {
 			//行动卡
+			actioncard(targetCard);
+			break;
 		}
 	}
 }
@@ -453,9 +461,11 @@ void fluxxControl::addPlayers() {
 		msgBox.createMsg(i, msgbufMsgtype);//通知消息的类型
 		msgBox.createMsg(i, msgbufMsgtype, clientNum, msgbufString);//发送真正的消息
 	}
-	for(unsigned int i = 0; i < players.size()-1; i++) {
-		msgBox.createMsg(clientNum,msgbufMsgtype);
+	for(unsigned int i = 0; i < players.size(); i++) {
+		msgbufString = players[i].getName();
+		msgBox.createMsg(clientNum, msgbufMsgtype);
 		msgBox.createMsg(clientNum, msgbufMsgtype, i, msgbufString);
+		Sleep(300);
 	}
 	if(clientNum == 3) {
 		//限制玩家数量上限为4
@@ -466,9 +476,9 @@ void fluxxControl::addPlayers() {
 		//分发初始手牌
 		for(unsigned int i = 0; i < players.size(); i++) {
 			setpresentPlayer(i);
-			dealCard(_checkCntdraw());
 			msgbufMsgtype = GAME_START;
-			msgbufCards = presentPlayer.gethand();
+			dealCard(_checkCntdraw());
+			msgbufCards = presentPlayer->gethand();
 			msgBox.createMsg(i,msgbufMsgtype);//通知消息类型
 			msgBox.createMsg(i, msgbufMsgtype, msgbufCards);//发送真正的消息
 			msgbufCards.clear();
@@ -486,7 +496,7 @@ void fluxxControl::dealCard(int totalDraw) {
 	//开始摸牌
 	for(int i = 0; i < totalDraw; i++) {
 		if (!deck.empty()) {
-			presentPlayer.addHand(*deck.back());
+			presentPlayer->addHand(*deck.back());
 			msgbufCards.push_back(deck.back());
 			deck.pop_back();
 		}
@@ -497,27 +507,32 @@ void fluxxControl::dealCard(int totalDraw) {
 	}
 	//随机开场的调整
 	if (rule.israndomstart()) {
-		std::vector<const Card*> _temp  =presentPlayer.gethand();
+		std::vector<const Card*> _temp  = presentPlayer->gethand();
 		int _card = rand()%_temp.size();
 		const Card* _tempcard = _temp[_card];
 		msgbufCards.insert(msgbufCards.begin(),_tempcard);
 	}
 	//发手牌啦！！！！
+	if (presentState == DEAL_ORIGINAL_CARD) {
+		return;
+	}
 	msgbufMsgtype = CARD_UPDATE;
 	msgbufAdditional = 1;
 	msgBox.createMsg(clientNum, msgbufMsgtype);
 	msgBox.createMsg(clientNum, msgbufMsgtype, msgbufCards, msgbufAdditional);
 	//广播手牌更新啦！！！！！
 	msgbufMsgtype = CARD_NUM;
-	msgbufAdditional = presentPlayer.getHandcnt();
+	msgbufAdditional = presentPlayer->getHandcnt();
 	for (int i = (clientNum+1)%4; i != clientNum; i = (i+1)%4) {
+		Sleep(300);
 		msgBox.createMsg(i, msgbufMsgtype);
 		msgBox.createMsg(i, msgbufMsgtype, clientNum, msgbufAdditional);
 	}
 	presentState = PLAYING_CARD;
+	return;
 }
 void fluxxControl::setpresentPlayer(int nextPlayer) {
-	presentPlayer = players[nextPlayer];
+	presentPlayer = &players[nextPlayer];
 }
 void fluxxControl::playCard(const Card& targetCard) {
 	//开始出牌循环
@@ -526,14 +541,14 @@ void fluxxControl::playCard(const Card& targetCard) {
 	int _winnernum;
 	msgbufMsgtype = CARD_PLAYED;
 		//结算，通知信息有效，广播结算结果
-	if(presentPlayer.removeHand(*msgbufCards[0])){
+	if(presentPlayer->removeHand(*msgbufCards[0])){
 		msgbufMsgtype = CARD_PLAYED;
 		for( unsigned int i = 0; i != players.size(); i++) {
 			msgBox.createMsg(i,msgbufMsgtype);//通知
-			msgBox.createMsg(i,msgbufMsgtype,msgbufCards);//内容
+			msgBox.createMsg(i,msgbufMsgtype,msgbufCards,clientNum);//内容
 		}
 		_settleCard(*msgbufCards[0]);
-		presentPlayer.setConsumedcard(presentPlayer.getConsumedcard()+1);
+		presentPlayer->setConsumedcard(presentPlayer->getConsumedcard()+1);
 		//3.检查胜利情况
 		_winnernum = _checkWinner();
 		if (_winnernum > 0) {
@@ -603,7 +618,7 @@ void fluxxControl::dropCard(int totalDrop) {
 	msgbufMsgtype = DROP_CARD_I;
 	if(msgBox.getMsg(clientNum,msgbufMsgtype,msgbufCards)) {
 		for(unsigned int i = 0; i < msgbufCards.size(); i++) {
-			if(presentPlayer.removeHand(*msgbufCards[i])) {
+			if(presentPlayer->removeHand(*msgbufCards[i])) {
 				droppeddeck.push_back(msgbufCards[i]);
 			}
 		}
@@ -619,12 +634,15 @@ void fluxxControl::fluxxRun() {
 	while(1) {
 		if (presentState == WAIT_FOR_PLAYERS) {
 			msgbufMsgtype = REGISTER;
-			if(msgBox.getMsg(clientNum, msgbufMsgtype, msgbufString)) {
+			if(msgBox.acceptNewClient()) {
+				msgBox.getMsg(clientNum,msgbufMsgtype,msgbufString);
 				addPlayers();
+				
 			}
 		}
 		else if (presentState == ROUND_PREPARE) {
 			//广播ROUNDBEGIN啦！！
+			std::cout<< "Game start!" << std::endl;
 			msgbufMsgtype = ROUND_BEGIN;
 			if (rule.israndomstart()) {
 				msgbufAdditional = 1;
@@ -633,13 +651,14 @@ void fluxxControl::fluxxRun() {
 				msgbufAdditional = 0;
 			}
 			for(unsigned int i = 0; i < players.size(); i++) {
+				Sleep(300);
 				msgBox.createMsg(i, msgbufMsgtype);
 				msgBox.createMsg(i, msgbufMsgtype, clientNum, msgbufAdditional);
 			}
 			dealCard(_checkCntdraw());
 		}
 		else if (presentState == PLAYING_CARD) {
-			while (presentPlayer.getConsumedcard() < _checkCntplay()) {
+			while (presentPlayer->getConsumedcard() < _checkCntplay()) {
 				msgbufMsgtype = PLAY_C;
 				msgbufCards.clear();
 				msgbufAdditional = 0;
@@ -647,13 +666,13 @@ void fluxxControl::fluxxRun() {
 				msgbufMsgtype = PLAY_I;
 				if(msgBox.getMsg(clientNum, msgbufMsgtype, msgbufCards)) {
 					playCard(*msgbufCards[0]);
-					presentPlayer.setConsumedcard(presentPlayer.getConsumedcard()+1);
+					presentPlayer->setConsumedcard(presentPlayer->getConsumedcard()+1);
 				}
 			}
 			presentState = DROPING_CARD;
 		}
 		else if (presentState == DROPING_CARD) {
-			msgbufAdditional = presentPlayer.gethand().size()-rule.gethandlimitation();
+			msgbufAdditional = presentPlayer->gethand().size()-rule.gethandlimitation();
 			if (msgbufAdditional > 0) {
 				dropCard(msgbufAdditional);
 			}

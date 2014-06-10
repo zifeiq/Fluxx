@@ -10,6 +10,22 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\qFluxx\cardLib_code\cardLib.cpp" />
+    <ClCompile Include="..\..\qFluxx\fluxxControl_code\actioncard.cpp" />
+    <ClCompile Include="..\..\qFluxx\fluxxControl_code\fluxxcontrol.cpp" />
+    <ClCompile Include="..\..\qFluxx\fluxxControl_code\fluxxrules.cpp" />
+    <ClCompile Include="..\..\qFluxx\fluxxControl_code\player.cpp" />
+    <ClCompile Include="..\..\qFluxx\mailbox\serverMB\serverMB.cpp" />
+    <ClCompile Include="main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\qFluxx\cardLib_code\cardLib.h" />
+    <ClInclude Include="..\..\qFluxx\fluxxControl_code\fluxxcontrol.h" />
+    <ClInclude Include="..\..\qFluxx\fluxxControl_code\fluxxrules.h" />
+    <ClInclude Include="..\..\qFluxx\fluxxControl_code\player.h" />
+    <ClInclude Include="..\..\qFluxx\mailbox\serverMB\serverMB.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{49EA4F2C-13E5-431B-880E-DB5698571244}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -75,22 +91,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\cardLib_code\cardLib.cpp" />
-    <ClCompile Include="..\..\fluxxControl_code\fluxxcontrol.cpp" />
-    <ClCompile Include="..\..\fluxxControl_code\fluxxrules.cpp" />
-    <ClCompile Include="..\..\fluxxControl_code\player.cpp" />
-    <ClCompile Include="..\..\mailbox\clientMB\clientMB.cpp" />
-    <ClCompile Include="..\..\mailbox\serverMB\serverMB.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\cardLib_code\cardLib.h" />
-    <ClInclude Include="..\..\fluxxControl_code\fluxxcontrol.h" />
-    <ClInclude Include="..\..\fluxxControl_code\fluxxrules.h" />
-    <ClInclude Include="..\..\fluxxControl_code\player.h" />
-    <ClInclude Include="..\..\mailbox\clientMB\clientMB.h" />
-    <ClInclude Include="..\..\mailbox\serverMB\serverMB.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

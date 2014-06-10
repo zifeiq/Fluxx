@@ -20,7 +20,7 @@ enum gameState{
 };
 class fluxxControl {
 public:
-	fluxxControl ();
+	fluxxControl (fluxxRules&);
 	void addPlayers();//添加玩家
 	/***基本操作函数***/
 	void dealCard(int); //发牌
@@ -28,7 +28,7 @@ public:
 	void dropCard(int);//弃牌
 	/***************************************/
 	void setpresentPlayer(int);//修改当前前面函数的作用对象
-	void actioncard(Card& act_card);
+	void actioncard(const Card& act_card);
 	//整局游戏控制
 	void fluxxRun();
 
@@ -45,7 +45,7 @@ private:
 	int _checkWinner();//检查胜利
 	int _getclientnum(Player&);//计算用于消息传递的玩家编号
 	//单个回合控制相关
-	Player& presentPlayer;
+	Player *presentPlayer;
 	fluxxRules rule;
 	//信息传递相关
 	int msgbufAdditional;//附加消息编号
@@ -61,5 +61,4 @@ private:
 	std::vector<const Card*> deck;//牌堆
 	std::vector<const Card*> droppeddeck;//弃牌堆
 };
-
 #endif

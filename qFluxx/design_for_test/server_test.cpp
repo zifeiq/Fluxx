@@ -77,8 +77,8 @@ int main()
 				cout<<"收到第一条消息类型为"<<convert(m)<<endl;
 				switch(m)
 				{
-				case ADD_PLAYER: if(!client.getMsg(m,player,s)) return 1;
-								 cout<<"收到第二条消息: "<<convert(m)<<"\t"<<player<<"\t"<<s<<endl;break;
+				case ADD_PLAYER: while (client.getMsg(m,player,s)) { if(m != ADD_PLAYER) break;
+					cout<<"收到第二条消息: "<<convert(m)<<"\t"<<player<<"\t"<<s<<endl;}break;
 				case GAME_START: 
 				case RULE:
 					if(!client.getMsg(m,cards)) return 1;
