@@ -245,7 +245,7 @@ bool ClientMB::getMsg(MsgType m, int& relatedPlayer, std::string& name)
 	case '0': return false;
 	case '1': 
 		if(m == ADD_PLAYER){
-			relatedPlayer = s[1];
+			relatedPlayer = atoi(s.substr(1,1).c_str());
 			name = s.substr(2); 
 			return true;
 		}
@@ -375,8 +375,8 @@ bool ClientMB::getMsg(MsgType m, std::vector<const Card*>& relatedCards,int& rel
 	//Ω‚Œˆœ˚œ¢
 	switch (s[0])
 	{
-	case '2': if( m== NACK) return false;
-	case 'C': 
+	case '0': if( m== NACK) return false;
+	case 'A': 
 		if(m== KEEPER_UPDATE){
 		relatedPlayer = atoi(s.substr(1,1).c_str());
 		additional = atoi(s.substr(2,1).c_str());
