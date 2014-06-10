@@ -19,7 +19,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     server = NULL;
 
-    connect(this,SIGNAL(gameStart()),this,SLOT(initGame())
+    connect(this,SIGNAL(gameStart()),this,SLOT(initGame()));
 }
 
 MainWindow::~MainWindow()
@@ -147,17 +147,78 @@ void MainWindow::initGame(){
     waiting->hide();
     this->show();
     if(msgBox.getMsg(GAME_START,tcards)){
-        for(int i = 0; i != PLAYER_NUM; i++)
+        //profiles & cardnum
+        for(int i = 0; i != PLAYER_NUM; i++){
+            //hands number
             handsNum[i] = tcards.size();
-        sHands.setSceneRect(0,480,650,120);
-        vHands.setScene(sHands);
+            QLabel* tnum = new QLabel("Hands Number:"+QString::number(handsNum[i]));
+            cardNum.push_back(tnum);
+            QAvatar* ticon = new QAvatar(i,playerName[i],this);
+            icons.push_back(ticon);
+            QLabel* temp = new QLabel(playerName[i],this);
+            names.push_back(temp);
+            QVBoxLayout* tprofile = new QVBoxLayout(this);
+            tprofile->addItem(temp);
+            tprofile->addItem(ticon);
+            if(i != myNo)
+                tprofile->addItem(tnum);
+            lProfiles.push_back(tprofile);
+        }
+        lProfiles[myNo]->addItem(confirm);
+
+        //my hands
+        myHands = new QGraphicsScene(this);
         for(int i = 0; i != tcards.size(); i++){
-            QGraphicsPixmapItem* temp = new QGraphicsPixmapItem(QPixmap(s2q(tcards[i]->getAddr())));
-            myHands.push_back(temp);
-            sHands.addItem(temp);
-            temp->setPos(15+95*i,0);
+            QCard* temp = new QCard(tcards[i]);
+            myHands->addItem(temp);
+            temp->setPos(85*i,0);
+        }
+        vHands = new QGraphicsView(myHands);
+
+        //keepers
+        for(int i = 0; i != PLAYER_NUM; i++){
+            QGraphicsScene* tscene = new QGraphicsScene(this);
+            keepers.push_back(tscene);
+            QGraphicsView* tview = new QGraphicsView(this);
+            tview->setScene(tscene);
+            vKeepers.push_back(tview);
         }
 
+        //layouts
+        //my area
+        myArea = new QHBoxLayout(this);
+        myArea->addItem(vKeepers[myNo]);
+        myArea->addItem(vHands);
+        myArea->addLayout(lProfiles[myNo]);
+
+        //competitors
+        for(int i = 1; (myNo+i)%PLAYER_NUM != myNo; i++){
+            QHBoxLayout* tarea = new QHBoxLayout(this);
+            tarea->addLayout(lProfiles[(i+myNo)%PLAYER_NUM]);
+            tarea->addItem(vKeepers[(i+myNo)%PLAYER_NUM]);
+            competitors->addLayout(tarea);
+        }
+
+        //table
+        table = new QHBoxLayout(this);
+        presentDspl = new QLabel("The present active player is:\n");
+        rules = new QGraphicsScene;
+        QCard* trule = new QCard(CardLib::getLib().getCard(0));
+        rules->addItem(trule);
+        trule->setPos(0,0);
+        truel = new QCard(CardLib::getLib().getCard(1));
+        rules->addItem(trule);
+        trule->setPos(80,0);
+        vRules = new QGraphicsView(rules);
+        goals = new QGraphicsScene;
+        vGoals = new QGraphicsView(goals);
+        table->addItem(presentDspl);
+        table->addSpacing(100);
+
+        layout = new QVBoxLayout(this);
+        layout->addLayout(competitors);
+        layout->addLayout(table);
+        layout->addLayout(myArea);
     }
     else
         ;//error handling

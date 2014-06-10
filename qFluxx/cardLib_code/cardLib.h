@@ -5,6 +5,8 @@
 #include <fstream>
 const std::string FILENAME = "carddata.txt";
 
+
+
 class Card  //卡牌的基类
 {
 public:
@@ -79,5 +81,4 @@ protected:
 	std::vector<Card*> _cards;  //基本卡为63个, 行动卡和用户拓展卡(How????)  后期可加
 	int _cardNum;
 };
-
 #endif
