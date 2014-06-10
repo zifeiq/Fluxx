@@ -331,7 +331,7 @@ void fluxxControl::_shuffleCard() {
 	std::cout << "洗牌结束" << std::endl;
 }
 void fluxxControl::_updateRules() {
-	std::cout << "##更新规则信息……" << std::endl;
+	std::cout << "##更新规则信息##" << std::endl;
 	msgbufCards.clear();
 	msgbufCards.push_back(&rule.getdrawrule());
 	msgbufCards.push_back(&rule.getplayrule());
@@ -714,6 +714,7 @@ void fluxxControl::playCard(const Card& targetCard) {
 	}
 }
 void fluxxControl::dropCard(int totalDrop) {
+	std::cout << "##玩家##" << std::endl;
 	msgbufMsgtype = DROP_CARD_C;
 	msgbufAdditional = totalDrop;
 	msgBox.createMsg(clientNum, msgbufMsgtype, msgbufAdditional);
