@@ -6,22 +6,29 @@
 #include <QList>
 #include <QLabel>
 #include <QLayout>
+#include <QGridLayout>
 #include <QGraphicsPixmapItem>
 #include <QGraphicsScene>
 #include <QGraphicsView>
+#include <QVariant>
+#include <QMetaType>
 
 #include <string>
 #include <vector>
 using std::string;
 using std::vector;
 
+#include "./cardLib_code/cardLib.h"
+#include "./mailbox/clientMB/clientMB.h"
 //#include "mailBox.h"
+
 #include "register.h"
 #include "mode.h"
 #include "waiting.h"
+#include "qcard.h"
+#include "qavatar.h"
 //#include "client.h"
-#include "./cardLib_code/cardLib.h"
-#include "./mailbox/clientMB/clientMB.h"
+
 #include "config.h"
 
 class MainWindow : public QMainWindow
@@ -37,15 +44,39 @@ public:
     Waiting* waiting;   //等待游戏开始
 
     //playing
-    QGraphicsScene sKeepers;
-    QGraphicsScene sHands;
-    QGraphicsView vHands;
-    QList<QGraphicsPixmapItem*> myHands;
-    QList<QList<QGraphicsPixmapItem*>> keepers;
-    QGraphicsPixmapItem* icons[PLAYER_NUM];
+    //my hands
+    QGraphicsScene* myHands;
+//    QList<QCard*> hands;
+    QGraphicsView* vHands;
+
+    //keepers
+    QList<QGraphicsScene*> keepers;
+    QList<QGraphicsView*> vKeepers;
+
+    //对手区域,icons & card no.
+    QList<QAvatar*> icons;
+    QList<QLabel*> cardNum;
+
+    //rules&goal
+    QGraphicsScene* rules;
+    QGraphicsScene* goals;
+    QGraphicsView* vRules;
+    QGraphicsView* vGoals;
+    QLabel* presentDspl;
 
     QPushButton* confirm;
 
+    QVBoxLayout* layout;
+
+    QHBoxLayout* myArea;
+    QHBoxLayout* competitors;
+    QHBoxLayout* table;
+
+    QList<QHBoxLayout*> oneArea;
+//    QList<QGridLayout*> lKeepers;
+
+    QList<QLabel*> names;
+    QList<QVBoxLayout*> lProfiles;
 
 signals:
     void serverConnected();
@@ -72,6 +103,7 @@ private:
     QList<QString> playerName;
     QString myName;
     int myNo;
+    int presentPlayer;
 
     //用于接收消息的临时变量
     MsgType tmsg;

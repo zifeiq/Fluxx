@@ -367,6 +367,20 @@ void fluxxControl::actioncard(const Card& act_card)
 	}
 	case 8://交换所有物
 	{
+		//检测自己是否有所有物
+		if(presentPlayer->getKeepercnt()==0)
+			break;
+		//检测其他人是否有所有物
+		tmp=0;
+		for(int i=0;i<players.size();i++)
+		{
+			if(i==clientNum)
+				continue;
+			if(players[i].getKeepercnt()>0)
+				tmp=-1;
+		}
+		if(tmp==0)
+			break;
 		//通知玩家选择所有物，并接收玩家的选择
 		msgbufMsgtype=EXCHANGE_KEEPER_C;
 		msgBox.createMsg(clientNum,msgbufMsgtype);

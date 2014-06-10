@@ -19,7 +19,9 @@ SOURCES += main.cpp\
     register.cpp \
     waiting.cpp \
     cardLib_code/cardLib.cpp \
-    mailbox/clientMB/clientMB.cpp
+    mailbox/clientMB/clientMB.cpp \
+    qcard.cpp \
+    qavatar.cpp
 
 HEADERS  += mainwindow.h \
     client.h \
@@ -28,7 +30,9 @@ HEADERS  += mainwindow.h \
     waiting.h \
     cardLib_code/cardLib.h \
     config.h \
-    mailbox/clientMB/clientMB.h
+    mailbox/clientMB/clientMB.h \
+    qcard.h \
+    qavatar.h
 
 RESOURCES += \
     data.qrc
