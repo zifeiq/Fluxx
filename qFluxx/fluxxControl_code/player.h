@@ -24,7 +24,7 @@ public:
 	std::string getName() { return playerName; }
 	std::vector<const Card*>& getkeeper() { return keeper; }
 	std::vector<const Card*>& gethand() { return hand; }
-private:
+protected:
 	std::string playerName;
 	int cntConsumedcard;
 	std::vector<const Card*> hand;
