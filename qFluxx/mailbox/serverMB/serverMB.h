@@ -1,11 +1,27 @@
+#ifndef SERVERMB_H
+#define SERVERMB_H
+
 #include <iostream>
 #include <vector>
 #include <string>  
 #include <sstream>
-#include <winsock2.h>  
-#include "..\..\cardLib_code\CardLib.h"
+
+#if defined(WIN32)//WINDOWS
+#include <winsock2.h>
+#else//LINUX
+#include <sys/stat.h> 
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>      // define structures like hostent
+#endif
+
+#include "../../cardLib_code/cardLib.h"
 #include "../../config.h"
+
+#ifdef WIN32
 #pragma comment(lib,"ws2_32.lib") 
+#endif
 //const int PORT = 1234; //默认PORT NUMBER = 1234
 //const int MAXBUFF = 512;
 //const int MAXCLIENT = 4;
@@ -77,3 +93,4 @@ private:
 	const Card* str2Card(std::string s); //由消息字符串生成Card*
 	std::string card2Str(const Card* c); //由Card*生成消息字符串
 };
+#endif

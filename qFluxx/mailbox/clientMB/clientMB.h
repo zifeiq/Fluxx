@@ -23,7 +23,6 @@
 #endif
 //const int PORT = 1234; //默认PORT NUMBER = 1234
 //const int BUFFMAX = 512;
-extern const int PORT;
 //extern enum MsgType;
 /*enum MsgType{
 	NACK,//错误信号, 客户端和服务器共用

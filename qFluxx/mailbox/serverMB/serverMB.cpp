@@ -5,9 +5,11 @@ ServerMB::ServerMB():
 _clientNum(0),
 _cards(CardLib::getLib())
 {
+#ifdef WIN32
 	//初始化winsock   
 	WSADATA wsaD;
 	WSAStartup(MAKEWORD(1, 1), &wsaD);
+#endif
 	//初始化服务器监听socket
 	serverSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	// 绑定主机地址和监听套接字  
@@ -22,10 +24,16 @@ _cards(CardLib::getLib())
 
 ServerMB::~ServerMB()
 {
+#ifdef WIN32
 	for (int i = 0; i < _clientNum; i++)
 		closesocket(clientSock[i]);
 	closesocket(serverSock);
 	WSACleanup();
+#else
+	for(int i = 0; i < _clientNum; i++)
+		close(clientSock[i]);
+	close(serverSock);
+#endif
 }
 
 bool ServerMB::sendMsg(int num,string s)
