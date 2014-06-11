@@ -435,7 +435,7 @@ void advancedAI::dropCard(int n)
 }
 //弃所有物，回应DROP_KEEPER_C消息
 //尽量不弃当前目标牌对应的所有物
-void AI::dropKeeper(int n)
+void advancedAI::dropKeeper(int n)
 {
 	vector<const Card*> cards;
 	vector<const Card*> temp =  _allKeepers[_ownNum];
@@ -478,12 +478,35 @@ void AI::dropKeeper(int n)
 	_mailbox.createMsg(DROP_KEEPER_I, cards);
 }
 //选择在场的所有物牌，回应CHOOSE_KEEPER_C, EXCHANGE_KEEPER_C消息
-//选自己的所有物：尽量不选当前目标牌对应的所有物; 选别人的所有物：尽量选当前目标牌对应的所有物
-void AI::chooseKeeper(int n)
+//选别人的所有物：尽量选当前目标牌对应的所有物; 选自己的所有物：尽量不选当前目标牌对应的所有物 
+void advancedAI::chooseKeeper(int n)
 {
 	vector<const Card*> cards;
+	vector<const Card*> relatedKeepers;
 	int i,j;
+	
+	//检测当前目标牌的对应所有物
+	for(int k = 0;k<_rules.size();k++)
+	{
+		if(_rules[k]->getType() == Card::GOAL&& _rules[k]->getNum() <22) //找出需检测的目标牌
+		{
+					CardLib& lib = CardLib::getLib();
+					vector<const Card*> temp;
+					lib.getInfo(_rules[k],temp);
+					relatedKeepers.push_back(temp[0]);
+					if(_rules[k]->getNum()<19)   //第二位仍有效
+						relatedKeepers.push_back(temp[1]);
+		}
+	}
 	//选别人的所有物一张
+
+
+
+
+
+
+
+
 	while (1)
 	{
 		i = rand() % _playerNum;
@@ -503,15 +526,15 @@ void AI::chooseKeeper(int n)
 	_mailbox.createMsg(CHOOSE_KEEPER_I, cards);
 }
 //弃规则，回应DROP_RULE_C消息
-void AI::dropRule(int n)
+void advancedAI::dropRule(int n)
 {
 }
 //选玩家，回应CHOOSE_PLAYER_C消息
-void AI::choosePlayer()
+void advancedAI::choosePlayer()
 {
 }
 //选目标，回应CHOOSE_GOAL_C消息
-void AI::chooseGoal()
+void advancedAI::chooseGoal()
 {
 }
 //for debugging
