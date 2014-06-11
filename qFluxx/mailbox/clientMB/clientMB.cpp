@@ -4,17 +4,23 @@ using namespace std;
 ClientMB::ClientMB():
 	_cards(CardLib::getLib())
 {
+#ifdef WIN32
 	//初始化winsock  
 	WSADATA wsaD;
 	WSAStartup(MAKEWORD(1, 1), &wsaD);
+#endif
 	//初始化客户端socket  
 	clientSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 }
 
 ClientMB::~ClientMB()
 {
+#ifdef WIN32
 	closesocket(clientSock);
 	WSACleanup();
+#else
+	close(clientSock);
+#endif
 }
 
 bool ClientMB::connectServer(const string server_ip)
