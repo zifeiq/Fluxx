@@ -46,7 +46,11 @@ bool ServerMB::sendMsg(int num,string s)
 	{
 		string temp = s.substr(index, BUFF_MAX - 1);
 		memset(buf, 0, sizeof(buf));
+#ifdef WIN32
 		strcpy_s(buf, temp.c_str());
+#else
+		strcpy(buf, temp.c_str());
+#endif
 		if (send(clientSock[num], buf, strlen(buf) + 1, 0) == -1) //·¢ËÍ³ö´í
 			return false;
 		else

@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>      // define structures like hostent
+#include <arpa/inet.h>
 #endif
 
 #include "../../cardLib_code/cardLib.h"

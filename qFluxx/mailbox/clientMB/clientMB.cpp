@@ -30,11 +30,7 @@ bool ClientMB::connectServer(const string server_ip)
 	//连接服务器  
 	sockaddr_in servAddr;
 	servAddr.sin_family = AF_INET;
-#ifdef WIN32
 	servAddr.sin_addr.s_addr = inet_addr(server_ip.c_str()); //指定服务器ip 
-#else
-	inet_aton(server_ip.c_str(),&servAddr.sin_addr);
-#endif
 	servAddr.sin_port = htons(PORT);             //指定端口  
 	if (connect(clientSock, (struct sockaddr*)&servAddr, sizeof(servAddr)) == -1) //通过套接字连接主机
 		return false;
