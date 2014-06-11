@@ -86,9 +86,11 @@ public:
 	bool createMsg(int playerNum, MsgType m, std::vector<const Card*> relatedCards,int relatedPlayer, int additional); //发送KEEPER_UPDATE消息
 
 private:
-	SOCKET serverSock;
+	//SOCKET serverSock;
+	int serverSock;
 	int _clientNum;
-	std::vector<SOCKET> clientSock;
+	//std::vector<SOCKET> clientSock;
+	std::vector<int> clientSock;
 	CardLib& _cards;
 	const Card* str2Card(std::string s); //由消息字符串生成Card*
 	std::string card2Str(const Card* c); //由Card*生成消息字符串
