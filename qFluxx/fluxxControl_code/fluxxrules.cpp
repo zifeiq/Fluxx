@@ -13,19 +13,19 @@ fluxxRules::fluxxRules(CardLib& r)
 	noHandbonus(false),
 	randomStart(false),
 	r_Cardlib(r),
-	DrawRule(*r.getCard(0)),
-	PlayRule(*r.getCard(1)),
-	HandlimitRule(*r.getCard(0)),
-	KeeperlimitRule(*r.getCard(0)),
-	firstGoal(*r.getCard(0)),
-	secondGoal(*r.getCard(0)),
-	c_richbonus(*r.getCard(16)),
-	c_poorBonus(*r.getCard(17)),
-	c_Inflation(*r.getCard(18)),
-	c_orderReverse(*r.getCard(19)),
-	c_noHandbonus(*r.getCard(20)),
-	c_Randomstart(*r.getCard(21)),
-	c_doubleGoals(*r.getCard(22))
+	DrawRule(r.getCard(0)),
+	PlayRule(r.getCard(1)),
+	HandlimitRule(r.getCard(0)),
+	KeeperlimitRule(r.getCard(0)),
+	firstGoal(r.getCard(0)),
+	secondGoal(r.getCard(0)),
+	c_richbonus(r.getCard(16)),
+	c_poorBonus(r.getCard(17)),
+	c_Inflation(r.getCard(18)),
+	c_orderReverse(r.getCard(19)),
+	c_noHandbonus(r.getCard(20)),
+	c_Randomstart(r.getCard(21)),
+	c_doubleGoals(r.getCard(22))
 	{
 		// cntDraw=1;
 		// cntPlay=1;

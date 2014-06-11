@@ -24,7 +24,7 @@ public:
 	void addPlayers();//添加玩家
 	/***基本操作函数***/
 	void dealCard(int); //发牌
-	void playCard(const Card&);//出牌
+	void playCard(const Card*);//出牌
 	void dropCard(int);//弃牌
 	/***************************************/
 	void setpresentPlayer(int);//修改当前前面函数的作用对象
@@ -36,12 +36,12 @@ public:
 
 private:
 	void _shuffleCard();//洗牌
-	void _settleCard(const Card&); //单张结算
+	void _settleCard(const Card*); //单张结算
 	void _updateRules();
 	void _updateKeepers();
-	void _settleKeepercard(const Card&);
-	void _settleRulecard(const Card&);
-	void _settleGoalcard(const Card&);
+	void _settleKeepercard(const Card*);
+	void _settleRulecard(const Card*);
+	void _settleGoalcard(const Card*);
 	int _checkCntdraw();//计算摸牌量
 	int _checkCntplay();//计算出牌量
 	int _checkCntdrop();

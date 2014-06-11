@@ -33,7 +33,7 @@ void fluxxControl::actioncard(const Card& act_card)
 			msgBox.createMsg(clientNum,msgbufMsgtype);
 			msgbufMsgtype=PLAY_I;
 			msgBox.getMsg(clientNum,msgbufMsgtype,msgbufCards);
-			playCard(*msgbufCards[0]);	//包含了广播
+			playCard(msgbufCards[0]);	//包含了广播
 		}
 		//恢复原手牌
 		player_cards_tmp=player_cards;
@@ -73,7 +73,7 @@ void fluxxControl::actioncard(const Card& act_card)
 			for(int i = 0;i<cards.getCardNum();i++)
 				if(cards.getCard(i)->getType() == Card::BASIC_RULE && cards.getCard(i)->getNum() == 0)
 				{
-					rule.setdrawrule(*cards.getCard(i));
+					rule.setdrawrule(cards.getCard(i));
 					break;
 				}
 		}
@@ -85,7 +85,7 @@ void fluxxControl::actioncard(const Card& act_card)
 			for(int i = 0;i<cards.getCardNum();i++)
 				if(cards.getCard(i)->getType() == Card::BASIC_RULE && cards.getCard(i)->getNum() == 1)
 				{
-					rule.setplayrule(*cards.getCard(i));
+					rule.setplayrule(cards.getCard(i));
 					break;
 				}
 		}
@@ -178,7 +178,7 @@ void fluxxControl::actioncard(const Card& act_card)
 			msgBox.createMsg(clientNum,msgbufMsgtype);
 			msgbufMsgtype=PLAY_I;
 			msgBox.getMsg(clientNum,msgbufMsgtype,msgbufCards);
-			playCard(*msgbufCards[0]);	//包含广播
+			playCard(msgbufCards[0]);	//包含广播
 		}
 		//弃一张牌，包含广播
 		dropCard(1);
@@ -219,7 +219,7 @@ void fluxxControl::actioncard(const Card& act_card)
 				break;
 			}
 
-		playCard(*player_cards[tmp]);
+		playCard(player_cards[tmp]);
 		break;
 	}
 	case 7://简化一下
@@ -285,7 +285,7 @@ void fluxxControl::actioncard(const Card& act_card)
 					for(int j=0;j<cards.getCardNum();j++)
 						if(cards.getCard(j)->getType() == Card::BASIC_RULE && cards.getCard(j)->getNum()==0)
 						{
-							rule.setdrawrule(*cards.getCard(j));
+							rule.setdrawrule(cards.getCard(j));
 							break;
 						}
 				}
@@ -297,7 +297,7 @@ void fluxxControl::actioncard(const Card& act_card)
 					for(int j=0;j<cards.getCardNum();j++)
 						if(cards.getCard(j)->getType() == Card::BASIC_RULE && cards.getCard(j)->getNum()==1)
 						{
-							rule.setplayrule(*cards.getCard(j));
+							rule.setplayrule(cards.getCard(j));
 							break;
 						}
 				}
@@ -311,7 +311,7 @@ void fluxxControl::actioncard(const Card& act_card)
 						for(int j=0;j<cards.getCardNum();j++)
 							if(cards.getCard(j)->getType() == Card::BASIC_RULE && cards.getCard(j)->getNum()==1)
 							{
-								rule.setplayrule(*cards.getCard(j));
+								rule.setplayrule(cards.getCard(j));
 								break;
 							}
 					}
@@ -372,11 +372,11 @@ void fluxxControl::actioncard(const Card& act_card)
 			break;
 		//检测其他人是否有所有物
 		tmp=0;
-		for(int i=0;i<players.size();i++)
+		for(unsigned int i=0;i<players.size();i++)
 		{
 			if(i==clientNum)
 				continue;
-			if(players[i].getKeepercnt()>0)
+			if(players[i]->getKeepercnt()>0)
 				tmp=-1;
 		}
 		if(tmp==0)
@@ -431,7 +431,7 @@ void fluxxControl::actioncard(const Card& act_card)
 		if(rule.isorderreverse())
 			clientNum=(clientNum+1)%4;
 		else
-			clientNum=(clientNum-1)%4;
+			clientNum=(clientNum+3)%4;
 		break;
 	}
 	case 10://偷窃
@@ -552,7 +552,7 @@ void fluxxControl::actioncard(const Card& act_card)
 					for(int j=0;j<cards.getCardNum();j++)
 						if(cards.getCard(j)->getType() == Card::BASIC_RULE && cards.getCard(j)->getNum() == 0)
 						{
-							rule.setdrawrule(*cards.getCard(j));
+							rule.setdrawrule(cards.getCard(j));
 							break;
 						}
 				}
@@ -564,7 +564,7 @@ void fluxxControl::actioncard(const Card& act_card)
 					for(int j=0;j<cards.getCardNum();j++)
 						if(cards.getCard(j)->getType() == Card::BASIC_RULE && cards.getCard(j)->getNum()==1)
 						{
-							rule.setplayrule(*cards.getCard(j));
+							rule.setplayrule(cards.getCard(j));
 							break;
 						}
 				}
@@ -578,7 +578,7 @@ void fluxxControl::actioncard(const Card& act_card)
 						for(int j=0;j<cards.getCardNum();j++)
 							if(cards.getCard(j)->getType() == Card::BASIC_RULE && cards.getCard(j)->getNum()==1)
 							{
-								rule.setplayrule(*cards.getCard(j));
+								rule.setplayrule(cards.getCard(j));
 								break;
 							}
 					}
@@ -747,7 +747,7 @@ void fluxxControl::actioncard(const Card& act_card)
 		}
 		//将该手牌偷偷加入本玩家手牌中并偷偷打出
 		presentPlayer->addHand(*tmp_card);
-		playCard(*tmp_card);
+		playCard(tmp_card);
 		break;
 	}
 	case 16://清除垃圾
