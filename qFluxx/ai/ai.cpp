@@ -251,7 +251,7 @@ void AI::play()
 {
 	vector<const Card*> cards;
 	int chosen = -1;
-	
+	//选牌
 	while (1){
 		int i = rand() % _ownCards.size();
 		//检测是否有所有物手牌
