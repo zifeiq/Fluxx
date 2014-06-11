@@ -277,7 +277,6 @@ void AI::dropCard(int n)
 	//发消息弃牌
 	_mailbox.createMsg(DROP_CARD_I, cards);
 }
-
 //弃所有物，回应DROP_KEEPER_C消息
 void AI::dropKeeper(int n)
 {
@@ -325,8 +324,13 @@ void AI::dropRule(int n)
 	vector<const Card*> temp = _rules;
 	for (int i = 0; i < n; i++)
 	{
-		//选择规则牌
-		int j = rand() % temp.size();
+		int j = -1;
+		while(j == -1)
+		{
+			//选择规则牌
+			j = rand() % temp.size();
+			if(temp[j] ->getType() == Card::BASIC_RULE) j = -1;
+		}
 		cards.push_back(temp[j]);
 		vector<const Card*>::iterator it = temp.begin() + j;
 		temp.erase(it);
@@ -348,7 +352,6 @@ void AI::choosePlayer()
 	//发选玩家的消息
 	_mailbox.createMsg(CHOOSE_PLAYER_I, chosen);
 }
-
 //选目标，回应CHOOSE_GOAL_C消息
 void AI::chooseGoal()
 {
@@ -372,10 +375,29 @@ advancedAI::~advancedAI()
 }
 
 //出牌，回应PLAY_C消息
-//实现出牌优先级：所有物>行动牌>目标牌>规则牌
+//实现出牌优先级：所有物>相关目标牌>正规则牌>行动牌>无关规则牌>无关目标牌>负规则牌
 void advancedAI::play()
 {
 	vector<const Card*> cards;
+	int chosen;
+	int best = 0;
+	//选出当前手牌最佳牌
+	for(int j = 1; j < _allCardNum[_ownNum];j++)
+	{
+		if(betterCard(_ownCards[j],_ownCards[best]))
+			best = j;
+	}
+	chosen = best;
+	//取出本牌待出
+	cards.push_back(_ownCards[chosen]);
+	vector<const Card*>::iterator it = _ownCards.begin() + chosen;
+	_ownCards.erase(it);
+	_allCardNum[_ownNum]--;
+	//发消息出牌
+	_mailbox.createMsg(PLAY_I, cards);
+
+
+	/*vector<const Card*> cards;
 	int chosen = -1;
 	//选牌
 	while (1){
@@ -427,14 +449,37 @@ void advancedAI::play()
 	_allCardNum[_ownNum]--;
 	//发消息打出本牌
 	_mailbox.createMsg(PLAY_I, cards);
+	*/
 }
 //弃牌，回应DROP_CARD_C消息
+//出牌的逆序优先级
 void advancedAI::dropCard(int n)
 {
-
+	vector<const Card*> cards;
+	int chosen;
+	int worst;
+	for (int i = 0; i < n; i++)
+	{
+		worst = 0;
+		//选出当前手牌最差牌
+		for(int j = 1; j < _allCardNum[_ownNum];j++)
+		{
+			if(betterCard(_ownCards[worst],_ownCards[j]))
+				worst = j;
+		}
+		chosen = worst;
+		//取出本牌待弃
+		cards.push_back(_ownCards[chosen]);
+		vector<const Card*>::iterator it = _ownCards.begin() + chosen;
+		_ownCards.erase(it);
+		_allCardNum[_ownNum]--;
+	}
+	//发消息弃牌
+	_mailbox.createMsg(DROP_CARD_I, cards);
 }
+
 //弃所有物，回应DROP_KEEPER_C消息
-//尽量不弃当前目标牌对应的所有物
+//尽量不弃相关所有物
 void advancedAI::dropKeeper(int n)
 {
 	vector<const Card*> cards;
@@ -443,32 +488,20 @@ void advancedAI::dropKeeper(int n)
 	for (int i = 0; i < n; i++)
 	{
 		chosen = -1;
-		while(chosen == -1)
-		{
-			//随机选择一张待弃牌
-			chosen = rand() % temp.size();
-			//检测是否为目标牌对应所有物
-			for(int j = 0;j<_rules.size();j++)
+		//优先选一无关所有物
+		int m = n = rand()%temp.size();
+		do{
+			if(!isRelatedKeeper(temp[n]))  
 			{
-				if(_rules[j]->getType() == Card::GOAL&& _rules[j]->getNum() <22) //找出需检测的目标牌
-				{
-					CardLib& lib = CardLib::getLib();
-					vector<const Card*> relatedKeepers;
-					lib.getInfo(_rules[j],relatedKeepers);
-					if(relatedKeepers[0] == temp[chosen])  //不可弃此所有物
-					{
-						chosen = -1;
-						break;
-					}
-					else if(_rules[j]->getNum()<19 && relatedKeepers[1] == temp[chosen])  //还需检测第二张相关所有物
-					{
-						chosen = -1;
-						break;
-					}
-				}
+				chosen = n;
+				break;
 			}
-		}
-
+			else
+				n = (n-1)%temp.size();
+		}while(n!= m);
+		//无符合要求的所有物，则随机选择
+		if(chosen == -1)
+			chosen = rand() % temp.size();
 		//将所选牌加入待弃牌堆
 		cards.push_back(temp[chosen]);
 		vector<const Card*>::iterator it = temp.begin() + chosen;
@@ -477,14 +510,14 @@ void advancedAI::dropKeeper(int n)
 	//发消息弃牌
 	_mailbox.createMsg(DROP_KEEPER_I, cards);
 }
+
 //选择在场的所有物牌，回应CHOOSE_KEEPER_C, EXCHANGE_KEEPER_C消息
 //选别人的所有物：尽量选当前目标牌对应的所有物; 选自己的所有物：尽量不选当前目标牌对应的所有物 
 void advancedAI::chooseKeeper(int n)
 {
 	vector<const Card*> cards;
 	vector<const Card*> relatedKeepers;
-	int i,j;
-	
+	int i = -1,j = -1;
 	//检测当前目标牌的对应所有物
 	for(int k = 0;k<_rules.size();k++)
 	{
@@ -498,45 +531,295 @@ void advancedAI::chooseKeeper(int n)
 						relatedKeepers.push_back(temp[1]);
 		}
 	}
-	//选别人的所有物一张
+	//检测别人是否有相关所有物
+	for(int k = 0; k < _playerNum; k++)
+		if(k!= _ownNum)
+		{
+			for(int m = 0; m < _allKeepers[k].size();m++)
+			{
+				/*for(int n = 0; n < relatedKeepers.size();n++)
+					if(_allKeepers[k][m] == relatedKeepers[n])  //存在目标所有物
+					{
+						i = k; 
+						j = m;
+						break;
+					}
+				if(i != -1 && j != -1) break;*/
+				if(isRelatedKeeper(_allKeepers[k][m]))
+				{
+					i = k; 
+					j = m;
+					break;
+				}
+			}
+			if(i != -1 && j != -1) break;
+		}
 
-
-
-
-
-
-
-
-	while (1)
+	if(i == -1 && j == -1)  //其他玩家手中无相关所有物，随机抽所有物
 	{
-		i = rand() % _playerNum;
-		if (i == _ownNum||_allKeepers[i].empty())  //选中自己或所选玩家无所有物
-			continue;
-		j = rand() % _allKeepers[i].size();
-		break;
+		while (1)
+		{
+			i = rand() % _playerNum;
+			if (i == _ownNum||_allKeepers[i].empty())  //选中自己或所选玩家无所有物
+				continue;
+			j = rand() % _allKeepers[i].size();
+			break;
+		}
 	}
+	//将所选牌加入选择所有物的待发牌堆
 	cards.push_back(_allKeepers[i][j]);
 	
 	if (n == 2)//还需选自己的所有物一张
 	{
-		i = rand() % _allKeepers[_ownNum].size();
+		i = -1;
+		while(i== -1)
+		{
+			i = rand() % _allKeepers[_ownNum].size();
+			/*for(int j = 0; j < relatedKeepers.size();j++)
+				if(_allKeepers[_ownNum][i] == relatedKeepers[j])  //所选牌为目标所有物
+				{
+					i = -1; 
+					break;
+				}*/
+			if(isRelatedKeeper(_allKeepers[_ownNum][i])) //所选牌为相关所有物
+				i = -1;
+		}
 		cards.push_back(_allKeepers[_ownNum][i]);
 	}
 	//发选所有物的消息
 	_mailbox.createMsg(CHOOSE_KEEPER_I, cards);
 }
+
 //弃规则，回应DROP_RULE_C消息
+//优先弃负规则牌>无关规则>正规则
 void advancedAI::dropRule(int n)
 {
+	vector<const Card*> cards;
+	vector<const Card*> temp = _rules;
+	int chosen;
+	for (int i = 0; i < n; i++)
+	{
+		chosen = -1;
+		//检测是否存在负规则牌
+		for(int j = 0; j <temp.size();j++)
+		{
+			if(isRelatedRule(temp[j]) == -1)
+			{
+				chosen = j;
+				break;
+			}
+		}
+	
+		if(chosen == -1)//无负规则牌，则优先选一无关规则
+		{
+			int m = n = rand()%temp.size();
+			do{
+				if(isRelatedRule(temp[n]) == 0)  //无关规则牌
+				{
+					chosen = n;
+					break;
+				}
+				else
+					n = (n-1)%temp.size();
+			}while(n!= m);
+			//无符合要求的规则，则随机选择正规则
+			while(chosen == -1)
+			{
+				//选择规则牌
+				chosen = rand() % temp.size();
+				if(temp[chosen] ->getType() == Card::BASIC_RULE) chosen = -1;
+			}
+		
+		}
+
+		//将所选规则加入待弃牌堆
+		cards.push_back(temp[chosen]);
+		vector<const Card*>::iterator it = temp.begin() + chosen;
+		temp.erase(it);
+	}
+	//发选规则的消息
+	_mailbox.createMsg(DROP_RULE_I, cards);
 }
+
 //选玩家，回应CHOOSE_PLAYER_C消息
+//挑选当前手牌数量最多的玩家
 void advancedAI::choosePlayer()
 {
+	//寻找手牌数最多的玩家
+	int max = -1;
+	for(int i = 0; i < _playerNum; i++)
+	{
+		if(i != _ownNum && _allCardNum[i]>max)
+			max = i;
+	}
+	//发选玩家的消息
+	_mailbox.createMsg(CHOOSE_PLAYER_I, max);
 }
+
 //选目标，回应CHOOSE_GOAL_C消息
+//尽量选择对自己无关的目标牌
 void advancedAI::chooseGoal()
 {
+	int chosen = _rules.size() - 1;   //两目标必在_rules的最后两个
+	if(isRelatedGoal(_rules[chosen])) //此目标与自己相关，则换另一个目标
+		chosen--;                     
+	vector<const Card*> cards;
+	cards.push_back(_rules[chosen]);
+	//发选目标的消息
+	_mailbox.createMsg(CHOOSE_GOAL_I,cards);
 }
+
+//辅助函数实现
+//相关所有物>不相关所有物>相关目标牌>正规则牌>行动牌>无关规则牌>无关目标牌>负规则牌>基本规则牌
+bool advancedAI::betterCard(const Card* c1, const Card* c2)
+{
+	int flag1 = -1, flag2 = -1; 
+	//7:相关所有物 6:不相关所有物 5:相关目标牌 4:正规则牌 3:行动牌 2:无关规则牌 1:无关目标牌 0:负规则牌 -1:基本规则牌
+	//评价c1
+	if(c1->getType() == Card::KEEPER)
+	{
+		if(	isRelatedKeeper(c1)) flag1 = 7;
+		else flag1 = 6;
+	} 
+	else if(c1->getType() == Card::GOAL)
+	{
+		if(isRelatedGoal(c1)) flag1 = 5;
+		else flag1 = 1;
+	}
+	else if(c1->getType() == Card::NEW_RULE)
+	{
+		if(isRelatedRule(c1) == 1) flag1 = 4;
+		else if(isRelatedRule(c1) == -1) flag1 = 0;
+		else flag1 = 2;
+	}
+	else if(c1->getType() == Card::ACTION)
+		flag1 = 3;
+	//评价c2
+	if(c2->getType() == Card::KEEPER)
+	{
+		if(	isRelatedKeeper(c2)) flag2 = 7;
+		else flag2 = 6;
+	} 
+	else if(c2->getType() == Card::GOAL)
+	{
+		if(isRelatedGoal(c2)) flag2 = 5;
+		else flag2 = 1;
+	}
+	else if(c2->getType() == Card::NEW_RULE)
+	{
+		if(isRelatedRule(c2) == 1) flag2 = 4;
+		else if(isRelatedRule(c2) == -1) flag2 = 0;
+		else flag2 = 2;
+	}
+	else if(c2->getType() == Card::ACTION)
+		flag2 = 3;
+	//选择更好的牌返回
+	if(flag1 >= flag2) return true;
+	else 
+		return false;
+}
+//检测自己的手牌或所有物中是否包含此目标对应的所有物
+bool advancedAI::isRelatedGoal(const Card* c)
+{
+	if(c->getType() != Card::GOAL||c->getNum()>21)  //类型错误或为“5件所有物”“10张手牌”目标
+		return false;
+	CardLib& lib = CardLib::getLib();
+	vector<const Card*> cards;
+	lib.getInfo(c,cards);   //得到目标牌的对应所有物信息
+	//检测手牌是否包含对应所有物
+	for(int i = 0; i != _ownCards.size(); i++)
+	{
+		if(_ownCards[i] == cards[0] || (c->getNum() < 19 && _ownCards[i] == cards[1])) 
+			return true;
+	}
+	//检测所有物是否包含对应所有物
+	for(int i = 0; i != _allKeepers[_ownNum].size(); i++)
+	{
+		if(_allKeepers[_ownNum][i] == cards[0] || (c->getNum() < 19 && _allKeepers[_ownNum][i] == cards[1])) 
+			return true;
+	}
+
+	return false;
+}
+//检测自己的手牌或当前目标中是否包含此所有物
+bool advancedAI::isRelatedKeeper(const Card* c)
+{
+	if(c->getType() != Card::KEEPER) return false;
+	CardLib& lib = CardLib::getLib();
+	vector<const Card*> cards;
+	//检测当前目标是否包含此所有物
+	for(int j = 0;j<_rules.size();j++)
+	{
+		if(_rules[j]->getType() == Card::GOAL&& _rules[j]->getNum() <22) //找出需检测的目标牌
+		{
+			lib.getInfo(_rules[j],cards);
+			if(c == cards[0] || (_rules[j]->getNum() < 19 && c == cards[1])) 
+				return true;
+		}
+	}
+	//检测手牌是否包含对应此所有物的目标
+	for(int i = 0; i < _ownCards.size(); i++)
+	{
+		if(_ownCards[i]->getType() == Card::GOAL&& _ownCards[i]->getNum() < 22)
+		{
+			lib.getInfo(_ownCards[i],cards);
+			if(c == cards[0] || (_ownCards[i]->getNum() < 19 && c == cards[1])) 
+				return true;
+		}
+	}
+
+	return false;
+}
+//return -1: 负规则（自己的手牌、所有物超过上限，会受到不好的影响）;0: 无关规则; 1:正规则（自己会受到好影响）;-2:其他类型 
+int advancedAI::isRelatedRule(const Card* c)
+{
+	if(c->getType() != Card::NEW_RULE) //其他类型
+		return -2;
+
+	int num = c->getNum();
+	//检测负规则
+	if(num/10==1 && num%10<_allCardNum[_ownNum])//手牌数大于手牌上限
+		return -1;
+	if(num/10==2 && num%10<_allKeepers[_ownNum].size())//所有物数大于所有物上限
+		return -1;
+	//检测正规则
+	if(num == 52)	//"富人奖励"
+	{
+		//检测自己是否为所有物最多者
+		int keeperMax = _allKeepers[_ownNum].size();
+		int max = _ownNum;
+		for(int i = 0; i < _playerNum; i++)
+		{
+			if(_allKeepers[i].size()>keeperMax)
+			{
+				max = i;
+				keeperMax = _allKeepers[i].size();
+			}
+		}
+		if(max == _ownNum) return 1;
+	}
+	else if(num == 51)  //"穷人奖励"
+	{
+		//检测自己是否为所有物最少者
+		int keeperMin = _allKeepers[_ownNum].size();
+		int min = _ownNum;
+		for(int i = 0; i < _playerNum; i++)
+		{
+			if(_allKeepers[i].size()<keeperMin)
+			{
+				min = i;
+				keeperMin = _allKeepers[i].size();
+			}
+		}
+		if(min == _ownNum) return 1;
+	}
+	else if(num = 56&&_allCardNum[_ownNum]== 0) //"无手牌奖励"
+		return 1;
+
+	//无关规则
+	return 0;
+}
+
 //for debugging
 string convert(MsgType m)
 {
@@ -564,4 +847,3 @@ string convert(MsgType m)
 	case  CHOOSE_GOAL_C: return "CHOOSE_GOAL_C";
 	}
 }
-

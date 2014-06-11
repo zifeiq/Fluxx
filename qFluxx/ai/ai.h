@@ -48,6 +48,11 @@ protected:
 	virtual void dropRule(int);        //弃规则，回应DROP_RULE_C消息
 	virtual void choosePlayer();    //选玩家，回应CHOOSE_PLAYER_C消息
 	virtual void chooseGoal();      //选目标，回应CHOOSE_GOAL_C消息
+	//辅助函数
+	bool betterCard(const Card* c1, const Card* c2);//true: c1比c2好 所有物>相关目标牌>正规则牌>行动牌>无关规则牌>无关目标牌>负规则牌
+	bool isRelatedGoal(const Card*);//检测自己的手牌或所有物中是否包含此目标对应的所有物
+	bool isRelatedKeeper(const Card*); //检测自己的手牌或当前目标中是否包含此所有物
+	int isRelatedRule(const Card*);//return -1: 负规则（自己的手牌、所有物超过上限，会受到不好的影响）;0: 无关规则; 1:正规则（自己会受到好影响）
 };
 
 
