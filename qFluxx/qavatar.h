@@ -11,6 +11,8 @@ public:
     explicit QAvatar(QWidget *parent = 0);
     explicit QAvatar(int no, QString name, QWidget *parent = 0);
     int getNum() { return playerNum;}
+    bool isSelected() { return selected;}
+    void setSelected(bool sel);
     void setSelectable(bool enable) { selectable = enable;}
     QString getName() { return playerName;}
 

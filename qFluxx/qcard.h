@@ -9,19 +9,27 @@
 
 //Q_DECLARE_METATYPE(Card*)
 
+enum qcardType{
+    HAND,
+    KEEPER,
+    RULE,
+    GOAL
+};
+
 class QCard : public QObject,public QGraphicsPixmapItem
 {
     Q_OBJECT
 public:
     explicit QCard(QGraphicsItem *parent = 0);
     explicit QCard(const QPixmap& pixmap, QGraphicsItem *parent = 0);
-    explicit QCard(const Card *acard, QGraphicsItem *parent = 0);
+    explicit QCard(const Card *acard, qcardType type,QGraphicsItem *parent = 0);
 
 protected:
     void mousePressEvent(QGraphicsSceneMouseEvent* event);
     void mouseReleaseEvent(QGraphicsSceneMouseEvent* event);
 
 signals:
+    void clicked();
 
 public slots:
     void longPress();

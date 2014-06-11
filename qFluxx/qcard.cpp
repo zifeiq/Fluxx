@@ -19,16 +19,17 @@ QCard::QCard(const QPixmap &pixmap, QGraphicsItem *parent):
 //    setData(0,QVariant::fromValue(*acard));
 }
 
-QCard::QCard(const Card* acard, QGraphicsItem* parent):
+QCard::QCard(const Card* acard, qcardType type, QGraphicsItem* parent):
     QGraphicsPixmapItem(QPixmap(s2q(acard->getAddr())).scaled(80,120),parent)
 {
     lp_timer = new QTimer();
     lp_timer->setSingleShot(true);
     connect(lp_timer,SIGNAL(timeout()),this,SLOT(longPress()));
 //    selected = false;
-    setData(0,acard->getType());
-    setData(1,acard->getNum());
+    setData(0,(int)acard->getType()*100+acard->getNum());
+    setData(1,type);
 }
+
 
 void QCard::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
@@ -47,6 +48,7 @@ void QCard::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
             setPos(scenePos()+QPointF(0,-10));
             setSelected(true);
         }
+        emit clicked();
     }
 }
 

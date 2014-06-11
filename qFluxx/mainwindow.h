@@ -50,7 +50,9 @@ public:
     QGraphicsView* vHands;
 
     //keepers
-    QList<QGraphicsScene*> keepers;
+    QGraphicsScene* keepers;
+//    QList<QGraphicsItemGroup*> gKeepers;
+    QList<const QRectF>* rKeepers;
     QList<QGraphicsView*> vKeepers;
 
     //对手区域,icons & card no.
@@ -63,6 +65,8 @@ public:
     QGraphicsView* vRules;
     QGraphicsView* vGoals;
     QLabel* presentDspl;
+    QLabel presentCard;
+    QList<QLabel*> droppedCards;
 
     QPushButton* confirm;
 
@@ -94,6 +98,15 @@ private slots:
 
     void sendChoice(MsgType type);
 
+    void reHands();
+    void reKeepers(QList<QRectF> rect);
+    void reRules();
+    void reGoal();
+
+    void clearPresent();    //clear the present card
+    void chooseConstraint(int no);
+    void chooseConstraint(bool exchange);
+
 private:
     Server* server;
 //    Client* player;
@@ -112,9 +125,13 @@ private:
     string tname;
     vector<const Card*> tcards;
 
+    const QString str_dspl = "The present player is:\n\t%1";
+
     //QString与string间转换
     QString s2q(const string& s) { return QString(QString::fromLocal8Bit(s.c_str())); }
     string q2s(const QString& s) { return string((const char *)s.toLocal8Bit()); }
+    //Card* & no.
+    int toNo(const Card* card) { return (int)card->getType()*100+card->getNum();}
 
 //    void awaitOthers();            //waiting for other players
 //    void awaitStart();      //waiting for gamestart msg
@@ -146,7 +163,13 @@ private:
     void keeperUpdate();
     void cardUpdate();
 
+    //enalble cards
+    void enable(QGraphicsScene* cards, int i);
+//    void enable(bool keeper_ex);
+    void enable(int no = 1);
+    void enable(bool exchange);
     //
+    void error();
 };
 
 #endif // MAINWINDOW_H
