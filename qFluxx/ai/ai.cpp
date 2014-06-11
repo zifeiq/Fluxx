@@ -431,6 +431,7 @@ void advancedAI::play()
 //弃牌，回应DROP_CARD_C消息
 void advancedAI::dropCard(int n)
 {
+
 }
 //弃所有物，回应DROP_KEEPER_C消息
 //尽量不弃当前目标牌对应的所有物
@@ -477,8 +478,29 @@ void AI::dropKeeper(int n)
 	_mailbox.createMsg(DROP_KEEPER_I, cards);
 }
 //选择在场的所有物牌，回应CHOOSE_KEEPER_C, EXCHANGE_KEEPER_C消息
+//选自己的所有物：尽量不选当前目标牌对应的所有物; 选别人的所有物：尽量选当前目标牌对应的所有物
 void AI::chooseKeeper(int n)
 {
+	vector<const Card*> cards;
+	int i,j;
+	//选别人的所有物一张
+	while (1)
+	{
+		i = rand() % _playerNum;
+		if (i == _ownNum||_allKeepers[i].empty())  //选中自己或所选玩家无所有物
+			continue;
+		j = rand() % _allKeepers[i].size();
+		break;
+	}
+	cards.push_back(_allKeepers[i][j]);
+	
+	if (n == 2)//还需选自己的所有物一张
+	{
+		i = rand() % _allKeepers[_ownNum].size();
+		cards.push_back(_allKeepers[_ownNum][i]);
+	}
+	//发选所有物的消息
+	_mailbox.createMsg(CHOOSE_KEEPER_I, cards);
 }
 //弃规则，回应DROP_RULE_C消息
 void AI::dropRule(int n)

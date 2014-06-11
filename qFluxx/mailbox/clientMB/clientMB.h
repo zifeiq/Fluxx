@@ -59,7 +59,7 @@
 	CHOOSE_PLAYER_I, //选择的玩家编号， 用于行动牌“交换手牌”“取而用之”
 	CHOOSE_GOAL_I
 };*/
-extern enum MsgType;
+//extern enum MsgType;
 class ClientMB  //客户端信箱
 {
 public:
@@ -83,7 +83,8 @@ public:
 	bool getMsg(MsgType m, int& relatedPlayer, int& additional); //接收ROUND_BEGIN，CARD_NUM消息
 	bool getMsg(MsgType m, std::vector<const Card*>& relatedCards,int& relatedPlayer, int& additional); //接收KEEPER_UPDATE消息
 private:
-	SOCKET clientSock;
+	//SOCKET clientSock;
+	int clientSock;
 	CardLib& _cards;
 	bool ipCheck(const std::string s) const; //用于检测ip地址格式是否正确
 	const Card* str2Card(std::string s); //由消息字符串生成Card*
