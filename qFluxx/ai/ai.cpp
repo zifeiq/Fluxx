@@ -246,54 +246,12 @@ bool AI::joinGame()
 	}
 }
 //出牌，回应PLAY_C消息
-//出牌优先级：所有物>行动牌>目标牌>规则牌
 void AI::play()
 {
+	int chosen;
 	vector<const Card*> cards;
-	int chosen = -1;
-	//选牌
-	while (1){
-		int i = rand() % _ownCards.size();
-		//检测是否有所有物手牌
-		int j = i;
-		do {
-			if (_ownCards[j]->getType() == Card::KEEPER)
-			{
-				chosen = j;
-				break;
-			}
-			else
-				j = (j - 1) % _ownCards.size();
-		} while (j != i);
-		if (chosen != -1) break;
-		//检测是否有行动牌
-		j = i;
-		do {
-			if (_ownCards[j]->getType() == Card::ACTION)
-			{
-				chosen = j;
-				break;
-			}
-			else 
-				j = (j - 1) % _ownCards.size();
-		} while (j != i);
-		if (chosen != -1) break;
-		//检测是否有目标牌
-		j = i;
-		do {
-			if (_ownCards[j]->getType() == Card::ACTION)
-			{
-				chosen = j;
-				break;
-			}
-			else
-				j = (j - 1) % _ownCards.size();
-		} while (j != i);
-		if (chosen != -1) break;
-		//均为规则牌，随机选择一张
-		chosen = i;
-		break;
-	}
+	//随机选牌
+	chosen = rand()%_allCardNum[_ownNum];
 	//取出本牌待出
 	cards.push_back(_ownCards[chosen]);
 	vector<const Card*>::iterator it = _ownCards.begin() + chosen;
@@ -321,15 +279,17 @@ void AI::dropCard(int n)
 }
 
 //弃所有物，回应DROP_KEEPER_C消息
-//尽量不弃当前目标牌对应的所有物(未实现）
 void AI::dropKeeper(int n)
 {
 	vector<const Card*> cards;
+	vector<const Card*> temp =  _allKeepers[_ownNum];
 	int chosen;
 	for (int i = 0; i < n; i++)
 	{
-		chosen = rand() % _allKeepers[_ownNum].size();
-		cards.push_back(_allKeepers[_ownNum][chosen]);
+		chosen = rand() % temp.size();
+		cards.push_back(temp[chosen]);
+		vector<const Card*>::iterator it = temp.begin() + chosen;
+		temp.erase(it);
 	}
 	//发消息弃牌
 	_mailbox.createMsg(DROP_KEEPER_I, cards);
@@ -398,6 +358,140 @@ void AI::chooseGoal()
 	//发选目标的消息
 	_mailbox.createMsg(CHOOSE_GOAL_I,cards);
 }
+
+advancedAI::~advancedAI()
+{
+	_ownName.clear();
+	_ownCards.clear();
+	//_ownKeepers.clear();
+	_allCardNum.clear();
+	_rules.clear();
+	for (int i = 0; i < _allKeepers.size();i++)
+		_allKeepers[i].clear();
+	_allKeepers.clear();
+}
+
+//出牌，回应PLAY_C消息
+//实现出牌优先级：所有物>行动牌>目标牌>规则牌
+void advancedAI::play()
+{
+	vector<const Card*> cards;
+	int chosen = -1;
+	//选牌
+	while (1){
+		int i = rand() % _ownCards.size();
+		//检测是否有所有物手牌
+		int j = i;
+		do {
+			if (_ownCards[j]->getType() == Card::KEEPER)
+			{
+				chosen = j;
+				break;
+			}
+			else
+				j = (j - 1) % _ownCards.size();
+		} while (j != i);
+		if (chosen != -1) break;
+		//检测是否有行动牌
+		j = i;
+		do {
+			if (_ownCards[j]->getType() == Card::ACTION)
+			{
+				chosen = j;
+				break;
+			}
+			else 
+				j = (j - 1) % _ownCards.size();
+		} while (j != i);
+		if (chosen != -1) break;
+		//检测是否有目标牌
+		j = i;
+		do {
+			if (_ownCards[j]->getType() == Card::ACTION)
+			{
+				chosen = j;
+				break;
+			}
+			else
+				j = (j - 1) % _ownCards.size();
+		} while (j != i);
+		if (chosen != -1) break;
+		//均为规则牌，随机选择一张
+		chosen = i;
+		break;
+	}
+	//取出本牌待出
+	cards.push_back(_ownCards[chosen]);
+	vector<const Card*>::iterator it = _ownCards.begin() + chosen;
+	_ownCards.erase(it);
+	_allCardNum[_ownNum]--;
+	//发消息打出本牌
+	_mailbox.createMsg(PLAY_I, cards);
+}
+//弃牌，回应DROP_CARD_C消息
+void advancedAI::dropCard(int n)
+{
+}
+//弃所有物，回应DROP_KEEPER_C消息
+//尽量不弃当前目标牌对应的所有物
+void AI::dropKeeper(int n)
+{
+	vector<const Card*> cards;
+	vector<const Card*> temp =  _allKeepers[_ownNum];
+	int chosen;
+	for (int i = 0; i < n; i++)
+	{
+		chosen = -1;
+		while(chosen == -1)
+		{
+			//随机选择一张待弃牌
+			chosen = rand() % temp.size();
+			//检测是否为目标牌对应所有物
+			for(int j = 0;j<_rules.size();j++)
+			{
+				if(_rules[j]->getType() == Card::GOAL&& _rules[j]->getNum() <22) //找出需检测的目标牌
+				{
+					CardLib& lib = CardLib::getLib();
+					vector<const Card*> relatedKeepers;
+					lib.getInfo(_rules[j],relatedKeepers);
+					if(relatedKeepers[0] == temp[chosen])  //不可弃此所有物
+					{
+						chosen = -1;
+						break;
+					}
+					else if(_rules[j]->getNum()<19 && relatedKeepers[1] == temp[chosen])  //还需检测第二张相关所有物
+					{
+						chosen = -1;
+						break;
+					}
+				}
+			}
+		}
+
+		//将所选牌加入待弃牌堆
+		cards.push_back(temp[chosen]);
+		vector<const Card*>::iterator it = temp.begin() + chosen;
+		temp.erase(it);
+	}
+	//发消息弃牌
+	_mailbox.createMsg(DROP_KEEPER_I, cards);
+}
+//选择在场的所有物牌，回应CHOOSE_KEEPER_C, EXCHANGE_KEEPER_C消息
+void AI::chooseKeeper(int n)
+{
+}
+//弃规则，回应DROP_RULE_C消息
+void AI::dropRule(int n)
+{
+}
+//选玩家，回应CHOOSE_PLAYER_C消息
+void AI::choosePlayer()
+{
+}
+//选目标，回应CHOOSE_GOAL_C消息
+void AI::chooseGoal()
+{
+}
 //for debugging
 string convert(MsgType m)
 {
@@ -425,3 +519,4 @@ string convert(MsgType m)
 	case  CHOOSE_GOAL_C: return "CHOOSE_GOAL_C";
 	}
 }
+
