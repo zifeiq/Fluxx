@@ -8,7 +8,7 @@ extern string convert(MsgType m);
 int main()
 {
 	string ip;
-	advancedAI ai(0);
+	advancedAI ai(3);
 	ai.run();
 }
 

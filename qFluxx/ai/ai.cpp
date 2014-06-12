@@ -35,7 +35,7 @@ void AI::run()
 	{
 		if (!_mailbox.getMsg(m))  {
 			cout << "获得消息失败" << endl;
-			return;
+			while(1){}return;
 		}
 		else
 		{
@@ -44,7 +44,7 @@ void AI::run()
 			{
 			case RULE:
 					if (!_mailbox.getMsg(m, cards)) 
-						{ cout << "获得消息失败" << endl; return; }
+						{ cout << "获得消息失败" << endl; while(1){}return; }
 						cout << "收到第二条消息: " << convert(m) << "\t";
 					for (int i = 0; i < cards.size(); i++)
 						cout << cards[i]->getType() << cards[i]->getNum() << "\t";
@@ -60,7 +60,7 @@ void AI::run()
 			case DROP_CARD_C:
 					if (!_mailbox.getMsg(m, additional))
 					{
-						cout << "获得消息失败" << endl; return;
+						cout << "获得消息失败" << endl; while(1){}return;
 					}
 					cout << "收到第二条消息: " << convert(m) << "\t" << additional << endl;
 				//回应消息
@@ -68,14 +68,14 @@ void AI::run()
 				break;
 			case DROP_KEEPER_C:
 				if (!_mailbox.getMsg(m, additional)) 
-					{ cout << "获得消息失败" << endl; return; }
+					{ cout << "获得消息失败" << endl; while(1){}return; }
 				cout << "收到第二条消息: " << convert(m) << "\t" << additional << endl;
 				//回应消息
 				dropKeeper(additional);
 				break;
 			case DROP_RULE_C:
 				if (!_mailbox.getMsg(m, additional))
-					{ cout << "获得消息失败" << endl; return; }
+					{ cout << "获得消息失败" << endl; while(1){}return; }
 				cout << "收到第二条消息: " << convert(m) << "\t" << additional << endl;
 				//回应消息
 				dropRule(additional);
@@ -99,17 +99,19 @@ void AI::run()
 			case GAME_OVER:
 				if (!_mailbox.getMsg(m, additional)) 
 				{
-					cout << "获得消息失败" << endl; return;
+					cout << "获得消息失败" << endl; while(1){}return;
 				}
 				cout << "收到第二条消息: " << convert(m) << "\t" << additional << endl; 
 				break;
 			case CARD_PLAYED: 
+				if (!_mailbox.getMsg(m, cards,additional)) { cout << "获得消息失败" << endl;while(1){} return; }
+				cout << "收到第二条消息: " << convert(m) << "\t额外信息：" << additional<<"卡牌：" << cards[0]->getType()<<cards[0]->getNum()<< endl; 
 				if (additional!= _ownNum)  //自己出的牌已在play中减去
 					_allCardNum[additional]--;
 				break;
 			case CARD_DROPED: 
-				if (!_mailbox.getMsg(m, cards, additional)){ cout << "获得消息失败" << endl; return; }
-				cout << "收到第二条消息: " << convert(m) << "\t" << additional << endl;
+				if (!_mailbox.getMsg(m, cards, additional)){ cout << "获得消息失败" << endl; while(1){}return; }
+				cout << "收到第二条消息: " << convert(m) << "\t额外信息：" << additional << "卡牌：";
 				for (int i = 0; i < cards.size(); i++)
 					cout << cards[i]->getType() << cards[i]->getNum() << "\t";
 				cout << endl; 
@@ -118,8 +120,8 @@ void AI::run()
 					_allCardNum[additional]--;
 				break;
 			case CARD_UPDATE:
-				if (!_mailbox.getMsg(m, cards, additional)){ cout << "获得消息失败" << endl; return; }
-				cout << "收到第二条消息: " << convert(m) << "\t" << additional << endl;
+				if (!_mailbox.getMsg(m, cards, additional)){ cout << "获得消息失败" << endl; while(1){}return; }
+				cout << "收到第二条消息: " << convert(m) << "\t额外信息：" << additional << "卡牌：";
 				for (int i = 0; i < cards.size(); i++)
 					cout << cards[i]->getType() << cards[i]->getNum() << "\t";
 				cout << endl; 
@@ -153,18 +155,18 @@ void AI::run()
 				break;
 
 			case ROUND_BEGIN:
-				if (!_mailbox.getMsg(m, relatedPlayer, additional)) { cout << "获得消息失败" << endl; return; }
+				if (!_mailbox.getMsg(m, relatedPlayer, additional)) { cout << "获得消息失败" << endl; while(1){}return; }
 				cout << "收到第二条消息: " << convert(m) << "\t玩家为" << relatedPlayer << "\t额外信息为" << additional << endl; 
 				//忽略消息
 				break;
 			case CARD_NUM:
-				if (!_mailbox.getMsg(m, relatedPlayer, additional)) { cout << "获得消息失败" << endl; return; }
+				if (!_mailbox.getMsg(m, relatedPlayer, additional)) { cout << "获得消息失败" << endl;while(1){} return; }
 				cout << "收到第二条消息: " << convert(m) << "\t玩家为" << relatedPlayer << "\t额外信息为" << additional << endl;
 				//处理消息
 				_allCardNum[relatedPlayer] = additional;
 				break;
 			case KEEPER_UPDATE:
-				if (!_mailbox.getMsg(m, cards, relatedPlayer, additional)){ cout << "获得消息失败" << endl; return; }
+				if (!_mailbox.getMsg(m, cards, relatedPlayer, additional)){ cout << "获得消息失败" << endl; while(1){}return; }
 				cout << "收到第二条消息: " << convert(m) << "\t玩家为" << relatedPlayer << "\t额外信息为" << additional << endl;
 				for (int i = 0; i < cards.size(); i++)
 					cout << cards[i]->getType() << cards[i]->getNum() << "\t";
@@ -197,7 +199,7 @@ void AI::run()
 					_allKeepers[relatedPlayer] = cards;
 				break;
 			default:
-				return;
+				while(1){}return;
 			}
 		}
 		if (m == GAME_OVER) break;
@@ -206,8 +208,14 @@ void AI::run()
 //向服务器注册并加入游戏
 bool AI::joinGame()
 {
-	if (!_mailbox.connectServer("127.0.0.1"))  //与服务器建立连接
-		return false;
+	//if (!_mailbox.connectServer("127.0.0.1"))  //与服务器建立连接
+	if (!_mailbox.connectServer("192.168.0.112"))  //与服务器建立连接
+		{
+			cout<<"连接服务器失败"<<endl;
+			return false;
+	}
+	else
+		cout<<"连接服务器成功"<<endl;
 	MsgType m = REGISTER;
 	string name;
 	int playerNum;
@@ -233,6 +241,9 @@ bool AI::joinGame()
 				vector<const Card*> temp;
 				if (!_mailbox.getMsg(m, temp)) return false;
 				_ownCards = temp;  //更新手牌
+				cout<<"初始手牌：";
+				for(int i = 0;i < 3;i++) cout<<_ownCards[i]->getType()<<_ownCards[i]->getNum()<<"\t";
+				cout<<endl;
 				for (int i = 0; i < _playerNum; i++)
 					_allCardNum.push_back(3); //初始默认3张手牌
 			}
