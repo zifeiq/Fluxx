@@ -21,8 +21,7 @@ CardLib::CardLib()  //暂规定个数为63个，后期需修改
 	std::ifstream carddata(FILENAME);
 	if(carddata)
 	{
-		for(_cardNum=0;!carddata.eof();_cardNum++)
-		{
+		while(carddata.peek() != EOF) {
 			carddata >> num_tmp;
 			stringstream ss;
             ss << num_tmp;
@@ -47,8 +46,11 @@ CardLib::CardLib()  //暂规定个数为63个，后期需修改
 			{
 				_cards.push_back((Card*)new ActionCard(num_tmp - 400,addr_tmp));
 			}
-
+			
+			_cardNum++;
 		}
+		_cards.pop_back();
+		_cardNum--;
 		carddata.close();
 	}
 	else

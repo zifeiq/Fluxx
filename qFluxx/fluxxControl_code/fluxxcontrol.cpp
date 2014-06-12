@@ -183,7 +183,17 @@ int fluxxControl::_checkWinner() {
 			}//目标1异常
 			else {
 				_keep1 = _tempKeeper[0];
-				if (rule.firstgoal().getNum() == 20 || rule.firstgoal().getNum() == 21) {
+				if (rule.firstgoal().getNum() == 19) {//只需要爱
+					std::cout << "##胜利条件：只需要爱" << std::endl;
+					for (unsigned int i = 0; i < players.size(); i++) {
+						if(players[i]->getKeepercnt() == 1 && players[i]->getkeeper()[0]->getNum() == 1) {
+							std::cout << "获胜玩家为" << i << std::endl;
+							return i;
+						}
+					}
+					return -1;
+				}
+				else if (rule.firstgoal().getNum() == 20 || rule.firstgoal().getNum() == 21) {
 					_keeperban = _tempKeeper[1];
 					std::cout << "##胜利条件：只有 " << _keep1->getNum() << " 没有 " <<  _keeperban->getNum() << "##" << std::endl;
 					//先检查禁止物品
@@ -329,7 +339,17 @@ int fluxxControl::_checkWinner() {
 				}//目标2异常
 				else {
 					_keep1 = _tempKeeper[0];
-					if (rule.firstgoal().getNum() == 20 || rule.firstgoal().getNum() == 21) {
+					if (rule.firstgoal().getNum() == 19) {//只需要爱
+						std::cout << "##胜利条件：只需要爱" << std::endl;
+						for (unsigned int i = 0; i < players.size(); i++) {
+							if(players[i]->getKeepercnt() == 1 && players[i]->getkeeper()[0]->getNum() == 1) {
+								std::cout << "获胜玩家为" << i << std::endl;
+								return i;
+							}
+						}
+						return -1;
+					}
+					else if (rule.firstgoal().getNum() == 20 || rule.firstgoal().getNum() == 21) {
 						_keeperban = _tempKeeper[1];
 						std::cout << "##胜利条件：只有 " << _keep1->getNum() << " 没有 " <<  _keeperban->getNum() << "##" << std::endl;
 						//先检查禁止物品
@@ -403,14 +423,25 @@ int fluxxControl::_checkWinner() {
 }
 void fluxxControl::_shuffleCard() {
 	std::cout << "洗牌中……" << std::endl;
-	deck = droppeddeck;
-	droppeddeck.clear();
-	for(unsigned int i = 0; i < deck.size(); i++) {
+	//deck = droppeddeck;
+	int size = droppeddeck.size();
+	int step = size/4;
+	for (int i = 0; i < step; i++) {
+		for(int j = 0; j < 4; j++) {
+			deck.push_back(droppeddeck[i+step*j]);
+		}
+	}
+	for (int i = droppeddeck.size() - deck.size(); i >0 ; i--) {
+		deck.push_back(droppeddeck[droppeddeck.size()-i]);
+	}
+	droppeddeck.clear(); 
+	/*for(unsigned int i = 0; i < deck.size(); i++) {
 		const Card* tempCard = deck[i];
 		int temp = rand()%deck.size();
 		deck[i] = deck[temp];
 		deck[temp] = tempCard;
-	}
+	}*/
+
 	std::cout << "洗牌结束" << std::endl;
 }
 void fluxxControl::_updateRules() {
@@ -717,15 +748,19 @@ void fluxxControl::playCard(const Card* targetCard) {
 	int _winnernum;
 	msgbufMsgtype = CARD_PLAYED;
 		//结算，通知信息有效，广播结算结果
-	if(presentPlayer->removeHand(*msgbufCards[0])){
+	if(presentPlayer->removeHand(*targetCard)){
 		msgbufMsgtype = CARD_PLAYED;
+		if(msgbufCards.empty()) {
+			msgbufCards.push_back(targetCard);
+		}
 		for( unsigned int i = 0; i != players.size(); i++) {
 			msgBox.createMsg(i,msgbufMsgtype);//通知
 			Sleep(300);
 			msgBox.createMsg(i,msgbufMsgtype,msgbufCards,clientNum);//内容
 			Sleep(300);
 		}
-		_settleCard(msgbufCards[0]);//msgbuf已经清空，出牌结算结束
+		msgbufCards.clear();//清空之前为发送的出牌消息
+		_settleCard(targetCard);//msgbuf已经清空，出牌结算结束
 		//3.检查胜利情况
 		_winnernum = _checkWinner();//检查结束
 		if (_winnernum >= 0) {
@@ -805,7 +840,7 @@ void fluxxControl::playCard(const Card* targetCard) {
 	}//所有物上限检查完毕,msgbuf已经清空
 	//5.检查新的摸牌规则
 	if (rule.getdraw() > presentPlayer->getcntAddcard()) {
-		dealCard(presentPlayer->getcntAddcard() - rule.getdraw());
+		dealCard(rule.getdraw() - presentPlayer->getcntAddcard());
 	}//新的摸牌结束，msgbuf已经清空
 }
 void fluxxControl::dropCard(int totalDrop) {
@@ -871,6 +906,7 @@ void fluxxControl::fluxxRun() {
 			while (presentPlayer->getConsumedcard() < _checkCntplay()) {
 				msgbufMsgtype = PLAY_C;
 				msgbufCards.clear();
+				Sleep(300);
 				msgBox.createMsg(clientNum, msgbufMsgtype);
 				msgbufMsgtype = PLAY_I;
 				if(msgBox.getMsg(clientNum, msgbufMsgtype, msgbufCards)) {
@@ -895,10 +931,10 @@ void fluxxControl::fluxxRun() {
 			presentPlayer->setcntAddcard(0);
 			presentPlayer->setConsumedcard(0);
 			if(rule.isorderreverse()) {
-				clientNum = (clientNum+3)%players.size();
+				clientNum = (clientNum+1)%players.size();
 			}
 			else {
-				clientNum = (clientNum+1)%players.size();
+				clientNum = (clientNum+3)%players.size();
 			}
 			setpresentPlayer(clientNum);
 			presentState = ROUND_PREPARE;

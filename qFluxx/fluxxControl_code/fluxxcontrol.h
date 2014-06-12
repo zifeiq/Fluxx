@@ -63,5 +63,7 @@ private:
 	std::vector<Player*> players;//ËùÓĞÍæ¼Ò
 	std::vector<const Card*> deck;//ÅÆ¶Ñ
 	std::vector<const Card*> droppeddeck;//ÆúÅÆ¶Ñ
+
+	std::vector<std::vector<const Card*>> hand_cards_buf;
 };
 #endif
