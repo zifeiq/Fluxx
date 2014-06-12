@@ -823,6 +823,15 @@ void fluxxControl::actioncard(const Card& act_card)
 	}
 	case 19://丢弃
 	{
+		//检测是否有所有物
+		tmp=0;
+		for(unsigned int i=0;i<players.size();i++)
+		{
+			if(players[i]->getKeepercnt()>0)
+				tmp++;
+		}
+		if(tmp==0)
+			break;
 		//玩家选一张所有物
 		msgbufMsgtype=CHOOSE_KEEPER_C;
 		msgBox.createMsg(clientNum,msgbufMsgtype);
