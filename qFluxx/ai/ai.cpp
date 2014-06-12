@@ -53,7 +53,6 @@ void AI::run()
 				_rules = cards; 
 				break;
 			case PLAY_C:
-					cout << "发送消息： PLAY_I" << endl; 
 				//回应消息
 				play(); 
 				break;
@@ -64,7 +63,6 @@ void AI::run()
 						cout << "获得消息失败" << endl; return;
 					}
 					cout << "收到第二条消息: " << convert(m) << "\t" << additional << endl;
-					cout << "发送消息： DROP_CARD_I" << endl; 
 				//回应消息
 				dropCard(additional); 
 				break;
@@ -72,7 +70,6 @@ void AI::run()
 				if (!_mailbox.getMsg(m, additional)) 
 					{ cout << "获得消息失败" << endl; return; }
 				cout << "收到第二条消息: " << convert(m) << "\t" << additional << endl;
-				cout << "发送消息： DROP_KEEPER_I" << endl; 
 				//回应消息
 				dropKeeper(additional);
 				break;
@@ -80,7 +77,6 @@ void AI::run()
 				if (!_mailbox.getMsg(m, additional))
 					{ cout << "获得消息失败" << endl; return; }
 				cout << "收到第二条消息: " << convert(m) << "\t" << additional << endl;
-				cout << "发送消息： DROP_RULE_I" << endl;
 				//回应消息
 				dropRule(additional);
 				break;
@@ -244,6 +240,7 @@ bool AI::joinGame()
 				return false;
 		}
 	}
+	return true;
 }
 //出牌，回应PLAY_C消息
 void AI::play()
@@ -258,7 +255,8 @@ void AI::play()
 	_ownCards.erase(it);
 	_allCardNum[_ownNum]--;
 	//发消息打出本牌
-	_mailbox.createMsg(PLAY_I, cards);
+	if(_mailbox.createMsg(PLAY_I, cards))
+		cout << "发送消息： PLAY_I " <<cards[0]->getType()<< cards[0]->getNum()<< endl; 
 }
 //弃牌，回应DROP_CARD_C消息
 void AI::dropCard(int n)
@@ -275,7 +273,11 @@ void AI::dropCard(int n)
 		_allCardNum[_ownNum]--;
 	}
 	//发消息弃牌
-	_mailbox.createMsg(DROP_CARD_I, cards);
+	if(_mailbox.createMsg(DROP_CARD_I, cards))
+	{	cout << "发送消息： DROP_CARD_I ";
+	for(int i = 0; i < cards.size();i++) cout<<cards[i]->getType()<< cards[i]->getNum()<< "\t"; 
+	cout<<"\n";
+	}
 }
 //弃所有物，回应DROP_KEEPER_C消息
 void AI::dropKeeper(int n)
@@ -291,7 +293,11 @@ void AI::dropKeeper(int n)
 		temp.erase(it);
 	}
 	//发消息弃牌
-	_mailbox.createMsg(DROP_KEEPER_I, cards);
+	if(_mailbox.createMsg(DROP_KEEPER_I, cards))
+	{		cout << "发送消息： DROP_KEEPER_I ";
+	for(int i = 0; i < cards.size();i++) cout<<cards[i]->getType()<< cards[i]->getNum()<< "\t"; 
+	cout<<"\n";
+	}
 }
 //选择在场的所有物牌，回应CHOOSE_KEEPER_C, EXCHANGE_KEEPER_C消息
 void AI::chooseKeeper(int n)
@@ -315,7 +321,12 @@ void AI::chooseKeeper(int n)
 		cards.push_back(_allKeepers[_ownNum][i]);
 	}
 	//发选所有物的消息
-	_mailbox.createMsg(CHOOSE_KEEPER_I, cards);
+	if(_mailbox.createMsg(CHOOSE_KEEPER_I, cards))
+	{		
+		cout << "发送消息： CHOOSE_KEEPER_I ";
+		for(int i = 0; i < cards.size();i++) cout<<cards[i]->getType()<< cards[i]->getNum()<< "\t"; 
+			cout<<"\n";
+	}
 }
 //弃规则，回应DROP_RULE_C消息
 void AI::dropRule(int n)
@@ -336,7 +347,12 @@ void AI::dropRule(int n)
 		temp.erase(it);
 	}
 	//发选规则的消息
-	_mailbox.createMsg(DROP_RULE_I, cards);
+	if(_mailbox.createMsg(DROP_RULE_I, cards))
+		{		
+		cout << "发送消息： DROP__RULE_I ";
+		for(int i = 0; i < cards.size();i++) cout<<cards[i]->getType()<< cards[i]->getNum()<< "\t"; 
+			cout<<"\n";
+	}
 }
 //选玩家，回应CHOOSE_PLAYER_C消息
 void AI::choosePlayer()
@@ -350,7 +366,8 @@ void AI::choosePlayer()
 			break;
 	}
 	//发选玩家的消息
-	_mailbox.createMsg(CHOOSE_PLAYER_I, chosen);
+	if(_mailbox.createMsg(CHOOSE_PLAYER_I, chosen))
+		cout << "发送消息： CHOOSE_PLAYER_I "<<chosen<<endl;
 }
 //选目标，回应CHOOSE_GOAL_C消息
 void AI::chooseGoal()
@@ -359,7 +376,8 @@ void AI::chooseGoal()
 	vector<const Card*> cards;
 	cards.push_back(_rules[chosen]);
 	//发选目标的消息
-	_mailbox.createMsg(CHOOSE_GOAL_I,cards);
+	if(_mailbox.createMsg(CHOOSE_GOAL_I,cards))
+			cout << "发送消息： CHOOSE_GOAL_I " <<cards[0]->getType()<< cards[0]->getNum()<< endl; 
 }
 
 advancedAI::~advancedAI()
@@ -394,7 +412,8 @@ void advancedAI::play()
 	_ownCards.erase(it);
 	_allCardNum[_ownNum]--;
 	//发消息出牌
-	_mailbox.createMsg(PLAY_I, cards);
+	if(_mailbox.createMsg(PLAY_I, cards))
+		cout << "发送消息： PLAY_I " <<cards[0]->getType()<< cards[0]->getNum()<< endl; 
 
 
 	/*vector<const Card*> cards;
@@ -475,7 +494,11 @@ void advancedAI::dropCard(int n)
 		_allCardNum[_ownNum]--;
 	}
 	//发消息弃牌
-	_mailbox.createMsg(DROP_CARD_I, cards);
+	if(_mailbox.createMsg(DROP_CARD_I, cards))
+	{	cout << "发送消息： DROP_CARD_I ";
+	for(int i = 0; i < cards.size();i++) cout<<cards[i]->getType()<< cards[i]->getNum()<< "\t"; 
+	cout<<"\n";
+	}
 }
 
 //弃所有物，回应DROP_KEEPER_C消息
@@ -508,7 +531,11 @@ void advancedAI::dropKeeper(int n)
 		temp.erase(it);
 	}
 	//发消息弃牌
-	_mailbox.createMsg(DROP_KEEPER_I, cards);
+	if(_mailbox.createMsg(DROP_KEEPER_I, cards))
+	{		cout << "发送消息： DROP_KEEPER_I ";
+	for(int i = 0; i < cards.size();i++) cout<<cards[i]->getType()<< cards[i]->getNum()<< "\t"; 
+	cout<<"\n";
+	}
 }
 
 //选择在场的所有物牌，回应CHOOSE_KEEPER_C, EXCHANGE_KEEPER_C消息
@@ -587,7 +614,12 @@ void advancedAI::chooseKeeper(int n)
 		cards.push_back(_allKeepers[_ownNum][i]);
 	}
 	//发选所有物的消息
-	_mailbox.createMsg(CHOOSE_KEEPER_I, cards);
+	if(_mailbox.createMsg(CHOOSE_KEEPER_I, cards))
+	{		
+		cout << "发送消息： CHOOSE_KEEPER_I ";
+		for(int i = 0; i < cards.size();i++) cout<<cards[i]->getType()<< cards[i]->getNum()<< "\t"; 
+			cout<<"\n";
+	}
 }
 
 //弃规则，回应DROP_RULE_C消息
@@ -638,7 +670,12 @@ void advancedAI::dropRule(int n)
 		temp.erase(it);
 	}
 	//发选规则的消息
-	_mailbox.createMsg(DROP_RULE_I, cards);
+	if(_mailbox.createMsg(DROP_RULE_I, cards))
+		{		
+		cout << "发送消息： DROP__RULE_I ";
+		for(int i = 0; i < cards.size();i++) cout<<cards[i]->getType()<< cards[i]->getNum()<< "\t"; 
+			cout<<"\n";
+	}
 }
 
 //选玩家，回应CHOOSE_PLAYER_C消息
@@ -653,7 +690,8 @@ void advancedAI::choosePlayer()
 			max = i;
 	}
 	//发选玩家的消息
-	_mailbox.createMsg(CHOOSE_PLAYER_I, max);
+	if(_mailbox.createMsg(CHOOSE_PLAYER_I, max))
+		cout << "发送消息： CHOOSE_PLAYER_I "<<max<<endl;
 }
 
 //选目标，回应CHOOSE_GOAL_C消息
@@ -666,7 +704,8 @@ void advancedAI::chooseGoal()
 	vector<const Card*> cards;
 	cards.push_back(_rules[chosen]);
 	//发选目标的消息
-	_mailbox.createMsg(CHOOSE_GOAL_I,cards);
+	if(_mailbox.createMsg(CHOOSE_GOAL_I,cards))
+			cout << "发送消息： CHOOSE_GOAL_I " <<cards[0]->getType()<< cards[0]->getNum()<< endl; 
 }
 
 //辅助函数实现
@@ -845,5 +884,6 @@ string convert(MsgType m)
 	case  EXCHANGE_KEEPER_C: return "EXCHANGE_KEEPER_C";
 	case  DROP_RULE_C: return "DROP_RULE_C";
 	case  CHOOSE_GOAL_C: return "CHOOSE_GOAL_C";
+	default: return "";
 	}
 }

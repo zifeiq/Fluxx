@@ -114,6 +114,7 @@ bool ServerMB::getMsg(int playerNum, MsgType m, string& name)
 {
 	//等待接受消息
 	string s = recvMsg(playerNum);
+cout<<"/////////////////////////\nserverMB: 收到消息 "<< s<<endl<<"/////////////////////////\n";
 	//解析消息
 	switch (s[0])
 	{
@@ -134,6 +135,7 @@ bool ServerMB::getMsg(int playerNum, MsgType m, vector<const Card*>& relatedCard
 {
 	//等待接受消息
 	string s = recvMsg(playerNum);
+cout<<"/////////////////////////\nserverMB: 收到消息 "<< s<<endl<<"/////////////////////////\n";
 	//解析消息
 	relatedCards.clear();
 	switch (s[0])
@@ -179,6 +181,7 @@ bool ServerMB::getMsg(int playerNum, MsgType m, int& relatedPlayer)
 {
 	//等待接受消息
 	string s = recvMsg(playerNum);
+cout<<"/////////////////////////\nserverMB: 收到消息 "<< s<<endl<<"/////////////////////////\n";
 	//解析消息
 	switch (s[0])
 	{

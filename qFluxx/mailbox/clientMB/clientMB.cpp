@@ -136,7 +136,7 @@ bool ClientMB::createMsg(MsgType m, vector<const Card*>relatedCards)
 			for (int i = 0; i < relatedCards.size(); i++)
 			{
 				//检测是否为有效的所有物牌编号
-				if(relatedCards[i]->getType() == Card::KEEPER && 0<relatedCards[i]->getNum()<19) 
+				if(relatedCards[i]->getType() == Card::KEEPER && 0<relatedCards[i]->getNum()&&relatedCards[i]->getNum()<19) 
 					s += card2Str(relatedCards[i]);
 				else
 					return false;
@@ -151,7 +151,7 @@ bool ClientMB::createMsg(MsgType m, vector<const Card*>relatedCards)
 			for (int i = 0; i < relatedCards.size(); i++)
 			{
 				//检测是否为有效的所有物牌
-				if(relatedCards[i]->getType() == Card::KEEPER && 0<relatedCards[i]->getNum()<19) 
+				if(relatedCards[i]->getType() == Card::KEEPER && 0<relatedCards[i]->getNum()&&relatedCards[i]->getNum()<19) 
 					s += card2Str(relatedCards[i]);
 				else
 					return false;
