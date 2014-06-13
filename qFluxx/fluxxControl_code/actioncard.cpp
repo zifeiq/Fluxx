@@ -117,6 +117,11 @@ void fluxxControl::actioncard(const Card& act_card)
 		{
 			rule.setdoublegoals(false);
 			droppeddeck.push_back(&rule.getCdoublegoals());
+			if(rule.secondgoal().getNum()!=0)
+			{
+				droppeddeck.push_back(&rule.secondgoal());
+				rule.setsecondgoal(cards.getCard(0));
+			}
 		}
 		
 		if(rule.isrichBonus())
@@ -268,7 +273,8 @@ void fluxxControl::actioncard(const Card& act_card)
 			tmp=cnt[0]/2+1;
 		else
 			tmp=cnt[0]/2;
-		
+		if(tmp == 0) 
+			break;
 		msgbufMsgtype=DROP_RULE_C;
 		msgBox.createMsg(clientNum,msgbufMsgtype);
 		Sleep(300);
@@ -378,7 +384,7 @@ void fluxxControl::actioncard(const Card& act_card)
 			break;
 		
 		tmp=0;
-		for(int i=0;i<players.size();i++)
+		for(unsigned int i=0;i<players.size();i++)
 		{
 			if(i==clientNum)
 				continue;
@@ -448,7 +454,17 @@ void fluxxControl::actioncard(const Card& act_card)
 	}
 	case 10:
 	{
-		
+		tmp=0;
+		for(unsigned int i=0;i<players.size();i++)
+		{
+			if(i==clientNum)
+				continue;
+			if(players[i]->getKeepercnt()>0)
+				tmp=-1;
+		}
+		if(tmp==0)
+			break;
+
 		msgbufMsgtype=CHOOSE_KEEPER_C;
 		msgBox.createMsg(clientNum,msgbufMsgtype);
 		Sleep(300);
@@ -481,7 +497,7 @@ void fluxxControl::actioncard(const Card& act_card)
 			Sleep(300);
 			msgbufMsgtype=KEEPER_UPDATE;
 			msgbufCards=players[tmp]->getkeeper();
-			msgbufAdditional=0;
+			msgbufAdditional=2;
 			msgBox.createMsg(i,msgbufMsgtype,msgbufCards,tmp,msgbufAdditional);
 			Sleep(300);
 			
@@ -490,7 +506,7 @@ void fluxxControl::actioncard(const Card& act_card)
 			Sleep(300);
 			msgbufMsgtype=KEEPER_UPDATE;
 			msgbufCards=players[clientNum]->getkeeper();
-			msgbufAdditional=0;
+			msgbufAdditional=2;
 			msgBox.createMsg(i,msgbufMsgtype,msgbufCards,clientNum,msgbufAdditional);
 			Sleep(300);
 		}
@@ -542,6 +558,31 @@ void fluxxControl::actioncard(const Card& act_card)
 	}
 	case 12:
 	{
+		cnt.push_back(0);	
+		if(rule.getdraw()!=1)
+			cnt[0]++;
+		if(rule.getplay()!=1)
+			cnt[0]++;
+		if(rule.gethandlimitation()!=-1)
+			cnt[0]++;
+		if(rule.getkeeperlimitation()!=-1)
+			cnt[0]++;
+		if(rule.isorderreverse())
+			cnt[0]++;
+		if(rule.isdoublegoals())
+			cnt[0]++;
+		if(rule.isrichBonus())
+			cnt[0]++;
+		if(rule.ispoorBonus())
+			cnt[0]++;
+		if(rule.isinflation())
+			cnt[0]++;
+		if(rule.isnohandbonus())
+			cnt[0]++;
+		if(rule.israndomstart())
+			cnt[0]++;
+		if(cnt[0] == 0) 
+			break;
 		
 		msgbufMsgtype=DROP_RULE_C;
 		msgBox.createMsg(clientNum,msgbufMsgtype);
@@ -580,8 +621,8 @@ void fluxxControl::actioncard(const Card& act_card)
 				{
 					if(rule.getplay()!=1)
 						droppeddeck.push_back(&rule.getplayrule());
-					rule.setplay(1);
-					rule.setplayrule(cards.getCard(1));
+					rule.setdraw(1);
+					rule.setdrawrule(cards.getCard(1));
 				}
 				if(msgbufCards[i]->getNum()/10==5)	
 				{
@@ -791,10 +832,7 @@ void fluxxControl::actioncard(const Card& act_card)
 			droppeddeck.push_back(deck.back());
 			deck.pop_back();
 		}
-		
 		_shuffleCard();
-		
-		droppeddeck.push_back(&act_card);
 		break;
 	}
 	case 17:
@@ -828,7 +866,7 @@ void fluxxControl::actioncard(const Card& act_card)
 	{
 		
 		tmp=0;
-		for(int i=0;i<players.size();i++)
+		for(unsigned int i=0;i<players.size();i++)
 		{
 			if(players[i]->getKeepercnt()>0)
 				tmp++;
@@ -893,7 +931,7 @@ void fluxxControl::actioncard(const Card& act_card)
 		
 		msgbufMsgtype=CHOOSE_KEEPER_C;
 		msgBox.createMsg(clientNum,msgbufMsgtype);
-		Sleep(300);
+		//Sleep(300);
 		msgbufMsgtype=CHOOSE_KEEPER_I;
 		msgBox.getMsg(clientNum,msgbufMsgtype,msgbufCards);
 		
@@ -919,7 +957,7 @@ void fluxxControl::actioncard(const Card& act_card)
 			Sleep(300);
 			msgbufMsgtype=KEEPER_UPDATE;
 			msgbufCards=players[tmp]->getkeeper();
-			msgbufAdditional=0;
+			msgbufAdditional=2;
 			msgBox.createMsg(i,msgbufMsgtype,msgbufCards,tmp,msgbufAdditional);
 			Sleep(300);
 		}
@@ -1002,6 +1040,7 @@ void fluxxControl::actioncard(const Card& act_card)
 		
 		Sleep(2000);
 		
+		hand_cards_buf[0]=player_cards_tmp4;
 		player_cards_tmp4=hand_cards_buf.back();
 		hand_cards_buf.pop_back();
 		

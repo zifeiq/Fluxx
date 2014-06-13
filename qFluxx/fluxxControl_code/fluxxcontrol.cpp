@@ -1,7 +1,6 @@
 #include "..\fluxxControl_code\fluxxcontrol.h"
 #include <iostream>
 
-//extern enum gameState;
 extern enum Card::Type;
 
 fluxxControl::fluxxControl(fluxxRules& r):cards(CardLib::getLib()), rule(r){
@@ -26,24 +25,26 @@ int fluxxControl::_checkCntdraw() {
 		if(rule.isnohandbonus()) {
 			if(presentPlayer->gethand().empty()) {
 				if (rule.isinflation()) {
-					_dealcardnum = 4;
+					_dealcardnum += 4;
 				}
 				else 
-					_dealcardnum = 3;
+					_dealcardnum += 3;
 			}
 		}
-		for(int i = (clientNum+1)%4; i != clientNum; i = (i+1)%4) {
-			if(players[i]->getkeeper().size() <= presentPlayer->getkeeper().size()) {
-				_isleast = false;
-				break;
+		if(rule.ispoorBonus()) {
+			for(int i = (clientNum+1)%4; i != clientNum; i = (i+1)%4) {
+				if(players[i]->getkeeper().size() <= presentPlayer->getkeeper().size()) {
+					_isleast = false;
+					break;
+				}
 			}
-		}
-		if (_isleast) {
-			if (rule.isinflation()) {
-				_dealcardnum += 2;
-			}
-			else {
-				_dealcardnum += 1;
+			if (_isleast) {
+				if (rule.isinflation()) {
+					_dealcardnum += 2;
+				}
+				else {
+					_dealcardnum += 1;
+				}
 			}
 		}
 		if (rule.isinflation()) {
@@ -139,7 +140,9 @@ int fluxxControl::_checkWinner() {
 			}
 			else {
 				std::cout << "没有玩家胜利" << std::endl;
-				return -1;
+				if(!rule.isdoublegoals()){
+					return -1;
+				}
 			}		
 		}//所有物最多检查完毕
 		else if (_subValue == 23) {//手牌最多
@@ -171,7 +174,9 @@ int fluxxControl::_checkWinner() {
 			}
 			else {
 				std::cout << "没有玩家胜利" << std::endl;
-				return -1;
+				if(!rule.isdoublegoals()) {
+					return -1;
+				}
 			}		
 		}//手牌最多检查完毕
 		else {//匹配所有物
@@ -191,7 +196,10 @@ int fluxxControl::_checkWinner() {
 							return i;
 						}
 					}
-					return -1;
+					if(!rule.isdoublegoals()) {
+						std::cout << "没有玩家胜利" << std::endl;
+						return -1;
+					}
 				}
 				else if (rule.firstgoal().getNum() == 20 || rule.firstgoal().getNum() == 21) {
 					_keeperban = _tempKeeper[1];
@@ -227,11 +235,15 @@ int fluxxControl::_checkWinner() {
 							}//找到了唯一的需求，返回胜利玩家编号
 						}//检查了所有玩家，没有人符合要求
 						std::cout << "没有玩家胜利" << std::endl;
-						return -1;
+						if(!rule.isdoublegoals()) {
+							return -1;
+						}
 					}//如果场上没有违禁物品
 					else{
 						std::cout << "没有玩家胜利" << std::endl;
-						return -1;
+						if(!rule.isdoublegoals()) {
+							return -1;
+						}
 					}//如果场上有违禁物品
 				}//一种需要一种不需要的胜利情况
 				else {
@@ -257,8 +269,10 @@ int fluxxControl::_checkWinner() {
 							_chk2 = false;
 						}
 					}//所有玩家都检查完毕
-					std::cout << "没有玩家胜利" << std::endl;
-					return -1;
+					if (!rule.isdoublegoals()) {
+						std::cout << "没有玩家胜利" << std::endl;
+						return -1;
+					}
 				}//需要两种胜利物品的情况
 			}//目标1正常结算完毕
 		}//匹配所有物检查完毕
@@ -419,12 +433,16 @@ int fluxxControl::_checkWinner() {
 				}//目标2正常
 			}//目标2需要匹配所有物的胜利条件
 		}
+		else {
+			std::cout << "没有玩家胜利" << std::endl;
+			return -1;
+		}
 	}
 }
 void fluxxControl::_shuffleCard() {
 	std::cout << "洗牌中……" << std::endl;
-	//deck = droppeddeck;
-	int size = droppeddeck.size();
+	deck = droppeddeck;
+	/*int size = droppeddeck.size();
 	int step = size/4;
 	for (int i = 0; i < step; i++) {
 		for(int j = 0; j < 4; j++) {
@@ -433,14 +451,14 @@ void fluxxControl::_shuffleCard() {
 	}
 	for (int i = droppeddeck.size() - deck.size(); i >0 ; i--) {
 		deck.push_back(droppeddeck[droppeddeck.size()-i]);
-	}
-	droppeddeck.clear(); 
-	/*for(unsigned int i = 0; i < deck.size(); i++) {
+	}*/
+	droppeddeck.clear();
+	for(unsigned int i = 0; i < deck.size(); i++) {
 		const Card* tempCard = deck[i];
 		int temp = rand()%deck.size();
 		deck[i] = deck[temp];
 		deck[temp] = tempCard;
-	}*/
+	}
 
 	std::cout << "洗牌结束" << std::endl;
 }
@@ -472,14 +490,13 @@ void fluxxControl::_updateRules() {
 	if (rule.israndomstart()) {
 		msgbufCards.push_back(&rule.getCrandomstart());
 	}
-	if (rule.isdoublegoals()) {
-		msgbufCards.push_back(&rule.secondgoal());
-	}
 	if(!(rule.firstgoal() == *cards.getCard(0))) {
 		msgbufCards.push_back(&rule.firstgoal());
 	}
-	if(!(rule.secondgoal() == *cards.getCard(0))) {
-		msgbufCards.push_back(&rule.secondgoal());
+	if (rule.isdoublegoals()) {
+		if(!(rule.secondgoal() == *cards.getCard(0))) {
+			msgbufCards.push_back(&rule.secondgoal());
+		}
 	}
 	std::cout << "更新后的规则为：" << std::endl;
 	for (unsigned i =0; i < msgbufCards.size(); i++) {
@@ -553,17 +570,46 @@ void fluxxControl::_settleRulecard(const Card* targetCard) {
 	return;//规则牌结算完成，返回到settlecard
 }
 void fluxxControl::_settleKeepercard(const Card* targetCard){
-	presentPlayer->addKeeper(*targetCard);//所有物
-	msgbufMsgtype = KEEPER_UPDATE;
-	msgbufAdditional = 1;
-	for(unsigned int i = 0; i < players.size(); i++) {
-		Sleep(300);
-		msgBox.createMsg(i,msgbufMsgtype);//通知
-		Sleep(300);
-		msgBox.createMsg(i,msgbufMsgtype,msgbufCards,clientNum,msgbufAdditional);//信息
+	if(rule.getkeeperlimitation()<0 || presentPlayer->getKeepercnt() < rule.getkeeperlimitation()) {
+		presentPlayer->addKeeper(*targetCard);//所有物
+		msgbufMsgtype = KEEPER_UPDATE;
+		msgbufAdditional = 1;
+		msgbufCards.push_back(targetCard);
+		for(unsigned int i = 0; i < players.size(); i++) {
+			Sleep(300);
+			msgBox.createMsg(i,msgbufMsgtype);//通知
+			Sleep(300);
+			msgBox.createMsg(i,msgbufMsgtype,msgbufCards,clientNum,msgbufAdditional);//信息
+		}
+		msgbufCards.clear();//清空之前用于广播的所有物
+		return;//返回到settlecard
 	}
-	msgbufCards.clear();//清空之前为当前回合的出牌
-	return;//返回到settlecard
+	else {
+		std::cout << "这个玩家的所有物即将超过上限，需要丢弃一张才能继续" << std::endl;
+		msgbufMsgtype = DROP_KEEPER_C;
+		msgBox.createMsg(clientNum, msgbufMsgtype);
+		msgbufAdditional = 1;
+		msgBox.createMsg(clientNum, msgbufMsgtype,msgbufAdditional);
+		msgbufMsgtype = DROP_KEEPER_I;
+		if(msgBox.getMsg(clientNum,msgbufMsgtype,msgbufCards)) {
+			if(presentPlayer->removeKeeper(*msgbufCards[0])){
+				std::cout << "玩家" << clientNum << "弃掉了所有物" << msgbufCards[0]->getNum() << std::endl;
+				msgbufMsgtype = KEEPER_UPDATE;
+				msgbufAdditional = 2;
+				for (unsigned int i = 0; i < players.size(); ++i) {
+					msgBox.createMsg(i, msgbufMsgtype);
+					Sleep(300);
+					msgBox.createMsg(i, msgbufMsgtype, clientNum, msgbufAdditional);
+					Sleep(300);
+				}//广播所有物更新完毕
+			}//弃所有物更新完毕
+			else {
+				std::cout << "玩家" << clientNum << "弃所有物失败，因为这个所有物不属于他" << std::endl;
+			}
+		}
+		msgbufCards.clear();//清空之前为弃掉的所有物消息
+		return;//返回到settlecard
+	}
 }
 void fluxxControl::_settleGoalcard(const Card* targetCard) {
 	if (rule.isdoublegoals()) {
@@ -578,7 +624,6 @@ void fluxxControl::_settleGoalcard(const Card* targetCard) {
 			msgbufMsgtype = CHOOSE_GOAL_C;
 			msgBox.createMsg(clientNum, msgbufMsgtype);
 			msgbufMsgtype = CHOOSE_GOAL_I;
-			msgbufCards.clear();
 			if(msgBox.getMsg(clientNum,msgbufMsgtype,msgbufCards)) {
 				if(*msgbufCards[0] == rule.firstgoal()) {
 					droppeddeck.push_back(&rule.firstgoal());
@@ -601,7 +646,7 @@ void fluxxControl::_settleGoalcard(const Card* targetCard) {
 		}
 	}
 	msgbufMsgtype = RULE;//与规则广播的消息相同
-	msgbufCards.clear();//清空之前为当前回合出牌
+	msgbufCards.clear();//清空之前可能为当前回合出牌或空
 	_updateRules();//cardbuf没有清空，可以发送消息
 	for (unsigned int i = 0; i < players.size(); i++) {
 		Sleep(300);
@@ -635,6 +680,7 @@ void fluxxControl::_settleCard(const Card* targetCard) {
 	case 4: {//行动卡
 			std::cout << "##这是一张行动卡##" << std::endl;
 			actioncard(*targetCard);
+			droppeddeck.push_back(targetCard);
 			break;
 		}
 	}
@@ -818,33 +864,38 @@ void fluxxControl::playCard(const Card* targetCard) {
 			if (rule.getkeeperlimitation() > 0 && players[i]->getkeeper().size() > unsigned int(rule.getkeeperlimitation())) {
 				msgbufMsgtype = DROP_KEEPER_C;
 				msgbufAdditional = players[i]->getkeeper().size()-rule.getkeeperlimitation();
-				Sleep(300);
 				msgBox.createMsg(i, msgbufMsgtype,msgbufAdditional);
+				Sleep(300);
+				msgbufMsgtype = DROP_KEEPER_I;
 				if (msgBox.getMsg(i, msgbufMsgtype, msgbufCards)) {
-					for (unsigned int j = 0; j < players.size(); j++) {
+					for (unsigned int j = 0; j < msgbufCards.size(); j++) {
 						players[i]->removeKeeper(*msgbufCards[j]);
 						droppeddeck.push_back(msgbufCards[j]);
-					}
-					for (unsigned int j = 0; j < players.size(); j++) {//广播器所有物信息
+					}//弃掉被选择的所有物
+					msgbufCards = presentPlayer->getkeeper();//更新之前是被弃掉的所有物
+					for (unsigned int j = 0; j < players.size(); j++) {//广播qi所有物信息
 						msgbufMsgtype = KEEPER_UPDATE;
-						msgbufAdditional = 0;
+						msgbufAdditional = 2;
 						msgBox.createMsg(j, msgbufMsgtype);
 						Sleep(300);
 						msgBox.createMsg(j, msgbufMsgtype, msgbufCards, i, msgbufAdditional);
-						Sleep(300);
-						msgbufCards.clear();//清空之前为前一个玩家弃的所有物
+						Sleep(300);	
 					}
+					msgbufCards.clear();//清空之前为前一个玩家弃的所有物
 				}//正常弃所有物处理完毕
+				else {
+					std::cout << "弃所有物消息接收失败" << std::endl;
+				}
 			}
 		}
 	}//所有物上限检查完毕,msgbuf已经清空
 	//5.检查新的摸牌规则
-	if (rule.getdraw() > presentPlayer->getcntAddcard()) {
-		dealCard(rule.getdraw() - presentPlayer->getcntAddcard());
+	if (_checkCntdraw() > presentPlayer->getcntAddcard()) {
+		dealCard(_checkCntdraw() - presentPlayer->getcntAddcard());
 	}//新的摸牌结束，msgbuf已经清空
 }
 void fluxxControl::dropCard(int totalDrop) {
-	std::cout << "##玩家##" << std::endl;
+	std::cout << "##该玩家需要弃牌" << totalDrop << "张##" << std::endl;
 	msgbufMsgtype = DROP_CARD_C;
 	msgbufAdditional = totalDrop;
 	msgBox.createMsg(clientNum, msgbufMsgtype, msgbufAdditional);
@@ -903,7 +954,7 @@ void fluxxControl::fluxxRun() {
 		else if (presentState == PLAYING_CARD) {
 			std::cout << "##出牌中……##" << std::endl;
 			presentPlayer->infoPlayer();
-			while (presentPlayer->getConsumedcard() < _checkCntplay()) {
+			while (presentPlayer->getHandcnt() > 0 && presentPlayer->getConsumedcard() < _checkCntplay()) {
 				msgbufMsgtype = PLAY_C;
 				msgbufCards.clear();
 				Sleep(300);
@@ -915,8 +966,13 @@ void fluxxControl::fluxxRun() {
 				else {
 					std::cout << "接收出牌消息失败" << std::endl;
 				}
+				if (presentState == GAME_END) {
+						break;
+				}
 			}
-			presentState = DROPING_CARD;
+			if (presentState != GAME_END) {
+				presentState = DROPING_CARD;
+			}
 		}
 		else if (presentState == DROPING_CARD) {
 			std::cout << "##弃牌中……##" << std::endl;
@@ -931,12 +987,13 @@ void fluxxControl::fluxxRun() {
 			presentPlayer->setcntAddcard(0);
 			presentPlayer->setConsumedcard(0);
 			if(rule.isorderreverse()) {
-				clientNum = (clientNum+1)%players.size();
-			}
-			else {
 				clientNum = (clientNum+3)%players.size();
 			}
+			else {
+				clientNum = (clientNum+1)%players.size();
+			}
 			setpresentPlayer(clientNum);
+
 			presentState = ROUND_PREPARE;
 		}
 		else if (presentState == GAME_END) {

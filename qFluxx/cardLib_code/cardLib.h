@@ -24,7 +24,6 @@ protected:
 	Type _type;
 	int _num; //本卡牌的编号（两位）
 	std::string _addr;
-
 };
 
 class RuleCard :public Card  //规则牌

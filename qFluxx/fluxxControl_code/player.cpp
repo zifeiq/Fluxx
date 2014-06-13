@@ -21,9 +21,9 @@ bool Player::removeKeeper(const Card& targetCard) {
 	std::vector<const Card*>::const_iterator i = keeper.begin();
 	for(; i != keeper.end(); i++) {
 		if ((**i) == targetCard) {
-			hand.erase(i);
+			keeper.erase(i);
+			return true;
 		}
-		return true;
 	}
 	return false;
 }
