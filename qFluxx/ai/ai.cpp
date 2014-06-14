@@ -208,8 +208,8 @@ void AI::run()
 //向服务器注册并加入游戏
 bool AI::joinGame()
 {
-	//if (!_mailbox.connectServer("127.0.0.1"))  //与服务器建立连接
-	if (!_mailbox.connectServer("192.168.0.112"))  //与服务器建立连接
+	if (!_mailbox.connectServer("127.0.0.1"))  //与服务器建立连接
+	//if (!_mailbox.connectServer("192.168.0.112"))  //与服务器建立连接
 		{
 			cout<<"连接服务器失败"<<endl;
 			return false;
@@ -554,35 +554,14 @@ void advancedAI::dropKeeper(int n)
 void advancedAI::chooseKeeper(int n)
 {
 	vector<const Card*> cards;
-	vector<const Card*> relatedKeepers;
 	int i = -1,j = -1;
-	//检测当前目标牌的对应所有物
-	for(int k = 0;k<_rules.size();k++)
-	{
-		if(_rules[k]->getType() == Card::GOAL&& _rules[k]->getNum() <22) //找出需检测的目标牌
-		{
-					CardLib& lib = CardLib::getLib();
-					vector<const Card*> temp;
-					lib.getInfo(_rules[k],temp);
-					relatedKeepers.push_back(temp[0]);
-					if(_rules[k]->getNum()<19)   //第二位仍有效
-						relatedKeepers.push_back(temp[1]);
-		}
-	}
+
 	//检测别人是否有相关所有物
 	for(int k = 0; k < _playerNum; k++)
 		if(k!= _ownNum)
 		{
 			for(int m = 0; m < _allKeepers[k].size();m++)
 			{
-				/*for(int n = 0; n < relatedKeepers.size();n++)
-					if(_allKeepers[k][m] == relatedKeepers[n])  //存在目标所有物
-					{
-						i = k; 
-						j = m;
-						break;
-					}
-				if(i != -1 && j != -1) break;*/
 				if(isRelatedKeeper(_allKeepers[k][m]))
 				{
 					i = k; 
@@ -610,18 +589,19 @@ void advancedAI::chooseKeeper(int n)
 	if (n == 2)//还需选自己的所有物一张
 	{
 		i = -1;
-		while(i== -1)
-		{
+		int m = n = rand()%_allKeepers[_ownNum].size();
+		do{
+			if(!isRelatedKeeper(_allKeepers[_ownNum][i])) //所选牌为无关所有物
+			{
+				i = n;
+				break;
+			}
+			else
+				n = (n-1)%_allKeepers[_ownNum].size();
+		}while(n!=m);
+		//无符合要求的所有物，则随机选择
+		if(i == -1)
 			i = rand() % _allKeepers[_ownNum].size();
-			/*for(int j = 0; j < relatedKeepers.size();j++)
-				if(_allKeepers[_ownNum][i] == relatedKeepers[j])  //所选牌为目标所有物
-				{
-					i = -1; 
-					break;
-				}*/
-			if(isRelatedKeeper(_allKeepers[_ownNum][i])) //所选牌为相关所有物
-				i = -1;
-		}
 		cards.push_back(_allKeepers[_ownNum][i]);
 	}
 	//发选所有物的消息
@@ -712,7 +692,7 @@ void advancedAI::chooseGoal()
 	int chosen = _rules.size() - 1;   //两目标必在_rules的最后两个
 	if(isRelatedGoal(_rules[chosen])) //此目标与自己相关，则换另一个目标
 		chosen--;                     
-	vector<const Card*> cards;
+	vector<const Card*> cards;	
 	cards.push_back(_rules[chosen]);
 	//发选目标的消息
 	if(_mailbox.createMsg(CHOOSE_GOAL_I,cards))

@@ -14,7 +14,7 @@ Card& Card::operator=(const Card& c)
 	return *this;
 }
 
-CardLib::CardLib()  //暂规定个数为63个，后期需修改
+CardLib::CardLib()  //个数为84个
 {
 	int num_tmp;
 	std::string addr_tmp;

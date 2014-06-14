@@ -19,7 +19,6 @@ protected:
 	int _ownNum;
 	int _playerNum;
 	std::vector<const Card*> _ownCards;
-	//std::vector<const Card*> _ownKeepers;
 	std::vector<int> _allCardNum;
 	std::vector<std::vector<const Card*>> _allKeepers;
 	std::vector<const Card*> _rules;

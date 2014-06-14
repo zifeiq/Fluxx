@@ -77,7 +77,7 @@ public:
 protected:
 	CardLib();
 	~CardLib();
-	std::vector<Card*> _cards;  //基本卡为63个, 行动卡和用户拓展卡(How????)  后期可加
+	std::vector<Card*> _cards;  
 	int _cardNum;
 };
 #endif
