@@ -30,8 +30,6 @@ public:
 	ServerMB();
 	~ServerMB();
 	bool acceptNewClient();        //接收一个新客户
-	std::string recvMsg(int num);  //接收来自第num个客户端消息
-	bool sendMsg(int num ,std::string s); //向第num个客户端发送消息
 
 	//getMsg函数重载以实现多种调用方式
 	//bool getMsg(int playerNum, MsgType m);
@@ -52,6 +50,8 @@ private:
 	int _clientNum;
 	std::vector<int> clientSock;
 	CardLib& _cards;
+	std::string recvMsg(int num);  //接收来自第num个客户端消息
+	bool sendMsg(int num, std::string s); //向第num个客户端发送消息
 	const Card* str2Card(std::string s); //由消息字符串生成Card*
 	std::string card2Str(const Card* c); //由Card*生成消息字符串
 };
