@@ -8,7 +8,9 @@ extern string convert(MsgType m);
 int main()
 {
 	string ip;
-	advancedAI ai(3);
+	advancedAI ai(1);
+	//CardLib& C = CardLib::getLib();
+	//AI ai(0);
 	ai.run();
 }
 

@@ -78,12 +78,7 @@ bool ClientMB::createMsg(MsgType m)
 	string s;
 	if(m == NACK) s = "0";
 	else return false;
-	/*switch(m)
-	{
-		case ACK: s = "1"; break;
-		case NACK: s = "2"; break;
-		default: return false;
-	}*/
+
 	//发送消息
 	if (!sendMsg(s))
 		return false;
@@ -234,7 +229,6 @@ bool ClientMB::getMsg(MsgType& m)
 	case 'B': m = DROP_CARD_C; break;
 	case 'C': m = DROP_KEEPER_C; break;
 	case 'D': m = GAME_OVER; break;
-	//case 'E': m = CARD_STOLEN; break;
 	case 'F':m = CHOOSE_PLAYER_C; break;
 	case 'G': m = CHOOSE_KEEPER_C; break;
 	case 'H': m = EXCHANGE_KEEPER_C; break;
@@ -285,7 +279,6 @@ bool ClientMB::getMsg(MsgType m, std::vector<const Card*>& relatedCards)
 				  createMsg(NACK);
 				  return false;
 			  }
-	//case 'E': if(m==CARD_STOLEN) break;
 	default:
 		//接收消息与期待不匹配
 		createMsg(NACK); 

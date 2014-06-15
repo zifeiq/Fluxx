@@ -3,7 +3,7 @@
 using namespace std;
 bool Card::operator==(const Card& c) const
 {
-	return((_type == c.getType()) && (_num == c.getNum()));
+	return((_type == c.getType()) && (_num == c.getNum())&&(_name == c.getName()));
 }
 
 Card& Card::operator=(const Card& c)
@@ -11,6 +11,7 @@ Card& Card::operator=(const Card& c)
 	_type = c.getType();
 	_num = c.getNum();
 	_addr = c.getAddr();
+	_name = c.getName();
 	return *this;
 }
 
@@ -18,39 +19,39 @@ CardLib::CardLib()  //个数为84个
 {
 	int num_tmp;
 	std::string addr_tmp;
+	std::string name;
 	std::ifstream carddata(FILENAME);
 	if(carddata)
 	{
 		while(carddata.peek() != EOF) {
 			carddata >> num_tmp;
+			carddata >> name;
 			stringstream ss;
             ss << num_tmp;
             ss >> addr_tmp;
 			if(num_tmp/100==0)
 			{
-				_cards.push_back((Card*)new BasicRuleCard(num_tmp,addr_tmp));
+				_cards.push_back((Card*)new BasicRuleCard(num_tmp,addr_tmp,name));
 			}
 			else if(num_tmp/100==1)
 			{
-				_cards.push_back((Card*)new NewRuleCard(num_tmp-100,addr_tmp));
+				_cards.push_back((Card*)new NewRuleCard(num_tmp-100,addr_tmp,name));
 			}
 			else if(num_tmp/100==2)
 			{
-				_cards.push_back((Card*)new KeeperCard(num_tmp-200,addr_tmp));
+				_cards.push_back((Card*)new KeeperCard(num_tmp-200,addr_tmp,name));
 			}
 			else if(num_tmp/100==3)
 			{
-				_cards.push_back((Card*)new GoalCard(num_tmp-300,addr_tmp));
+				_cards.push_back((Card*)new GoalCard(num_tmp-300,addr_tmp,name));
 			}
 			else if (num_tmp/100 == 4)
 			{
-				_cards.push_back((Card*)new ActionCard(num_tmp - 400,addr_tmp));
+				_cards.push_back((Card*)new ActionCard(num_tmp - 400,addr_tmp,name));
 			}
 			
 			_cardNum++;
 		}
-		_cards.pop_back();
-		_cardNum--;
 		carddata.close();
 	}
 	else

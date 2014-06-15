@@ -93,28 +93,12 @@ bool ServerMB::acceptNewClient()
 	else
 		return false;
 }
-//接收ACK或NACK消息
-/*
-bool ServerMB::getMsg(int playerNum, MsgType& m)
-{
-	//等待接受消息
-	string s = recvMsg(playerNum);
-	//解析消息
-	switch (s[0])
-	{
-	case '1': m = ACK; break;
-	case '2': m = NACK; break;
-	default: return false;
-	}
-	return true;
-}*/
 
 //期待接收REGISTER消息
 bool ServerMB::getMsg(int playerNum, MsgType m, string& name)
 {
 	//等待接受消息
 	string s = recvMsg(playerNum);
-cout<<"/////////////////////////\nserverMB: 收到消息 "<< s<<endl<<"/////////////////////////\n";
 	//解析消息
 	switch (s[0])
 	{
@@ -135,7 +119,6 @@ bool ServerMB::getMsg(int playerNum, MsgType m, vector<const Card*>& relatedCard
 {
 	//等待接受消息
 	string s = recvMsg(playerNum);
-cout<<"/////////////////////////\nserverMB: 收到消息 "<< s<<endl<<"/////////////////////////\n";
 	//解析消息
 	relatedCards.clear();
 	switch (s[0])
@@ -181,7 +164,6 @@ bool ServerMB::getMsg(int playerNum, MsgType m, int& relatedPlayer)
 {
 	//等待接受消息
 	string s = recvMsg(playerNum);
-cout<<"/////////////////////////\nserverMB: 收到消息 "<< s<<endl<<"/////////////////////////\n";
 	//解析消息
 	switch (s[0])
 	{
@@ -219,7 +201,6 @@ bool ServerMB::createMsg(int playerNum, MsgType m)
 	case DROP_CARD_C: s = "B"; break;
 	case DROP_KEEPER_C: s = "C"; break;
 	case GAME_OVER: s = "D"; break;
-	//case CARD_STOLEN: s = "E"; break;
 	case CHOOSE_PLAYER_C:s = "F"; break;
 	case CHOOSE_KEEPER_C: s = "G"; break;
 	case EXCHANGE_KEEPER_C: s = "H"; break;
@@ -278,11 +259,6 @@ bool ServerMB::createMsg(int playerNum, MsgType m, std::vector<const Card*> rela
 		}
 		s = "9";
 		break;
-	/*case CARD_STOLEN:
-		if (relatedCards.size() != 1) return false;
-		s = "E";
-		break;
-	*/
 	default: return false;
 	}
 	for (unsigned int i = 0; i < relatedCards.size(); i++)
@@ -429,124 +405,6 @@ bool ServerMB::createMsg(int playerNum, MsgType m, std::vector<const Card*> rela
 	else
 		return true;
 }
-/*
-bool ServerMB::createMsg(int playerNum, MsgType m, vector<Card*> relatedCards, int relatedPlayer, int additional, string name)
-{
-	//解析参数并生成消息字符串
-	string s;
-	stringstream ss;
-	switch (m)
-	{
-	case ADDPLAYER:
-		if (name == "" || relatedPlayer < 0 || relatedPlayer>3) //未传入正确名字或编号
-			return false;
-		else
-		{
-			ss << relatedPlayer;
-			s = "00" + ss.str() + name;
-			break;
-		}
-	case ACK:
-		s = "01";
-		break;
-	case NACK:
-		s = "02";
-		break;
-	case GAMESTART:
-		s = "03";
-		if (relatedCards.size() != 3) //未传入初始三张手牌信息
-			return false;
-		for (int i = 0; i < 3; i++)
-			s += card2Str(relatedCards[i]);
-		break;
-	case ROUNDBEGIN:
-		if (relatedPlayer < 0 || relatedPlayer >3) //未传入正确玩家编号
-			return false;
-		else
-		{
-			ss << relatedPlayer;
-			s = "04" + ss.str();
-			break;
-		}
-	case DRAW:
-		s = "05";
-		if (additional != 0 && additional != 1)  //未传入是否随机开场的有效信息 
-			return false;
-		else{
-			ss << additional;
-			s += ss.str();
-		}
-
-		for (int i = 0; i < relatedCards.size(); i++)
-			s += card2Str(relatedCards[i]);
-		break;
-	case DROPCARD:
-		if (additional < 0)  //未传入弃牌张数的有效信息
-			return false;
-		else{
-			ss << additional;
-			s = "06" + ss.str();
-			break;
-		}
-	case DROPKEEPER:
-		if (additional <= 0)  //未传入弃所有物张数的有效信息
-			return false;
-		else{
-			ss << additional;
-			s = "07" + ss.str();
-			break;
-		}
-	case CARDNUM:
-		if (additional < 0 || relatedPlayer<0 || relatedPlayer>3) //未传入有效手牌张数或玩家编号异常
-			return false;
-		else{
-			ss << relatedPlayer << additional;
-			s = "08" + ss.str();
-			break;
-		}
-	case CARDPLAYING:
-		if (relatedPlayer<0 || relatedPlayer>3 || relatedCards.size() != 1) //玩家编号异常或未传入出牌的有效信息
-			return false;
-		else{
-			ss << relatedPlayer;
-			s = "09" + ss.str() + card2Str(relatedCards[0]);
-			break;
-		}
-	case GAMEOVER:
-		if (relatedPlayer<0 || relatedPlayer>3) //玩家编号异常
-			return false;
-		else{
-			ss << relatedPlayer;
-			s = "10" + ss.str();
-			break;
-		}
-	case RULE:
-		if (relatedCards.size() == 0)//未传入当前规则的有效信息
-			return false;
-		for (int i = 0; i < relatedCards.size(); i++)  //检测是否传入的均为规则牌和目标牌
-		{
-			Card::Type type = relatedCards[i]->getType();
-			if (type != Card::BASIC_RULE&&type != Card::NEW_RULE&&type != Card::GOAL)
-				return false;
-		}
-
-		s = "11";
-		for (int i = 0; i < relatedCards.size(); i++)
-			s += card2Str(relatedCards[i]);
-		break;
-	case KEEPERUPDATE:
-		if (relatedPlayer < 0 || relatedPlayer>3 || additional<0 || additional>2)  //玩家编号异常或未传入额外信息
-			return false;
-		ss << additional;
-		s = "12" + ss.str();
-		for (int i = 0; i < relatedCards.size(); i++)
-			s += card2Str(relatedCards[i]);
-		break;
-	default:return false;
-	}
-
-
-}*/
 
 //由server收到的字符串信息得到对应的卡牌信息(s的正确性由MB和client保证，此处不再检测）
 const Card* ServerMB::str2Card(string s)

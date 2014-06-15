@@ -1,10 +1,12 @@
+#ifndef AI_H
+#define AI_H
+
 #include <iostream>
 #include <sstream>
-//#include <windows.h>
-//#include "../fluxxControl_code/player.h"
 
 #include "../mailbox/serverMB/serverMB.h"
 #include "../mailbox/clientMB/clientMB.h"
+
 //AI基类，简单模式
 class AI
 {
@@ -53,6 +55,4 @@ protected:
 	bool isRelatedKeeper(const Card*); //检测自己的手牌或当前目标中是否包含此所有物
 	int isRelatedRule(const Card*);//return -1: 负规则（自己的手牌、所有物超过上限，会受到不好的影响）;0: 无关规则; 1:正规则（自己会受到好影响）
 };
-
-
-std::string convert(MsgType m);
+#endif
