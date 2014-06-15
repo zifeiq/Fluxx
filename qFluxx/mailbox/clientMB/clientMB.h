@@ -44,15 +44,15 @@ public:
 	bool getMsg(MsgType m, std::vector<const Card*>& relatedCards,int& relatedInfo); //接收CARD_PLAYED,CARD_DROPED,CARD_UPDATE消息
 	bool getMsg(MsgType m, int& relatedPlayer, int& additional); //接收ROUND_BEGIN，CARD_NUM消息
 	bool getMsg(MsgType m, std::vector<const Card*>& relatedCards,int& relatedPlayer, int& additional); //接收KEEPER_UPDATE消息
-private:
-	int clientSock;
+protected:
 	CardLib& _cards;
-
-	bool sendMsg(std::string s);
-	std::string recvMsg();
 	bool ipCheck(const std::string s) const; //用于检测ip地址格式是否正确
 	const Card* str2Card(std::string s); //由消息字符串生成Card*
 	std::string card2Str(const Card* c); //由Card*生成消息字符串
+private:
+	int clientSock;
+	bool sendMsg(std::string s);
+	std::string recvMsg();
 };
 
 #endif
