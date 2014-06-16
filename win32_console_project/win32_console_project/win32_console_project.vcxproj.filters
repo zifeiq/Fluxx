@@ -53,5 +53,8 @@
     <ClInclude Include="..\..\qFluxx\mailbox\serverMB\serverMB.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\qFluxx\fluxxControl_code\additionalcard.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

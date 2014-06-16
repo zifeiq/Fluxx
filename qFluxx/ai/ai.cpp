@@ -98,8 +98,10 @@ void AI::run()
 			case CARD_DROPED: 
 				if (!_mailbox.getMsg(m, cards, additional)){ cout << "获得消息失败" << endl; return; }
 				//处理消息
-				for (int i = 0; i < cards.size();i++)
-					_allCardNum[additional]--;
+				if(additional != _ownNum){
+					for (int i = 0; i < cards.size();i++)
+						_allCardNum[additional]--;
+				}
 				break;
 			case CARD_UPDATE:
 				if (!_mailbox.getMsg(m, cards, additional)){ cout << "获得消息失败" << endl; return; }

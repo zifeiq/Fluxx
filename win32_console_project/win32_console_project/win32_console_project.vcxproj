@@ -21,6 +21,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\qFluxx\cardLib_code\cardLib.h" />
+    <ClInclude Include="..\..\qFluxx\fluxxControl_code\additionalcard.h" />
     <ClInclude Include="..\..\qFluxx\fluxxControl_code\fluxxcontrol.h" />
     <ClInclude Include="..\..\qFluxx\fluxxControl_code\fluxxrules.h" />
     <ClInclude Include="..\..\qFluxx\fluxxControl_code\player.h" />

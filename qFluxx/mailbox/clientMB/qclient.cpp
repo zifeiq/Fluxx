@@ -17,17 +17,22 @@ QClient::~QClient()
     delete tcpSocket;
 }
 
-void QClient::connectServer(QString server_ip)
+bool QClient::connectServer(QString server_ip)
 {
-    tcpSocket->abort(); 
+    tcpSocket->abort(); //
     tcpSocket->connectToHost(server_ip,PORT);
+    if(tcpSocket->waitForConnected())
+        return true;
+    else
+        return false;
 }
 
-void QClient::sendMsg(string s)
+bool QClient::sendMsg(string s)
 {
     QTextStream out(tcpSocket);
     QString str(QString(QString::fromLocal8Bit(s.c_str())));
     out << str;
+	return true;
 }
 
 string QClient::recvMsg()

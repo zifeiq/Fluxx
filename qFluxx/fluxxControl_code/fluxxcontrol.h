@@ -4,10 +4,11 @@
 #include <vector>
 #include <string>
 #include <time.h>
-#include "..\fluxxControl_code\fluxxrules.h"
-#include "..\cardLib_code\cardLib.h"
-#include "..\mailbox\serverMB\serverMB.h"
-#include "..\fluxxControl_code\player.h"
+#include <fstream>
+#include "fluxxrules.h"
+#include "../cardLib_code/cardLib.h"
+#include "../mailbox/serverMB/serverMB.h"
+#include "player.h"
 
 //extern enum MsgType;
 enum gameState{ 
@@ -63,7 +64,7 @@ private:
 	std::vector<Player*> players;//ËùÓÐÍæ¼Ò
 	std::vector<const Card*> deck;//ÅÆ¶Ñ
 	std::vector<const Card*> droppeddeck;//ÆúÅÆ¶Ñ
-
-	std::vector<std::vector<const Card*>> hand_cards_buf;
+	std::ofstream run_log;
+    std::vector<std::vector<const Card*> > hand_cards_buf;
 };
 #endif

@@ -1,14 +1,14 @@
 #include "player.h"
 
 extern int cntPlayer;
-Player::Player(std::string name = "FluxxPlayer" + cntPlayer) : playerName(name) {
+Player::Player(std::string name) : playerName(name) {
 	cntConsumedcard = 0;
 	cntPlayer++;
 }
 
 bool Player::consumeHand(const Card& targetCard) {
 	//找到卡牌,确认有效性
-	std::vector<const Card*>::const_iterator i = hand.begin();
+    std::vector<const Card*>::iterator i = hand.begin();
 	for(; i != hand.end(); i++) {
 		if ((**i) == targetCard) {
 			hand.erase(i);
@@ -18,7 +18,7 @@ bool Player::consumeHand(const Card& targetCard) {
 	return false;
 }
 bool Player::removeKeeper(const Card& targetCard) {
-	std::vector<const Card*>::const_iterator i = keeper.begin();
+    std::vector<const Card*>::iterator i = keeper.begin();
 	for(; i != keeper.end(); i++) {
 		if ((**i) == targetCard) {
 			keeper.erase(i);
@@ -34,7 +34,7 @@ void Player::addKeeper(const Card& newkeeper) {
 	keeper.push_back(&newkeeper);
 }
 bool Player::removeHand(const Card& removedhand) {
-	std::vector<const Card*>::const_iterator i;
+    std::vector<const Card*>::iterator i;
 	for (i = hand.begin(); i != hand.end(); i++) {
 		if ((**i) == removedhand) {
 			hand.erase(i);
@@ -43,16 +43,16 @@ bool Player::removeHand(const Card& removedhand) {
 	}
 	return false;
 }
-void Player::infoPlayer() {
-	std::cout << "当前玩家信息： " << std::endl;
-	std::cout << "玩家姓名：" << this->getNameref() << std::endl;
-	std::cout << "玩家手牌：" ;
+void Player::infoPlayer(std::ostream& os) {
+	os << "当前玩家信息： " << std::endl;
+	os << "玩家姓名：" << this->getNameref() << std::endl;
+	os << "玩家手牌：" ;
 	for (unsigned int i = 0; i < this->hand.size(); i++) {
-		std::cout << hand[i]->getNum() << "\t";
+		os << hand[i]->getNum() << "\t";
 	}
-	std::cout << "\n所有物信息：";
+	os << "\n所有物信息：";
 	for (unsigned int i = 0; i < this->keeper.size(); i++) {
-		std::cout << keeper[i]->getNum() << "\t" ;
+		os << keeper[i]->getNum() << "\t" ;
 	}
-	std::cout << "\n";
+	os << "\n";
 }

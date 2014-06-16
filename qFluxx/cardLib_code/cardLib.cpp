@@ -20,7 +20,8 @@ CardLib::CardLib()  //个数为84个
 	int num_tmp;
 	std::string addr_tmp;
 	std::string name;
-	std::ifstream carddata(FILENAME);
+    std::ifstream carddata;
+    carddata.open(FILENAME);
 	if(carddata)
 	{
 		while(carddata.peek() != EOF) {

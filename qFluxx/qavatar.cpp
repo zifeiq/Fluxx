@@ -10,7 +10,7 @@ QAvatar::QAvatar(QWidget *parent) :
 QAvatar::QAvatar(int no, QString name, QWidget *parent) :
     QLabel(parent)
 {
-    this->setPixmap(QPixmap("/Users/zoe/Desktop/icon"+QString::number(no)+".jpg").scaled(100,100));
+    this->setPixmap(QPixmap(":/pics/player"+QString::number(no)).scaled(100,100));
     playerNum = no;
     playerName = name;
     selected = false;

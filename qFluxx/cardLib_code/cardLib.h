@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <fstream>
-const std::string FILENAME = "./carddata.txt";
+const std::string FILENAME = "carddata.txt";
 
 
 

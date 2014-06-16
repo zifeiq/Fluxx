@@ -49,10 +49,11 @@ protected:
 	bool ipCheck(const std::string s) const; //用于检测ip地址格式是否正确
 	const Card* str2Card(std::string s); //由消息字符串生成Card*
 	std::string card2Str(const Card* c); //由Card*生成消息字符串
+	virtual bool sendMsg(std::string s);
+	virtual std::string recvMsg();
 private:
 	int clientSock;
-	bool sendMsg(std::string s);
-	std::string recvMsg();
+
 };
 
 #endif

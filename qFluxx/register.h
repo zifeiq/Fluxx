@@ -13,16 +13,14 @@ class Register : public QDialog
     Q_OBJECT
 
 public:
-    QLineEdit* name;
-    QPushButton* ok;
-    QPushButton* cancel;
-
     explicit Register(QWidget *parent = 0);
     ~Register();
+    QLineEdit* name;        //输入昵称的单行文本框
+    QPushButton* ok;        //确认按钮
+    QPushButton* cancel;    //取消按钮
 private:
     QVBoxLayout* layout;
     QHBoxLayout* layout_pb;
-
     QLabel* request;
 };
 

@@ -4,7 +4,7 @@
 void fluxxControl::actioncard(const Card& act_card)
 {
 	std::vector<const Card*> player_cards;	
-	std::vector<const Card*>::const_iterator ii = droppeddeck.begin();	
+    std::vector<const Card*>::iterator ii = droppeddeck.begin();
 	std::vector<int> cnt;	
 	int tmp;
 	const Card* tmp_card;
@@ -19,13 +19,13 @@ void fluxxControl::actioncard(const Card& act_card)
 		player_cards_tmp.clear();	
 		
 		msgbufMsgtype=CARD_UPDATE;
+        Sleep(300);
 		msgBox.createMsg(clientNum,msgbufMsgtype);
-		Sleep(300);
 		msgbufMsgtype=CARD_UPDATE;
 		msgbufCards=presentPlayer->gethand();
 		msgbufAdditional=2;
+        Sleep(300);
 		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
-		Sleep(300);
 		msgbufCards.clear();
 		
 		dealCard(2);
@@ -33,8 +33,9 @@ void fluxxControl::actioncard(const Card& act_card)
 		for(unsigned int i = 0;i<2;i++)
 		{
 			msgbufMsgtype=PLAY_C;
+            Sleep(300);
 			msgBox.createMsg(clientNum,msgbufMsgtype);
-			Sleep(300);
+            Sleep(300);
 			msgbufMsgtype=PLAY_I;
 			msgBox.getMsg(clientNum,msgbufMsgtype,msgbufCards);
 			playCard(msgbufCards[0]);	
@@ -43,21 +44,52 @@ void fluxxControl::actioncard(const Card& act_card)
 		player_cards_tmp=hand_cards_buf.back();
 		hand_cards_buf.pop_back();
 		
-		msgbufMsgtype=CARD_UPDATE;
-		msgBox.createMsg(clientNum,msgbufMsgtype);
-		Sleep(300);
-		msgbufMsgtype=CARD_UPDATE;
-		msgbufCards=presentPlayer->gethand();
-		msgbufAdditional=2;
-		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
-		Sleep(300);
-		msgbufCards.clear();
+		for(unsigned int i=0;i<players.size();i++)
+		{
+			if(i==clientNum)
+			{
+				msgbufMsgtype=CARD_UPDATE;
+				msgBox.createMsg(clientNum,msgbufMsgtype);
+                Sleep(300);
+				msgbufMsgtype=CARD_UPDATE;
+				msgbufCards=presentPlayer->gethand();
+				msgbufAdditional=2;
+				msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
+                Sleep(300);
+				msgbufCards.clear();
+			}
+			else
+			{
+				msgbufMsgtype=CARD_NUM;
+				msgBox.createMsg(i,msgbufMsgtype);
+                Sleep(300);
+				msgbufMsgtype=CARD_NUM;
+				msgbufCards=presentPlayer->gethand();
+				msgbufAdditional=presentPlayer->getHandcnt();
+				msgBox.createMsg(i,msgbufMsgtype,clientNum,msgbufAdditional);
+                Sleep(300);
+				msgbufCards.clear();
+			}
+		}
 		break;
 	}
 	case 2:
 	{
 		
 		std::vector<const Card*>& player_cards_tmp=presentPlayer->gethand();
+		hand_cards_buf.push_back(player_cards_tmp);
+		player_cards_tmp=hand_cards_buf[0];
+
+		msgbufMsgtype=CARD_UPDATE;
+        Sleep(300);
+		msgBox.createMsg(clientNum,msgbufMsgtype);
+		msgbufMsgtype=CARD_UPDATE;
+		msgbufCards=presentPlayer->gethand();
+		msgbufAdditional=2;
+        Sleep(300);
+		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
+		msgbufCards.clear();
+
 		tmp=player_cards_tmp.size();
 		while(player_cards_tmp.size()>0)
 		{
@@ -66,16 +98,31 @@ void fluxxControl::actioncard(const Card& act_card)
 		}
 		
 		msgbufMsgtype=CARD_UPDATE;
+        Sleep(300);
 		msgBox.createMsg(clientNum,msgbufMsgtype);
-		Sleep(300);
+        Sleep(300);
 		msgbufMsgtype=CARD_UPDATE;
 		msgbufCards=presentPlayer->gethand();
 		msgbufAdditional=2;
 		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
-		Sleep(300);
 		msgbufCards.clear();
 		
 		dealCard(tmp);
+
+		hand_cards_buf[0]=player_cards_tmp;
+		player_cards_tmp=hand_cards_buf.back();
+		hand_cards_buf.pop_back();
+
+		msgbufMsgtype=CARD_UPDATE;
+        Sleep(300);
+		msgBox.createMsg(clientNum,msgbufMsgtype);
+		msgbufMsgtype=CARD_UPDATE;
+		msgbufCards=presentPlayer->gethand();
+		msgbufAdditional=2;
+        Sleep(300);
+		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
+		msgbufCards.clear();
+
 		break;
 	}
 	case 3:
@@ -157,13 +204,13 @@ void fluxxControl::actioncard(const Card& act_card)
 		for(unsigned int i=0;i<players.size();i++)
 		{
 			msgbufMsgtype=RULE;
+            Sleep(300);
 			msgBox.createMsg(i,msgbufMsgtype);
-			Sleep(300);
 			msgbufMsgtype=RULE;
 			msgbufCards.clear();
 			_updateRules();
+            Sleep(300);
 			msgBox.createMsg(i,msgbufMsgtype,msgbufCards);
-			Sleep(300);
 		}
 		msgbufCards.clear();
 		break;
@@ -177,13 +224,13 @@ void fluxxControl::actioncard(const Card& act_card)
 		player_cards_tmp.clear();	
 		
 		msgbufMsgtype=CARD_UPDATE;
+        Sleep(300);
 		msgBox.createMsg(clientNum,msgbufMsgtype);
-		Sleep(300);
 		msgbufMsgtype=CARD_UPDATE;
 		msgbufCards=presentPlayer->gethand();
 		msgbufAdditional=2;
+        Sleep(300);
 		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
-		Sleep(300);
 		msgbufCards.clear();
 		
 		dealCard(3);
@@ -191,8 +238,8 @@ void fluxxControl::actioncard(const Card& act_card)
 		for(unsigned int i=0;i<2;i++)
 		{
 			msgbufMsgtype=PLAY_C;
+            Sleep(300);
 			msgBox.createMsg(clientNum,msgbufMsgtype);
-			Sleep(300);
 			msgbufMsgtype=PLAY_I;
 			msgBox.getMsg(clientNum,msgbufMsgtype,msgbufCards);
 			playCard(msgbufCards[0]);	
@@ -203,21 +250,67 @@ void fluxxControl::actioncard(const Card& act_card)
 		player_cards_tmp=hand_cards_buf.back();
 		hand_cards_buf.pop_back();
 		
-		msgbufMsgtype=CARD_UPDATE;
-		msgBox.createMsg(clientNum,msgbufMsgtype);
-		Sleep(300);
-		msgbufMsgtype=CARD_UPDATE;
-		msgbufCards=presentPlayer->gethand();
-		msgbufAdditional=2;
-		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
-		Sleep(300);
-		msgbufCards.clear();
+		for(unsigned int i=0;i<players.size();i++)
+		{
+			if(i==clientNum)
+			{
+				msgbufMsgtype=CARD_UPDATE;
+                Sleep(300);
+				msgBox.createMsg(clientNum,msgbufMsgtype);
+				msgbufMsgtype=CARD_UPDATE;
+				msgbufCards=presentPlayer->gethand();
+				msgbufAdditional=2;
+                Sleep(300);
+				msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
+				msgbufCards.clear();
+			}
+			else
+			{
+				msgbufMsgtype=CARD_NUM;
+                Sleep(300);
+				msgBox.createMsg(i,msgbufMsgtype);
+                Sleep(300);
+				msgbufMsgtype=CARD_NUM;
+				msgbufCards=presentPlayer->gethand();
+				msgbufAdditional=presentPlayer->getHandcnt();
+				msgBox.createMsg(i,msgbufMsgtype,clientNum,msgbufAdditional);
+				msgbufCards.clear();
+			}
+		}
 		break;
 	}
 	case 5:
 	{
+		std::vector<const Card*>& player_cards_tmp=presentPlayer->gethand();
+		hand_cards_buf.push_back(player_cards_tmp);
+		player_cards_tmp=hand_cards_buf[0];
+
+		msgbufMsgtype=CARD_UPDATE;
+        Sleep(300);
+		msgBox.createMsg(clientNum,msgbufMsgtype);
+        Sleep(300);
+		msgbufMsgtype=CARD_UPDATE;
+		msgbufCards=presentPlayer->gethand();
+		msgbufAdditional=2;
+		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
+		msgbufCards.clear();
 		
 		dealCard(3);
+
+		hand_cards_buf[0]=player_cards_tmp;
+		player_cards_tmp=hand_cards_buf.back();
+		hand_cards_buf.pop_back();
+
+		msgbufMsgtype=CARD_UPDATE;
+        Sleep(300);
+		msgBox.createMsg(clientNum,msgbufMsgtype);
+        Sleep(300);
+		msgbufMsgtype=CARD_UPDATE;
+		msgbufCards=presentPlayer->gethand();
+		msgbufAdditional=2;
+		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
+		msgbufCards.clear();
+
 		break;
 	}
 	case 6:
@@ -276,12 +369,12 @@ void fluxxControl::actioncard(const Card& act_card)
 		if(tmp == 0) 
 			break;
 		msgbufMsgtype=DROP_RULE_C;
+        Sleep(300);
 		msgBox.createMsg(clientNum,msgbufMsgtype);
-		Sleep(300);
+        Sleep(300);
 		msgbufMsgtype=DROP_RULE_C;
 		msgbufAdditional=tmp;
 		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufAdditional);
-		Sleep(300);
 		msgbufMsgtype=DROP_RULE_I;
 		msgBox.getMsg(clientNum, msgbufMsgtype, msgbufCards);
 		
@@ -305,7 +398,7 @@ void fluxxControl::actioncard(const Card& act_card)
 				{
 					if(rule.getdraw()!=1)
 						droppeddeck.push_back(&rule.getdrawrule());
-					rule.setplay(1);
+					rule.setdraw(1);
 					rule.setdrawrule(cards.getCard(0));
 				}
 				if(msgbufCards[i]->getNum()/10==4)	
@@ -366,13 +459,13 @@ void fluxxControl::actioncard(const Card& act_card)
 		for(unsigned int i=0;i<players.size();i++)
 		{
 			msgbufMsgtype=RULE;
+            Sleep(300);
 			msgBox.createMsg(i,msgbufMsgtype);
-			Sleep(300);
+            Sleep(300);
 			msgbufMsgtype=RULE;
 			msgbufCards.clear();
 			_updateRules();
 			msgBox.createMsg(i,msgbufMsgtype,msgbufCards);
-			Sleep(300);
 		}
 		msgbufCards.clear();
 		break;
@@ -395,8 +488,8 @@ void fluxxControl::actioncard(const Card& act_card)
 			break;
 		
 		msgbufMsgtype=EXCHANGE_KEEPER_C;
+        Sleep(300);
 		msgBox.createMsg(clientNum,msgbufMsgtype);
-		Sleep(300);
 		msgbufMsgtype=CHOOSE_KEEPER_I;
 		msgBox.getMsg(clientNum,msgbufMsgtype,msgbufCards);
 		
@@ -424,32 +517,29 @@ void fluxxControl::actioncard(const Card& act_card)
 		{
 			
 			msgbufMsgtype=KEEPER_UPDATE;
+            Sleep(300);
 			msgBox.createMsg(i,msgbufMsgtype);
-			Sleep(300);
+            Sleep(300);
 			msgbufMsgtype=KEEPER_UPDATE;
 			msgbufCards=players[tmp]->getkeeper();
 			msgbufAdditional=0;
 			msgBox.createMsg(i,msgbufMsgtype,msgbufCards,tmp,msgbufAdditional);
-			Sleep(300);
 			
 			msgbufMsgtype=KEEPER_UPDATE;
+            Sleep(300);
 			msgBox.createMsg(i,msgbufMsgtype);
-			Sleep(300);
+            Sleep(300);
 			msgbufMsgtype=KEEPER_UPDATE;
 			msgbufCards=players[clientNum]->getkeeper();
 			msgbufAdditional=0;
 			msgBox.createMsg(i,msgbufMsgtype,msgbufCards,clientNum,msgbufAdditional);
-			Sleep(300);
 		}
 		msgbufCards.clear();
 		break;
 	}
 	case 9:
 	{
-		if(rule.isorderreverse())
-			clientNum=(clientNum+1)%4;
-		else
-			clientNum=(clientNum+3)%4;
+		rule.setanotherround(true);
 		break;
 	}
 	case 10:
@@ -466,8 +556,8 @@ void fluxxControl::actioncard(const Card& act_card)
 			break;
 
 		msgbufMsgtype=CHOOSE_KEEPER_C;
+        Sleep(300);
 		msgBox.createMsg(clientNum,msgbufMsgtype);
-		Sleep(300);
 		msgbufMsgtype=CHOOSE_KEEPER_I;
 		msgBox.getMsg(clientNum,msgbufMsgtype,msgbufCards);
 		
@@ -493,28 +583,41 @@ void fluxxControl::actioncard(const Card& act_card)
 		{
 			
 			msgbufMsgtype=KEEPER_UPDATE;
+            Sleep(300);
 			msgBox.createMsg(i,msgbufMsgtype);
-			Sleep(300);
+            Sleep(300);
 			msgbufMsgtype=KEEPER_UPDATE;
 			msgbufCards=players[tmp]->getkeeper();
 			msgbufAdditional=2;
 			msgBox.createMsg(i,msgbufMsgtype,msgbufCards,tmp,msgbufAdditional);
-			Sleep(300);
 			
 			msgbufMsgtype=KEEPER_UPDATE;
+            Sleep(300);
 			msgBox.createMsg(i,msgbufMsgtype);
-			Sleep(300);
+            Sleep(300);
 			msgbufMsgtype=KEEPER_UPDATE;
 			msgbufCards=players[clientNum]->getkeeper();
 			msgbufAdditional=2;
 			msgBox.createMsg(i,msgbufMsgtype,msgbufCards,clientNum,msgbufAdditional);
-			Sleep(300);
 		}
 		msgbufCards.clear();
 		break;
 	}
 	case 11:
 	{
+		std::vector<const Card*>& player_cards_tmp=presentPlayer->gethand();
+		hand_cards_buf.push_back(player_cards_tmp);
+		player_cards_tmp=hand_cards_buf[0];
+
+		msgbufMsgtype=CARD_UPDATE;
+        Sleep(300);
+		msgBox.createMsg(clientNum,msgbufMsgtype);
+        Sleep(300);
+		msgbufMsgtype=CARD_UPDATE;
+		msgbufCards=presentPlayer->gethand();
+		msgbufAdditional=2;
+		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
+		msgbufCards.clear();
 		
 		srand(int(time(NULL)));
 		for(unsigned int i=0;i<players.size();i++)
@@ -532,28 +635,43 @@ void fluxxControl::actioncard(const Card& act_card)
 		{
 			
 			msgbufMsgtype=CARD_UPDATE;
+            Sleep(300);
 			msgBox.createMsg(i,msgbufMsgtype);
-			Sleep(300);
+            Sleep(300);
 			msgbufMsgtype=CARD_UPDATE;
 			msgbufCards=players[i]->gethand();
 			msgbufAdditional=2;
 			msgBox.createMsg(i,msgbufMsgtype,msgbufCards,msgbufAdditional);
-			Sleep(300);
 			
 			for(unsigned int j=0;j<players.size();j++)
 			{
 				if(j==i)
 					continue;
 				msgbufMsgtype=CARD_NUM;
+                Sleep(300);
 				msgBox.createMsg(i,msgbufMsgtype);
-				Sleep(300);
+                Sleep(300);
 				msgbufMsgtype=CARD_NUM;
 				msgbufAdditional=players[j]->getHandcnt();
 				msgBox.createMsg(i,msgbufMsgtype,j,msgbufAdditional);
-				Sleep(300);
 			}
 		}
 		msgbufCards.clear();
+
+		hand_cards_buf[0]=player_cards_tmp;
+		player_cards_tmp=hand_cards_buf.back();
+		hand_cards_buf.pop_back();
+
+		msgbufMsgtype=CARD_UPDATE;
+        Sleep(300);
+		msgBox.createMsg(clientNum,msgbufMsgtype);
+        Sleep(300);
+		msgbufMsgtype=CARD_UPDATE;
+		msgbufCards=presentPlayer->gethand();
+		msgbufAdditional=2;
+		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
+		msgbufCards.clear();
+
 		break;
 	}
 	case 12:
@@ -585,12 +703,12 @@ void fluxxControl::actioncard(const Card& act_card)
 			break;
 		
 		msgbufMsgtype=DROP_RULE_C;
+        Sleep(300);
 		msgBox.createMsg(clientNum,msgbufMsgtype);
-		Sleep(300);
+        Sleep(300);
 		msgbufMsgtype=DROP_RULE_C;
 		msgbufAdditional=1;
 		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufAdditional);
-		Sleep(300);
 		msgbufMsgtype=DROP_RULE_I;
 		msgBox.getMsg(clientNum, msgbufMsgtype, msgbufCards);
 		
@@ -675,28 +793,41 @@ void fluxxControl::actioncard(const Card& act_card)
 		for(unsigned int i = 0;i<players.size();i++)
 		{
 			msgbufMsgtype=RULE;
+            Sleep(300);
 			msgBox.createMsg(i,msgbufMsgtype);
-			Sleep(300);
+            Sleep(300);
 			msgbufMsgtype=RULE;
 			msgbufCards.clear();
 			_updateRules();
 			msgBox.createMsg(i,msgbufMsgtype,msgbufCards);
-			Sleep(300);
 		}
 		msgbufCards.clear();
 		break;
 	}
 	case 13:
 	{
+		std::vector<const Card*>& player_cards_tmp=presentPlayer->gethand();
+		hand_cards_buf.push_back(player_cards_tmp);
+		player_cards_tmp=hand_cards_buf[0];
+
+		msgbufMsgtype=CARD_UPDATE;
+        Sleep(300);
+		msgBox.createMsg(clientNum,msgbufMsgtype);
+        Sleep(300);
+		msgbufMsgtype=CARD_UPDATE;
+		msgbufCards=presentPlayer->gethand();
+		msgbufAdditional=2;
+		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
+		msgbufCards.clear();
 		
 		msgbufMsgtype=CHOOSE_PLAYER_C;
+        Sleep(300);
 		msgBox.createMsg(clientNum,msgbufMsgtype);
-		Sleep(300);
 		msgbufMsgtype=CHOOSE_PLAYER_I;
 		msgBox.getMsg(clientNum,msgbufMsgtype,msgbufAdditional);
 		
 		tmp=msgbufAdditional;
-		std::vector<const Card*>& player_cards_tmp=presentPlayer->gethand();
+		//std::vector<const Card*>& player_cards_tmp=presentPlayer->gethand();
 		std::vector<const Card*>& player_cards_tmp2=players[tmp]->gethand();
 		player_cards=player_cards_tmp;
 		player_cards_tmp=player_cards_tmp2;
@@ -708,67 +839,98 @@ void fluxxControl::actioncard(const Card& act_card)
 			{
 				
 				msgbufMsgtype=CARD_UPDATE;
+                Sleep(300);
 				msgBox.createMsg(i,msgbufMsgtype);
-				Sleep(300);
+                Sleep(300);
 				msgbufMsgtype=CARD_UPDATE;
 				msgbufCards=players[i]->gethand();
 				msgbufAdditional=2;
 				msgBox.createMsg(i,msgbufMsgtype,msgbufCards,msgbufAdditional);
-				Sleep(300);
 				
 				msgbufMsgtype=CARD_NUM;
+                Sleep(300);
 				msgBox.createMsg(i,msgbufMsgtype);
-				Sleep(300);
+                Sleep(300);
 				msgbufMsgtype=CARD_NUM;
 				msgbufAdditional=players[tmp]->getHandcnt();
 				msgBox.createMsg(i,msgbufMsgtype,tmp,msgbufAdditional);
-				Sleep(300);
 			}
 			else if(i==tmp)	
 			{
 				
 				msgbufMsgtype=CARD_UPDATE;
+                Sleep(300);
 				msgBox.createMsg(i,msgbufMsgtype);
-				Sleep(300);
+                Sleep(300);
 				msgbufMsgtype=CARD_UPDATE;
 				msgbufCards=players[i]->gethand();
 				msgbufAdditional=2;
 				msgBox.createMsg(i,msgbufMsgtype,msgbufCards,msgbufAdditional);
-				Sleep(300);
+                Sleep(300);
 				
 				msgbufMsgtype=CARD_NUM;
 				msgBox.createMsg(i,msgbufMsgtype);
-				Sleep(300);
+                Sleep(300);
 				msgbufMsgtype=CARD_NUM;
 				msgbufAdditional=players[clientNum]->getHandcnt();
 				msgBox.createMsg(i,msgbufMsgtype,clientNum,msgbufAdditional);
-				Sleep(300);
+				
 			}
 			else        
 			{
 				
 				msgbufMsgtype=CARD_NUM;
+                Sleep(300);
 				msgBox.createMsg(i,msgbufMsgtype);
-				Sleep(300);
+                Sleep(300);
 				msgbufMsgtype=CARD_NUM;
 				msgbufAdditional=players[clientNum]->getHandcnt();
 				msgBox.createMsg(i,msgbufMsgtype,clientNum,msgbufAdditional);
-				Sleep(300);
+                Sleep(300);
 
 				msgbufMsgtype=CARD_NUM;
 				msgBox.createMsg(i,msgbufMsgtype);
-				Sleep(300);
+                Sleep(300);
 				msgbufMsgtype=CARD_NUM;
 				msgbufAdditional=players[tmp]->getHandcnt();
 				msgBox.createMsg(i,msgbufMsgtype,tmp,msgbufAdditional);
-				Sleep(300);
+				
 			}
 		}
 		msgbufCards.clear();
+
+		hand_cards_buf[0]=player_cards_tmp;
+		player_cards_tmp=hand_cards_buf.back();
+		hand_cards_buf.pop_back();
+
+		msgbufMsgtype=CARD_UPDATE;
+        Sleep(300);
+		msgBox.createMsg(clientNum,msgbufMsgtype);
+        Sleep(300);
+		msgbufMsgtype=CARD_UPDATE;
+		msgbufCards=presentPlayer->gethand();
+		msgbufAdditional=2;
+		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
+		
+		msgbufCards.clear();
+
 		break;
 	}
 	case 14:
 	{
+		std::vector<const Card*>& player_cards_tmp=presentPlayer->gethand();
+		hand_cards_buf.push_back(player_cards_tmp);
+		player_cards_tmp=hand_cards_buf[0];
+
+		msgbufMsgtype=CARD_UPDATE;
+        Sleep(300);
+		msgBox.createMsg(clientNum,msgbufMsgtype);
+        Sleep(300);
+		msgbufMsgtype=CARD_UPDATE;
+		msgbufCards=presentPlayer->gethand();
+		msgbufAdditional=2;
+		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
+		msgbufCards.clear();
 		
 		tmp=clientNum;
 		for(unsigned int i = 0;i<players.size();i++)
@@ -777,14 +939,29 @@ void fluxxControl::actioncard(const Card& act_card)
 			dealCard(1);
 		}
 		clientNum=tmp;
+
+		hand_cards_buf[0]=player_cards_tmp;
+		player_cards_tmp=hand_cards_buf.back();
+		hand_cards_buf.pop_back();
+
+		msgbufMsgtype=CARD_UPDATE;
+        Sleep(300);
+		msgBox.createMsg(clientNum,msgbufMsgtype);
+        Sleep(300);
+		msgbufMsgtype=CARD_UPDATE;
+		msgbufCards=presentPlayer->gethand();
+		msgbufAdditional=2;
+		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
+		msgbufCards.clear();
+
 		break;
 	}
 	case 15:
 	{
 		
 		msgbufMsgtype=CHOOSE_PLAYER_C;
+        Sleep(300);
 		msgBox.createMsg(clientNum,msgbufMsgtype);
-		Sleep(300);
 		msgbufMsgtype=CHOOSE_PLAYER_I;
 		msgBox.getMsg(clientNum,msgbufMsgtype,msgbufAdditional);
 		
@@ -798,24 +975,24 @@ void fluxxControl::actioncard(const Card& act_card)
 			if(i==tmp)
 			{
 				msgbufMsgtype=CARD_UPDATE;
+                Sleep(300);
 				msgBox.createMsg(i,msgbufMsgtype);
-				Sleep(300);
+                Sleep(300);
 				msgbufMsgtype=CARD_UPDATE;
 				msgbufCards.clear();
 				msgbufCards.push_back(tmp_card);
 				msgbufAdditional=0;
 				msgBox.createMsg(i,msgbufMsgtype,msgbufCards,msgbufAdditional);
-				Sleep(300);
 			}
 			else
 			{
 				msgbufMsgtype=CARD_NUM;
+                Sleep(300);
 				msgBox.createMsg(i,msgbufMsgtype);
-				Sleep(300);
+                Sleep(300);
 				msgbufMsgtype=CARD_NUM;
 				msgbufAdditional=players[tmp]->getHandcnt();
 				msgBox.createMsg(i,msgbufMsgtype,tmp,msgbufAdditional);
-				Sleep(300);
 			}
 		}
 		msgbufCards.clear();
@@ -851,13 +1028,13 @@ void fluxxControl::actioncard(const Card& act_card)
 		for(unsigned int i = 0;i<players.size();i++)
 		{
 			msgbufMsgtype=RULE;
+            Sleep(300);
 			msgBox.createMsg(i,msgbufMsgtype);
-			Sleep(300);
+            Sleep(300);
 			msgbufMsgtype=RULE;
 			msgbufCards.clear();
 			_updateRules();
 			msgBox.createMsg(i,msgbufMsgtype,msgbufCards);
-			Sleep(300);
 		}
 		msgbufCards.clear();
 		break;
@@ -906,13 +1083,13 @@ void fluxxControl::actioncard(const Card& act_card)
 			for(unsigned int j=0;j<players.size();j++)
 			{
 				msgbufMsgtype=KEEPER_UPDATE;
+                Sleep(300);
 				msgBox.createMsg(i,msgbufMsgtype);
-				Sleep(300);
+                Sleep(300);
 				msgbufMsgtype=KEEPER_UPDATE;
 				msgbufCards=players[j]->getkeeper();
 				msgbufAdditional=2;
 				msgBox.createMsg(i,msgbufMsgtype,msgbufCards,j,msgbufAdditional);
-				Sleep(300);
 			}
 			msgbufCards.clear();
 		break;
@@ -930,8 +1107,8 @@ void fluxxControl::actioncard(const Card& act_card)
 			break;
 		
 		msgbufMsgtype=CHOOSE_KEEPER_C;
+        Sleep(300);
 		msgBox.createMsg(clientNum,msgbufMsgtype);
-		//Sleep(300);
 		msgbufMsgtype=CHOOSE_KEEPER_I;
 		msgBox.getMsg(clientNum,msgbufMsgtype,msgbufCards);
 		
@@ -953,13 +1130,13 @@ void fluxxControl::actioncard(const Card& act_card)
 		for(unsigned int i = 0;i<players.size();i++)
 		{
 			msgbufMsgtype=KEEPER_UPDATE;
+            Sleep(300);
 			msgBox.createMsg(i,msgbufMsgtype);
-			Sleep(300);
+            Sleep(300);
 			msgbufMsgtype=KEEPER_UPDATE;
 			msgbufCards=players[tmp]->getkeeper();
 			msgbufAdditional=2;
 			msgBox.createMsg(i,msgbufMsgtype,msgbufCards,tmp,msgbufAdditional);
-			Sleep(300);
 		}
 		msgbufCards.clear();
 		break;
@@ -972,16 +1149,16 @@ void fluxxControl::actioncard(const Card& act_card)
 		player_cards_tmp4=hand_cards_buf.front();
 		
 		msgbufMsgtype=CARD_UPDATE;
+        Sleep(300);
 		msgBox.createMsg(clientNum,msgbufMsgtype);
-		Sleep(300);
+        Sleep(300);
 		msgbufMsgtype=CARD_UPDATE;
 		msgbufCards=presentPlayer->gethand();
 		msgbufAdditional=2;
 		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
-		Sleep(300);
 		msgbufCards.clear();
 		
-		Sleep(2000);
+        Sleep(2000);
 		
 		if(rule.isorderreverse())
 		{
@@ -1017,41 +1194,44 @@ void fluxxControl::actioncard(const Card& act_card)
 				if(j==i)	
 				{
 					msgbufMsgtype=CARD_UPDATE;
+                    Sleep(300);
 					msgBox.createMsg(i,msgbufMsgtype);
-					Sleep(300);
+                    Sleep(300);
 					msgbufMsgtype=CARD_UPDATE;
 					msgbufCards=players[i]->gethand();
 					msgbufAdditional=2;
 					msgBox.createMsg(i,msgbufMsgtype,msgbufCards,msgbufAdditional);
-					Sleep(300);
+					
 				}
 				else     
 				{
 					msgbufMsgtype=CARD_NUM;
+                    Sleep(300);
 					msgBox.createMsg(i,msgbufMsgtype);
-					Sleep(300);
+                    Sleep(300);
 					msgbufMsgtype=CARD_NUM;
 					msgbufAdditional=players[j]->getHandcnt();
 					msgBox.createMsg(i,msgbufMsgtype,j,msgbufAdditional);
-					Sleep(300);
+					
 				}
 			}
 		}
 		
-		Sleep(2000);
+        Sleep(2000);
 		
 		hand_cards_buf[0]=player_cards_tmp4;
 		player_cards_tmp4=hand_cards_buf.back();
 		hand_cards_buf.pop_back();
 		
 		msgbufMsgtype=CARD_UPDATE;
+        Sleep(300);
 		msgBox.createMsg(clientNum,msgbufMsgtype);
-		Sleep(300);
+        Sleep(300);
 		msgbufMsgtype=CARD_UPDATE;
 		msgbufCards=presentPlayer->gethand();
 		msgbufAdditional=2;
 		msgBox.createMsg(clientNum,msgbufMsgtype,msgbufCards,msgbufAdditional);
-		Sleep(300);
+		
 		msgbufCards.clear();
 	}
 	}

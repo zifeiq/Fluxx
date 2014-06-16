@@ -1,5 +1,5 @@
 #include "qcard.h"
-
+#include <iostream>
 QCard::QCard(QGraphicsItem *parent) :
     QGraphicsPixmapItem(parent)
 {
@@ -20,8 +20,9 @@ QCard::QCard(const QPixmap &pixmap, QGraphicsItem *parent):
 }
 
 QCard::QCard(const Card* acard, qcardType type, QGraphicsItem* parent):
-    QGraphicsPixmapItem(QPixmap(s2q(acard->getAddr())).scaled(80,120),parent)
+    QGraphicsPixmapItem(QPixmap(":/cards/"+s2q(acard->getAddr())).scaled(CARD_W,CARD_L),parent)
 {
+    std::cout << ":/cards/"+acard->getAddr() << std::endl;
     lp_timer = new QTimer();
     lp_timer->setSingleShot(true);
     connect(lp_timer,SIGNAL(timeout()),this,SLOT(longPress()));
@@ -33,22 +34,26 @@ QCard::QCard(const Card* acard, qcardType type, QGraphicsItem* parent):
 
 void QCard::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    lp_timer->start(100);
+    lp_timer->start(300);
 }
 
 void QCard::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    if(lp_timer->remainingTime() > 0){
-        lp_timer->stop();
-        if(isSelected()){
-            setPos(scenePos()+QPointF(0,10));
-            setSelected(false);
+    if(flags().testFlag(QGraphicsItem::ItemIsSelectable)){
+        if(lp_timer->remainingTime() > 0){
+            lp_timer->stop();
+            if(isSelected()){
+				if(data(1).toInt()==QHAND)
+					setPos(scenePos()+QPointF(0,10));
+                setSelected(false);
+            }
+            else{
+				if(data(1).toInt()==QHAND)
+					setPos(scenePos()+QPointF(0,-10));
+                setSelected(true);
+            }
+            emit clicked();
         }
-        else{
-            setPos(scenePos()+QPointF(0,-10));
-            setSelected(true);
-        }
-        emit clicked();
     }
 }
 

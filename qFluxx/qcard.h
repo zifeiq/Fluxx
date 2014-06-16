@@ -6,14 +6,15 @@
 #include <QMouseEvent>
 #include <QTimer>
 #include "./cardLib_code/cardLib.h"
+#include "config.h"
 
 //Q_DECLARE_METATYPE(Card*)
 
 enum qcardType{
-    HAND,
-    KEEPER,
-    RULE,
-    GOAL
+    QHAND,
+    QKEEPER,
+    QRULE,
+    QGOAL
 };
 
 class QCard : public QObject,public QGraphicsPixmapItem

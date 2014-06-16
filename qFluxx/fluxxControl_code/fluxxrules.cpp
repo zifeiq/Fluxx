@@ -12,6 +12,7 @@ fluxxRules::fluxxRules(CardLib& r)
 	Inflation(false),
 	noHandbonus(false),
 	randomStart(false),
+	anotherRound(false),
 	r_Cardlib(r),
 	DrawRule(r.getCard(0)),
 	PlayRule(r.getCard(1)),

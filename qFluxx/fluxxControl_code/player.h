@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <iostream>
-#include "..\cardLib_code\cardLib.h"
+#include "../cardLib_code/cardLib.h"
 
 static int cntPlayer = 0;
 typedef int cardNum;
@@ -21,7 +21,7 @@ public:
 	void addKeeper(const Card&);
 	void setcntAddcard(int i) { cntAddcard = i; }
 	void setConsumedcard(int i) { cntConsumedcard = i; }
-	void infoPlayer();
+	void infoPlayer(std::ostream&);
 	bool removeHand(const Card&);
 	bool consumeHand(const Card&);
 	bool removeKeeper(const Card&);

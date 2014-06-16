@@ -4,10 +4,17 @@
 #include <QMessageBox>
 #include <QPixmap>
 
+const QString MainWindow::str_dspl = "The present player is:\n\t";
+const QString MainWindow::str_num = "Hands Number: ";
+
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
+    : QDialog(parent)
 {
-//    MailBox = new ClientMB;
+//    str_dspl = "The present player is:\n\t";
+//        str_num
+    server = NULL;
+
+    msgBox = new QClient;
     reg = new Register(this);
     connect(reg->ok,SIGNAL(clicked()),this,SLOT(reg_ok_clicked()));
     connect(reg->cancel,SIGNAL(clicked()),this,SLOT(reg_cancel_clicked()));
@@ -16,21 +23,65 @@ MainWindow::MainWindow(QWidget *parent)
     chooseMode = new Mode(this);
     connect(chooseMode->host,SIGNAL(clicked()),this,SLOT(mode_host_clicked()));
     connect(chooseMode->part,SIGNAL(clicked()),this,SLOT(mode_part_clicked()));
-
-    server = NULL;
-
     connect(this,SIGNAL(gameStart()),this,SLOT(initGame()));
 
+//	tcpSocket = new QTcpSocket(this);
+    connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(processMsg()));
+
+    presentCard = new QLabel(this);
+	presentCard->setFixedSize(CARD_W,CARD_L);
+ //   setFixedSize(1024,768);
+	setFixedSize(WINDOW_W,WINDOW_L);
+    log = new QTextEdit;
+    log->setReadOnly(true);
+	log->setGeometry(0,0,200,120);
 }
 
 MainWindow::~MainWindow()
 {
+//    delete reg;
+//	if(chooseMode)
+//    delete chooseMode;
+//	if(waiting)
+//    delete waiting;
+//    delete myHands;
+//    delete vHands;
+//    delete keepers;
+//    for(int i = 0; i != vKeepers.size(); i++)
+//        delete vKeepers[i];
+//    for(int i = 0; i != icons.size(); i++)
+//        delete icons[i];
+//    for(int i = 0; i != cardNum.size(); i++)
+//        delete cardNum[i];
+//    delete rules;
+//    delete goals;
+//    delete vRules;
+//    delete vGoals;
+//    delete presentDspl;
+//    delete presentCard;
+//    for(int i = 0; i != droppedCards.size(); i++)
+//        delete droppedCards[i];
+//    delete confirm;
+//    delete layout;
+////    delete myArea;
+////    delete competitors;
+////    delete table;
+//    for(int i = 0; i != oneArea.size(); i++)
+//        delete oneArea[i];
+//    for(int i = 0; i != names.size(); i++)
+//        delete names[i];
+//    for(int i = 0; i != lProfiles.size(); i++)
+//        delete lProfiles[i];
+//    delete msgBox;
+//    for(int i = 0; i != tcards.size(); i++)
+//        delete tcards[i];
+
 }
 
 void MainWindow::reg_ok_clicked()
 {
     myName = reg->name->text();
-//    player = new Client(myName);
+
     reg->hide();
     chooseMode->show();
 }
@@ -41,470 +92,614 @@ void MainWindow::reg_cancel_clicked()
 }
 
 void MainWindow::mode_host_clicked()
-{
-    //    connectServer("127.0.0.1");
-    server = new Server;
-    //听说这里应该建立子进程
-    msgBox.connectServer(q2s("127.0.0.1"));
+{  
+    server = new ServerThread;
+    server->start();
+    msgBox->connectServer("127.0.0.1");
+	//tcpSocket->abort();
+	//tcpSocket->connectToHost("127.0.0.1",PORT);	
     waiting = new Waiting(true);
+    connect(waiting->ai_s,SIGNAL(clicked()),this,SLOT(createAI()));
+    connect(waiting->ai_h,SIGNAL(clicked()),this,SLOT(createAI()));
+	chooseMode->hide();
     waiting->show();
-//    awaitOthers();
-    if(!msgBox.createMsg(REGISTER,q2s(myName)))
+    connect(this,SIGNAL(roomFull()),waiting,SLOT(enableStart()));
+
+    if(!msgBox->createMsg(REGISTER,q2s(myName)))
         error();
-//    emit serverConnected();
-    processMsg();
+
+    //processMsg();
 }
 
 void MainWindow::mode_part_clicked()
 {
-    while(1){
-        bool ok = false;
-        //请输入IP
-        QString ip = QInputDialog::getText(this,"Fluxx","Please enter the IP address of your host",QLineEdit::Normal,QString::null,&ok);
-        //按下OK且IP不为空
-        if(ok && !ip.isEmpty()){
-            if(!msgBox.connectServer(q2s(ip)))//连接失败
-                QMessageBox::warning(NULL, "Oops~", "Cannot connect to the server, please try another IP address.", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
-            else  {                 //连接成功
-                chooseMode->hide();
-                waiting = new Waiting(false);
-                waiting->show();
-//                awaitOthers();
-                if(!msgBox.createMsg(REGISTER,q2s(myName)))
-                    error();
-                processMsg();
-                return;
-        }
-        else
-            break;
-        }
+      bool ok = false;
+      QString ip = QInputDialog::getText(this,"Fluxx","Please enter the IP address of your host",QLineEdit::Normal,QString::null,&ok);
+        
+      if(ok && !ip.isEmpty()){
+//           if(!msgBox->connectServer(ip))
+/*                QMessageBox::warning(NULL, "Oops~", "Cannot connect to the server, please try another IP address.", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+            else  {       */   
+				//tcpSocket->abort(); //
+				//tcpSocket->connectToHost(ip,PORT); 
+          while(1){
+              if(!msgBox->connectServer(ip)){
+                  QMessageBox::warning(NULL, "Oops~", "Cannot connect to the server, please try another IP address.", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+              }
+              else break;
+          }
+      }
+      else{
+          return;
+      }
+      chooseMode->hide();
+      waiting = new Waiting(false);
+      waiting->show();
+      waiting->resize(400,300);
+      if(!msgBox->createMsg(REGISTER,q2s(myName)))
+          error();
+}
+
+void MainWindow::createAI(){
+    if(dynamic_cast<QPushButton*>(sender())->text() == SIMPLE_AI){
+        AIthread* tai = new AIthread(true);
+        ai.push_back(tai);
+        tai->start();
+    }
+    else{
+        AIthread* tai = new AIthread(false);
+        ai.push_back(tai);
+        tai->start();
     }
 }
 
 
+const Card* MainWindow::toCard(QGraphicsItem* item)
+{
+    for(int i = 0; i != CardLib::getLib().getCardNum(); i++){
+        if(CardLib::getLib().getCard(i)->getType()*100+CardLib::getLib().getCard(i)->getNum() == item->data(0).toInt())
+            return CardLib::getLib().getCard(i);
+    }
+	return CardLib::getLib().getCard(0);
+}
+
+
 void MainWindow::processMsg(){
-        if(!msgBox.getMsg(tmsg))
+		
+        if(!msgBox->getMsg(tmsg))
             error();
+        disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(processMsg()));
         switch(tmsg){
-        case ADD_PLAYER:    addPlayer();break;
-        case GAME_START:    initGame();break;
-        case ROUND_BEGIN:   roundBegin();break;
+        case ADD_PLAYER:   connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(addPlayer()));break;
+        case GAME_START:   connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(initGame()));break;
+        case ROUND_BEGIN:  connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(roundBegin()));break;
 
 
-        //commands MODIFICATION
+        
         case PLAY_C:        playCard();break;
-        case DROP_CARD_C:   dropCard();break;
-        case DROP_KEEPER_C: dropKeeper();break;
-        case DROP_RULE_C:   dropRule();break;
+        case DROP_CARD_C:   connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(dropCard()));break;
+        case DROP_KEEPER_C: connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(dropKeeper()));break;
+        case DROP_RULE_C:   connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(dropRule()));break;
         case CHOOSE_PLAYER_C:choosePlayer();break;
         case CHOOSE_KEEPER_C:chooseKeeper();break;
         case EXCHANGE_KEEPER_C:exchangeKeeper();break;
         case CHOOSE_GOAL_C: chooseGoal();break;
 
-        //updates
-        case CARD_NUM:      cardnumUpdate();break;
-        case RULE:          ruleUpdate();break;
-        case KEEPER_UPDATE: keeperUpdate();break;
-        case CARD_UPDATE:   cardUpdate();break;
+        
+        case CARD_NUM:      connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(cardnumUpdate()));break;
+        case RULE:          connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(ruleUpdate()));break;
+        case KEEPER_UPDATE: connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(keeperUpdate()));break;
+        case CARD_UPDATE:   connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(cardUpdate()));break;
 
-        //information
-        case CARD_PLAYED:   cardPlayed();break;
-        case CARD_DROPED:   cardDropped();break;
-//        case CARD_STOLEN:   cardStoled();break;
-        case GAME_OVER:     gameOver();break;
+        
+        case CARD_PLAYED:   connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(cardPlayed()));break;
+        case CARD_DROPED:   connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(cardDropped()));break;
+
+        case GAME_OVER:     connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(gameOver()));break;
 
         }
 }
 
 void MainWindow::addPlayer(){
-    if(msgBox.getMsg(ADD_PLAYER,tno,tname)){
-        if(tname == q2s(myName)){
+    if(msgBox->getMsg(ADD_PLAYER,tno,tname)){
+		playerName.push_back(s2q(tname));
+        waiting->addPlayer(tno,s2q(tname));
+        if(tname == q2s(myName))
             myNo = tno;
-            for(int i = 0; i != myNo; i++){
-                if(msgBox.getMsg(ADD_PLAYER,tno,tname)){
-                    playerName.push_back(s2q(tname));
-                    waiting->addPlayer(s2q(tname));
-                }
-                else
-                    error();
-            }
-            playerName[myNo] = s2q(myName);
-            waiting->addPlayer(myName);
-        }
-        else{
-            player[tno] = s2q(tname);
-            waiting->addPlayer(s2q(tname));
-        }
+        //    for(int i = 0; i != myNo; i++){
+        //        if(msgBox->getMsg(ADD_PLAYER,tno,tname)){
+        //            playerName.push_back(s2q(tname));
+        //            waiting->addPlayer(s2q(tname));
+        //        }
+        //        else
+        //            error();
+        //    }
+        //    playerName[myNo] = myName;
+        //    waiting->addPlayer(myName);
+        //}
+        //else{
+
+        //    waiting->addPlayer(s2q(tname));
+        //}
     }
     else
         error();
-    if(server && playerName.size() == PLAYER_NUM)
+    if(/*server &&*/ playerName.size() == CLIENT_MAX)
         emit roomFull();
-    processMsg();
+    connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(processMsg()));
+    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(addPlayer()));
+//    processMsg();
 }
 
 void MainWindow::initGame(){
-    //waiting for modification
+    
     waiting->hide();
     this->show();
-    if(msgBox.getMsg(GAME_START,tcards)){
-        //profiles & cardnum
-        for(int i = 0; i != PLAYER_NUM; i++){
-            //hands number
-            handsNum[i] = tcards.size();
-            QLabel* tnum = new QLabel("Hands Number:"+QString::number(handsNum[i]));
+    log->append("Game initializing...");
+    if(msgBox->getMsg(GAME_START,tcards)){
+        
+        for(int i = 0; i != CLIENT_MAX; i++){
+			handsNum[i] = tcards.size();
+			QLabel* tnum = new QLabel(str_num+QString::number(handsNum[i]),this);
+            if(i != myNo){
+				tnum->show();
+			}
             cardNum.push_back(tnum);
             QAvatar* ticon = new QAvatar(i,playerName[i],this);
             icons.push_back(ticon);
-            QLabel* temp = new QLabel(playerName[i],this);
+            ticon->show();
+            QLabel* temp = new QLabel(QString::number(i)+" "+playerName[i],this);
             names.push_back(temp);
-            QVBoxLayout* tprofile = new QVBoxLayout(this);
-            tprofile->addItem(temp);
-            tprofile->addItem(ticon);
+            temp->show();
+            QVBoxLayout* tprofile = new QVBoxLayout;
+            tprofile->setDirection(QBoxLayout::TopToBottom);
+            tprofile->addWidget(temp);
+            tprofile->addWidget(ticon);
             if(i != myNo)
-                tprofile->addItem(tnum);
+                tprofile->addWidget(tnum);
             lProfiles.push_back(tprofile);
         }
-        lProfiles[myNo]->addItem(confirm);
+        confirm = new QPushButton("confirm",this);
+        lProfiles[myNo]->addWidget(confirm);
 
-        //my hands
+        
         myHands = new QGraphicsScene(this);
-        connect(myHands,SIGNAL(changed(QList<QRectF>)),this,SLOT(rearrange()));
         for(int i = 0; i != tcards.size(); i++){
-            QCard* temp = new QCard(tcards[i],HAND);
+            QCard* temp = new QCard(tcards[i],QHAND);
             myHands->addItem(temp);
-            temp->setPos(85*i,0);
+            temp->setPos((CARD_W+HAND_S)*i,0);
         }
         vHands = new QGraphicsView(myHands);
+        vHands->setSceneRect(0,-10,HAND_MAX*(CARD_W+HAND_S),HAND_L);
 
-        //keepers
+        
         keepers = new QGraphicsScene(this);
-        connect(keepers,SIGNAL(changed(QList<QRectF>)),this,SLOT(reKeepers(QList<RectF>)));
-        for(int i = 0; i != PLAYER_NUM; i++){
+        for(int i = 0; i != CLIENT_MAX; i++){
 //            QGraphicsScene* tscene = new QGraphicsScene(this);
 //            connect(tscene,SIGNAL(changed(QList<QRectF>)),this,SLOT(reKeepers()));
-//            keepers.push_back(tscene);
-            QGraphicsView* tview = new QGraphicsView(this);
-            tview->setScene(tscene);
-            tview->setSceneRect(0,200*i,140,140);
-            vKeepers.push_back(tview);
-            rKeepers->push_back(QRectF(0,200*i,140,140));
-        }
 
-        //layouts
-        //my area
-        myArea = new QHBoxLayout(this);
-        myArea->addItem(vKeepers[myNo]);
-        myArea->addItem(vHands);
+            QGraphicsView* tview = new QGraphicsView(this);
+            tview->setScene(keepers);
+            tview->setSceneRect(0,KEEPER_VL*i-20,KEEPER_VW,KEEPER_VL);
+            vKeepers.push_back(tview);
+            rKeepers.push_back(QRectF(0,KEEPER_VL*i,KEEPER_VW,KEEPER_VL));
+        }
+        
+        myArea = new QHBoxLayout;
+        myArea->addWidget(vKeepers[myNo]);
+        myArea->addWidget(vHands);
         myArea->addLayout(lProfiles[myNo]);
 
-        //competitors
-        for(int i = 1; (myNo+i)%PLAYER_NUM != myNo; i++){
-            QHBoxLayout* tarea = new QHBoxLayout(this);
-            tarea->addLayout(lProfiles[(i+myNo)%PLAYER_NUM]);
-            tarea->addItem(vKeepers[(i+myNo)%PLAYER_NUM]);
+        
+        competitors = new QHBoxLayout;
+        for(int i = 1; (myNo+i)%CLIENT_MAX != myNo; i++){
+            QHBoxLayout* tarea = new QHBoxLayout;
+            tarea->addLayout(lProfiles[(i+myNo)%CLIENT_MAX]);
+            tarea->addWidget(vKeepers[(i+myNo)%CLIENT_MAX]);
             competitors->addLayout(tarea);
         }
 
-        //table
-        table = new QHBoxLayout(this);
-        presentDspl = new QLabel(str_dspl.arg(" "));
+        
+        table = new QHBoxLayout;
+        presentDspl = new QLabel(str_dspl+" ",this);
+//        presentDspl->show();
         rules = new QGraphicsScene;
-        connect(rules,SIGNAL(changed(QList<QRectF>)),this,SLOT(reRules()));
-        QCard* trule = new QCard(CardLib::getLib().getCard(0),qcardType::RULE);
+
+        QCard* trule = new QCard(CardLib::getLib().getCard(0),QRULE);
         rules->addItem(trule);
-//        trule->setPos(0,0);
-        truel = new QCard(CardLib::getLib().getCard(1),qcardType::RULE);
+
+        trule = new QCard(CardLib::getLib().getCard(1),QRULE);
         rules->addItem(trule);
-//        trule->setPos(80,0);
+        trule->setPos(CARD_W,0);
+
         vRules = new QGraphicsView(rules);
+        vRules->setSceneRect(0,0,RULE_MAX*CARD_W,CARD_L);
         goals = new QGraphicsScene;
-        connect(goals,SIGNAL(changed(QList<QRectF>)),this,SLOT(reGoal()));
         vGoals = new QGraphicsView(goals);
-        table->addItem(presentDspl);
-        table->addSpacing(100);
+        vGoals->setSceneRect(0,0,CARD_W,CARD_L);
+
+
+        table->addWidget(log);
+//        table->addSpacing(100);
+        table->addWidget(presentCard);
+//        table->addSpacing(120);
+        table->addWidget(vRules);
+        table->addWidget(vGoals);
 
         layout = new QVBoxLayout(this);
         layout->addLayout(competitors);
+//        layout->addStretch(200);
         layout->addLayout(table);
+//        layout->addStretch(200);
         layout->addLayout(myArea);
+
+        //setLayout(layout);
     }
     else
         error();
-    processMsg();
+//    processMsg();
+    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(initGame()));
+    connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(processMsg()));
 }
 
 void MainWindow::roundBegin(){
-    if(msgBox.getMsg(ROUND_BEGIN,tno,tinfo)){
-        bool random = tinfo?true:false;
+    connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(processMsg()));
+    if(msgBox->getMsg(ROUND_BEGIN,tno,tinfo)){
+        randomStart = tinfo?true:false;
         if(tno == myNo){
-            presentDspl->setText(str_dspl.arg("YOU"));
-            if(msgBox.getMsg(CARD_UPDATE,tcards,tinfo)){
-                if(random){
-                    msgBox.createMsg(PLAY_I,tcards[0]);
-                    for(int i = 1; i != tcards.size(); i++){
-                        myHands->addItem(new QCard(tcards[i],qcardType::HAND));
-                    }
-                }
-                else{
-                    for(int i = 0; i != tcards.size(); i++)
-                        myHands->addItem(new QCard(tcards[i]),qcardType::HAND);
-                }
-            }
-            else
-                error();
+            presentDspl->setText(str_dspl+"YOU");
+            log->append("It's your round now!");
         }
         else{
-            presentDspl->setText(str_dspl.arg(playerName[tno]));
-            if(msgBox.getMsg(CARD_NUM,tno,tinfo)){
-                handsNum[tno] = tinfo;
-                cardNum[tno]->setText(QString::number(tinfo));//GUI
-            }
-            else
-                error();
+            presentDspl->setText(str_dspl+QString::number(tno)+" "+playerName[tno]);
+            log->append("It's player " + playerName[tno] + "'s round now.");
         }
     }
     else
         error();
-    processMsg();
+//    processMsg();
+    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(roundBegin()));
+
 }
 
 void MainWindow::cardPlayed(){
-    if(msgBox.getMsg(CARD_PLAYED,tno,tcards)){
+    connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(processMsg()));
+    if(msgBox->getMsg(CARD_PLAYED,tcards,tno)){
         handsNum[tno]--;
-        if(tno != myNo)
-            cardNum[tno]->setText(QString::number(handsNum[tno]));
+		QString type;
+		switch(tcards[0]->getType()){
+			case Card::NEW_RULE:	type = "NEW RULE";break;
+			case Card::KEEPER:		type = "KEEPER";break;
+			case Card::ACTION:		type = "ACTION CARD";break;
+			case Card::GOAL:		type = "GOAL";break;
+			default:break;
+			}
+        if(tno != myNo){
+            cardNum[tno]->setText(str_num+QString::number(handsNum[tno]));
+			log->append("Player "+playerName[tno]+" has played a "+ type+": " +s2q(tcards[0]->getName()));
+        }
         else{
-            QList<QGraphicsItem*> hands = myHands->items();//GUI
+            log->append("You have played a "+ type+": " +s2q(tcards[0]->getName()));
+            QList<QGraphicsItem*> hands = myHands->items();
             for(int i = 0; i != hands.size(); i++){
                 if(hands[i]->data(0) == toNo(tcards[0])){
                     myHands->removeItem(hands[i]);
                     delete hands[i];
+                    break;
                 }
             }
+			reHands();
         }
-        presentCard.setPixmap(QPixmap(QString::number(toNo(tcards[0]))));
+        presentCard->setPixmap(QPixmap(":/cards/"+s2q(tcards[0]->getAddr())).scaled(CARD_W,CARD_L));
+//        presentCard->setGeometry(360,240,CARD_W,CARD_L);
+//        presentCard->set
+        presentCard->show();
         QTimer::singleShot(2000,this,SLOT(clearPresent()));
     }
     else
         error();
-    processMsg();
+//    processMsg();
+    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(cardPlayed()));
+
 }
 
-// response to command
+
 void MainWindow::playCard(){
+    log->append("Pleas play a card!");
     enable(myHands,1);
-    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice(PLAY_I)));
+    confirm->setEnabled(true);
+    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice()));
+//    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(playCard()));
 }
 
 void MainWindow::dropCard(){
-    if(!msgBox.getMsg(DROP_CARD_C,tinfo))
+    if(!msgBox->getMsg(DROP_CARD_C,tinfo))
         error();
+    log->append("Please drop "+QString::number(tinfo)+" cards.");
     enable(myHands,tinfo);
-    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice(DROP_CARD_I)));
+    confirm->setEnabled(true);
+    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice()));
+    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(dropCard()));
 }
 
 void MainWindow::dropKeeper(){
-    if(!msgBox.getMsg(DROP_KEEPER_C,tinfo))
+    if(!msgBox->getMsg(DROP_KEEPER_C,tinfo))
         error();
-    enable(keepers[myNo],tinfo);
-    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice(DROP_KEEPER_I)));
+	log->append("Please drop " + QString::number(tinfo)+" keepers.");
+    enable(keepers,tinfo);
+    confirm->setEnabled(true);
+    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice()));
+    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(dropKeeper()));
 }
 
 void MainWindow::dropRule(){
-    if(!msgBox.getMsg(DROP_RULE_C,tinfo))
+    if(!msgBox->getMsg(DROP_RULE_C,tinfo))
         error();
+	log->append("Please drop " + QString::number(tinfo)+" rules.");
     enable(rules,tinfo);
-    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice(DROP_RULE_I)));
+    confirm->setEnabled(true);
+    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice()));
+    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(dropRule()));
 }
 
 void MainWindow::choosePlayer(){
     enable();
-    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice(CHOOSE_PLAYER_I)));
+	log->append("Please choose a player.");
+    confirm->setEnabled(true);
+    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice()));
+//    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(choosePlayer()));
 }
 
 void MainWindow::chooseKeeper(){
+	log->append("Please choose a keeper.");
     enable(false);
-    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice(CHOOSE_KEEPER_I)));
+    confirm->setEnabled(true);
+    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice()));
+//    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(chooseKeeper()));
 }
 
 void MainWindow::exchangeKeeper(){
+	log->append("Please choose a keeper of others and a keeper of yours.");
     enable(true);
-    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice(EXCHANGE_KEEPER_I)));
+    confirm->setEnabled(true);
+    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice()));
+//    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(exchangeKeeper()));
 }
 
 void MainWindow::chooseGoal(){
+	log->append("Please choose a goal.");
     enable(goals,1);
-    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice(CHOOSE_GOAL_I)));
+    confirm->setEnabled(true);
+    connect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice()));
+//    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(chooseGoal()));
 }
-// END OF MODIFICATION
 
-//updates
+
+
 void MainWindow::cardnumUpdate(){
-    if(msgBox.getMsg(CARD_NUM,tno,tinfo)){
+
+    if(msgBox->getMsg(CARD_NUM,tno,tinfo)){
+		if(tinfo > handsNum[tno])
+			log->append("Player " + playerName[tno]+" has drawn " + QString::number(tinfo-handsNum[tno]) + " hands");
+		else if(tinfo < handsNum[tno])
+			log->append("Player " + playerName[tno]+" has lost " + QString::number(handsNum[tno]-tinfo) + " hands.");
+		else
+			log->append("Player " + playerName[tno]+" has " + QString::number(handsNum[tno]-tinfo) + " hands.");
         handsNum[tno] = tinfo;
-        cardNum[tno]->setText(QString::number(tinfo));
+        cardNum[tno]->setText(str_num+QString::number(tinfo));
     }
     else
         error();
-    processMsg();
+    //processMsg();
+    connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(processMsg()));
+    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(cardnumUpdate()));
+
 }
 
 void MainWindow::ruleUpdate(){
-    QList<QGraphicsItem> items(rules->items());
-    for(int i = 0; i != items.size(); i++){
-        rules->removeItem(items[i]);
-        delete items[i];
-    }
-    items = goals->items();
-    for(int i = 0; i != items.size(); i++){
-        goals->removeItem(items[i]);
-        delete items[i];
-    }
-    if(msgBox.getMsg(RULE,tcards)){
+    connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(processMsg()));
+//    connect(rules,SIGNAL(changed(QList<QRectF>)),this,SLOT(reRules()));
+//    connect(goals,SIGNAL(changed(QList<QRectF>)),this,SLOT(reGoal()));
+
+    if(msgBox->getMsg(RULE,tcards)){
+        QList<QGraphicsItem*> items(rules->items());
+        for(int i = 0; i != items.size(); i++){
+            rules->removeItem(items[i]);
+            delete items[i];
+        }
+        items = goals->items();
+        for(int i = 0; i != items.size(); i++){
+            goals->removeItem(items[i]);
+            delete items[i];
+        }
+		QString newrules;
         for(int i = 0; i != tcards.size(); i++){
-            switch(tcards[i]->_type){
+            switch(tcards[i]->getType()){
             case Card::BASIC_RULE:
-            case Card::NEW_RULE:
-                rules->addItem(new QCard(tcards[i],qcardType::RULE));
-                break;
+            case Card::NEW_RULE:{
+                QCard* temp = new QCard(tcards[i],QRULE);
+                rules->addItem(temp);
+                temp->setPos(CARD_W*i,0);
+                break;}
             case Card::GOAL:                      
-                goals->addItem(new QCard(tcards[i],qcardType::GOAL));
+                goals->addItem(new QCard(tcards[i],QGOAL));
                 break;
-                //更新当前目标
+                
             default:    break;
             }
+			newrules = newrules + s2q(tcards[i]->getName()) + " ";
         }
+		log->append("Now the rules are: "+newrules);
     }
     else
         error();
-    processMsg();
+//    disconnect(goals,SIGNAL(changed(QList<QRectF>)),this,SLOT(reGoal()));
+//    disconnect(rules,SIGNAL(changed(QList<QRectF>)),this,SLOT(reRules()));
+    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(ruleUpdate()));
+
+   // //processMsg();
 }
 
 void MainWindow::keeperUpdate(){
-    if(msgBox.getMsg(KEEPER_UPDATE,tno,tcards,tinfo)){
-        //update keepers
-        //keepers usually deleted with notification
-        QList<QGraphicsItem*> items = keepers->items(QRectF(0,200*tno,140,140));
+    connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(processMsg()));
+//    connect(keepers,SIGNAL(changed(QList<QRectF>)),this,SLOT(reKeepers(QList<QRectF>)));
+    if(msgBox->getMsg(KEEPER_UPDATE,tcards,tno,tinfo)){
+        QList<QGraphicsItem*> items = keepers->items(rKeepers[tno]);
         switch(tinfo){
-        case 0:
+        case 2:{
             for(int i = 0; i != items.size(); i++){
                 keepers->removeItem(items[i]);
                 delete items[i];
             }
+			QString hiskeepers;
             for(int i = 0; i != tcards.size(); i++){
-                QCard* temp = new QCard(tcards[i],qcardType::KEEPER);
-                temp->setPixmap("s"+QString::number(temp->data(0).toInt()));
+                QCard* temp = new QCard(tcards[i],QKEEPER);
+                temp->setPixmap(QPixmap(":/cards/s"+QString::number(temp->data(0).toInt())).scaled(KEEPER_W,KEEPER_L));
                 keepers->addItem(temp);
-//                temp->setPos(140*i/4,35*i%4);
+                temp->setPos(i/KNUM_ROW*KEEPER_W,KEEPER_VL*tno+KEEPER_L*(i%KNUM_ROW));
+				hiskeepers = hiskeepers + s2q(tcards[i]->getName()) + " ";
             }
-            ;//notifications
-            break;
-        case 1:
+            log->append("Now player " + playerName[tno]+"'s keepers are: " + hiskeepers);
+            break;}
+        case 1:{
             for(int i = 0; i != tcards.size(); i++){
-                QCard* temp = new QCard(tcards[i],qcardType::KEEPER);
-                temp->setPixmap("s"+QString::number(temp->data(0).toInt()));
+                QCard* temp = new QCard(tcards[i],QKEEPER);
+                temp->setPixmap(QPixmap(":/cards/s"+QString::number(temp->data(0).toInt())).scaled(112,28));
                 keepers->addItem(temp);
-//                temp->setPos(140*(items.size()+i)/4,35*(items.size())+i);
+                temp->setPos(items.size()/KNUM_ROW*KEEPER_W,KEEPER_VL*tno+KEEPER_L*(items.size()%KNUM_ROW));
+				log->append("Player " + playerName[tno]+" has gained a keeper: " + s2q(tcards[i]->getName()));
             }
-            break;
-        case 2:
+            break;}
+        case 0:{
             for(int i = 0; i != tcards.size(); i++){
                 for(int j = 0; j != items.size(); i++)
                     if(toNo(tcards[i]) == items[j]->data(0).toInt()){
                         keepers->removeItem(items[j]);
                         delete items[j];
                     }
+				log->append("Player " + playerName[tno]+" has lost a keeper: " + s2q(tcards[i]->getName()));
             }
-            ;//notifications
-            break;
+            items = keepers->items(rKeepers[tno]);
+            for(int i = 0; i != items.size(); i++)
+                items[i]->setPos(i/KNUM_ROW*KEEPER_W,KEEPER_VL*tno+i%KNUM_ROW*KEEPER_L);
+            ;
+            break;}
         default:    break;
         }
     }
     else
         error();
-    processMsg();
+//    disconnect(keepers,SIGNAL(changed(QList<QRectF>)),this,SLOT(reKeepers(QList<QRectF>)));
+    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(keeperUpdate()));
+
+    ////processMsg();
 }
 
 void MainWindow::cardUpdate(){
-    if(msgBox.getMsg(CARD_UPDATE,tcards,tinfo)){
+    connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(processMsg()));
+    if(msgBox->getMsg(CARD_UPDATE,tcards,tinfo)){
+//        connect(myHands,SIGNAL(changed(QList<QRectF>)),this,SLOT(reHands()));
         switch(tinfo){
-        case 0:
-            QList<QGraphicsItem> items(myHands->items());
+        case 2:{
+            QList<QGraphicsItem*> items(myHands->items());
             for(int i = 0; i != items.size(); i++){
                 myHands->removeItem(items[i]);
                 delete items[i];
             }
+			QString newhands;
             for(int i = 0; i != tcards.size(); i++){
-                myHands->addItem(new QCard(tcards[i],HAND));
+                QCard* temp = new QCard(tcards[i],QHAND);
+                myHands->addItem(temp);
+				newhands = newhands + s2q(tcards[i]->getName()) + " ";
+             }
+			log->append("Now your hands are: " + newhands);
+            reHands();
+            break;}
+        case 1:{
+            if(randomStart){
+                std::vector<const Card*> tt;
+                tt.push_back(tcards[0]);
+                msgBox->createMsg(PLAY_I,tt);
             }
-            break;
-        case 1:
             for(int i = 0; i != tcards.size(); i++){
-                //
-                myHands->addItem(new QCard(tcards[i],HAND));
+                QCard* temp = new QCard(tcards[i],QHAND);
+                myHands->addItem(temp);
+				log->append("You have drawn a hand: " + s2q(tcards[i]->getName()));
             }
-            break;
-        case 2:
-            ;//find and delete
-            ;//usually with notification
-            QList<QGraphicsItem> items(myHands->items());
+            reHands();
+            break;}
+        case 0:{
+            ;
+            ;
+            QList<QGraphicsItem*> items(myHands->items());
             for(int i = 0; i != tcards.size(); i++){
                 for(int j = 0; j != items.size(); j++){
-                    if(items[j].data(0) == toNo(tcards[i])){
+                    if(items[j]->data(0) == toNo(tcards[i])){
                         myHands->removeItem(items[j]);
                         delete items[j];
                     }
                 }
+				log->append("You have lost a hand: " + s2q(tcards[i]->getName()));
             }
-            break;
+            reHands();
+            break;}
         }
     }
     else
         error();
-    processMsg();
+//    disconnect(myHands,SIGNAL(changed(QList<QRectF>)),this,SLOT(reHands()));
+    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(cardUpdate()));
+
+    //processMsg();
 }
 
 void MainWindow::cardDropped(){
-    if(msgBox.getMsg(CARD_DROPED,tno,tcards)){
+    connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(processMsg()));
+    if(msgBox->getMsg(CARD_DROPED,tcards,tno)){
         if(tno == myNo){
-            QList<QGraphicsItem> items(myHands->items());
+			QString dropped;
+            QList<QGraphicsItem*> items(myHands->items());
             for(int i = 0; i != tcards.size(); i++){
                 for(int j = 0; j != items.size(); j++){
-                    if(items[j].data(0) == toNo(tcards[i])){
+                    if(items[j]->data(0) == toNo(tcards[i])){
                         myHands->removeItem(items[j]);
                         delete items[j];
                     }
                 }
-                QLabel* temp = new QLabel(QPixmap(QString::number(toNo(tcards[i]))));
+				dropped = dropped + s2q(tcards[i]->getName());
+                QLabel* temp = new QLabel;
+                temp->setPixmap(QPixmap(QString::number(toNo(tcards[i]))));
                 temp->setGeometry(400-40*tcards.size()+80*i,240,80,120);
                 droppedCards.push_back(temp);
             }
+			log->append("You have dropped these cards: " + dropped);
             QTimer::singleShot(2000,this,SLOT(clearPresent()));
         }
-        else{
-            //display
+        else{           
+			QString dropped;
             for(int i = 0; i != tcards.size(); i++){
-                QLabel* temp = new QLabel(QPixmap(QString::number(toNo(tcards[i]))));
+                QLabel* temp = new QLabel;
+                temp->setPixmap(QPixmap(QString::number(toNo(tcards[i]))));
                 temp->setGeometry(400-40*tcards.size()+80*i,240,80,120);
                 droppedCards.push_back(temp);
+				dropped = dropped + s2q(tcards[i]->getName());
             }
+			log->append("Player " + playerName[tno] +" have dropped these cards: " + dropped);
             QTimer::singleShot(2000,this,SLOT(clearPresent()));
             handsNum[tno] -= tcards.size();
-            cardNum[tno]->setText(QString::number(handsNum[tno]));
+            cardNum[tno]->setText(str_num+QString::number(handsNum[tno]));
         }
     }
     else
         error();
-    processMsg();
+    ////processMsg();
+    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(cardDropped()));
+
 }
 
-//void MainWindow::cardStoled(){
-
-//}
-
 void MainWindow::gameOver(){
-    if(msgBox.getMsg(GAME_OVER,tno)){
+    connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(processMsg()));
+    if(msgBox->getMsg(GAME_OVER,tno)){
         if(tno == myNo){
             QMessageBox::information(NULL, "Game Over", "Congratulations! You win!", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
         }
@@ -515,15 +710,17 @@ void MainWindow::gameOver(){
     }
     else
         error();
+    disconnect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(gameOver()));
+
 }
 
 void MainWindow::enable(int no){
     for(int i = 0; i != icons.size(); i++){
         if(i != myNo){
           icons[i]->setSelectable(true);
-          connect(icons[i],SIGNAL(clicked()),this,SLOT(chooseConstraint(no)));
+          connect(icons[i],SIGNAL(clicked()),this,SLOT(chooseConstraint()));
         }
-    }
+     }
 }
 
 void MainWindow::enable(QGraphicsScene *cards, int i){
@@ -531,149 +728,188 @@ void MainWindow::enable(QGraphicsScene *cards, int i){
     for(int i = 0; i != items.size(); i++){
         items[i]->setFlag(QGraphicsItem::ItemIsSelectable);
     }
-    connect(cards,SIGNAL(selectionChanged()),this,SLOT(chooseConstraint(i)));
+    connect(cards,SIGNAL(selectionChanged()),this,SLOT(chooseConstraint()));
 }
 
 void MainWindow::enable(bool exchange)
 {
-    if(true){
+    if(exchange){
         QList<QGraphicsItem*> items = keepers->items();
         for(int i = 0; i != items.size(); i++){
             items[i]->setFlag(QGraphicsItem::ItemIsSelectable);
-            connect(items[i],SIGNAL(clicked()),this,SLOT(chooseConstraint(exchange)));
+            connect(keepers,SIGNAL(selectionChanged()),this,SLOT(chooseConstraint()));
         }
     }
     else{
-        for(int i = 0; i != PLAYER_NUM; i++){
+        for(int i = 0; i != CLIENT_MAX; i++){
             if(i == myNo)
                 continue;
-            QList<QGraphicsItem*> items = keepers->items(rKeepers[i]);
-            for(int j = 0; j != items.size(); i++){
-                connect(items[j],SIGNAL(clicked()),this,SLOT(chooseConstraint(exchange)));
+            QList<QGraphicsItem*> items(keepers->items(rKeepers[i]));
+            for(int j = 0; j != items.size(); j++){
+                connect(keepers,SIGNAL(selectionChanged()),this,SLOT(chooseConstraint()));
                 items[j]->setFlag(QGraphicsItem::ItemIsSelectable);
             }
         }
     }
 }
 
-// the following are slots function
-void MainWindow::sendChoice(MsgType type){
-    switch(type){
-    case CHOOSE_PLAYER_I:
+void MainWindow::disable(){
+    for(int i = 0; i != icons.size(); i++)
+        icons[i]->setSelectable(false);
+    QList<QGraphicsItem*> items = myHands->items();
+    for(int i = 0; i != items.size(); i++)
+        items[i]->setFlag(QGraphicsItem::ItemIsSelectable,false);
+    items = keepers->items();
+    for(int i = 0; i != items.size(); i++)
+        items[i]->setFlag(QGraphicsItem::ItemIsSelectable,false);
+    items = rules->items();
+    for(int i = 0; i != items.size(); i++)
+        items[i]->setFlag(QGraphicsItem::ItemIsSelectable,false);
+    items = goals->items();
+    for(int i = 0; i != items.size(); i++)
+        items[i]->setFlag(QGraphicsItem::ItemIsSelectable,false);
+}
+
+void MainWindow::sendChoice(){
+    switch(tmsg){
+    case CHOOSE_PLAYER_C:{
         for(int i = 0; i != icons.size(); i++)
             if(icons[i]->isSelected()){
                 tno = i;
-                break;
             }
-        if(!msgBox.createMsg(CHOOSE_PLAYER_I,to))
+        if(!msgBox->createMsg(CHOOSE_PLAYER_I,tno))
             error();
-        break;
-    case PLAY_I:
-    case DROP_CARD_I:
+        break;}
+    case PLAY_C:
+    {
+        tcards.clear();
         QList<QGraphicsItem*> sel(myHands->selectedItems());
         for(int i = 0; i != sel.size(); i++)
             tcards.push_back(toCard(sel[i]));
-        if(!msgBox.createMsg(type,tcards))
-            error;
-        break;
-    case DROP_KEEPER_I:
-    case CHOOSE_KEEPER_I:
+        if(!msgBox->createMsg(PLAY_I,tcards))
+            error();
+        break;}
+    case DROP_CARD_C:
+    {
+        tcards.clear();
+        QList<QGraphicsItem*> sel(myHands->selectedItems());
+        for(int i = 0; i != sel.size(); i++)
+            tcards.push_back(toCard(sel[i]));
+        if(!msgBox->createMsg(DROP_CARD_I,tcards))
+            error();
+        break;}
+    case DROP_KEEPER_C:{
+        tcards.clear();
         QList<QGraphicsItem*> sel(keepers->selectedItems());
         for(int i = 0; i != sel.size(); i++)
             tcards.push_back(toCard(sel[i]));
-        if(!msgBox.createMsg(type,tcards))
-            error;
-        break;
-    case DROP_RULE_I:
+        if(!msgBox->createMsg(DROP_KEEPER_I,tcards))
+            error();
+        break;}
+    case CHOOSE_KEEPER_C:
+    case EXCHANGE_KEEPER_C:{
+        tcards.clear();
+        QList<QGraphicsItem*> sel(keepers->selectedItems());
+        for(int i = 0; i != sel.size(); i++)
+            tcards.push_back(toCard(sel[i]));
+        if(!msgBox->createMsg(CHOOSE_KEEPER_I,tcards))
+            error();
+        break;}
+    case DROP_RULE_C:{
+        tcards.clear();
         QList<QGraphicsItem*> sel(rules->selectedItems());
         for(int i = 0; i != sel.size(); i++)
             tcards.push_back(toCard(sel[i]));
-        if(!msgBox.createMsg(type,tcards))
-            error;
-        break;
-    case CHOOSE_GOAL_I:
+        if(!msgBox->createMsg(DROP_RULE_I,tcards))
+            error();
+        break;}
+    case CHOOSE_GOAL_C:{
+        tcards.clear();
         QList<QGraphicsItem*> sel(goals->selectedItems());
         for(int i = 0; i != sel.size(); i++)
             tcards.push_back(toCard(sel[i]));
-        if(!msgBox.createMsg(type,tcards))
-            error;
-        break;
+        if(!msgBox->createMsg(CHOOSE_GOAL_I,tcards))
+            error();
+        break;}
     default:    break;
     }
-    disconnect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice(MsgType)));
+    disable();
+    disconnect(confirm,SIGNAL(clicked()),this,SLOT(sendChoice()));
     confirm->setEnabled(false);
-    processMsg();
+    ////processMsg();
+    connect(msgBox->tcpSocket,SIGNAL(readyRead()),this,SLOT(processMsg()));
 }
 
 void MainWindow::reHands()
 {
-    QGraphicsScene* theScene = dynamic_cast<QGraphicsScene*>(sender());
-    QList<QGraphicsItem*> items = theScene->items();
+    QList<QGraphicsItem*> items = myHands->items();
     if(items.size()>6){
         for(int i = 0; i != items.size(); i++)
-            items[i]->setPos(425.0/(items.size()-1)*i,0);
+            items[i]->setPos((HAND_W-CARD_W)/(float)(items.size())*i,0);
     }
     else
         for(int i = 0; i != items.size(); i++)
-            items[i]->setPos(85*i,0);
+            items[i]->setPos((CARD_W+HAND_S)*i,0);
 }
 
-void MainWindow::reKeepers(QList<QRectF> rect)
-{
-    QGraphicsScene* theScene = dynamic_cast<QGraphicsScene*>(sender());
-    int no = rect[0].bottom()/200;
-    QList<QGraphicsItem*> items = theScene->items(0,no*200,140,140);
-    for(int i = 0; i != items.size()/4; i++)
-        for(int j = 0; j != 4 && (4*i+j) != items.size(); j++)
-            items[i]->setPos(140*i,35*j+no*200);
-}
+//void MainWindow::reKeepers(QList<QRectF> rect)
+//{
+//    QGraphicsScene* theScene = dynamic_cast<QGraphicsScene*>(sender());
+//    int no = rect[0].bottom()/200;
+//    QList<QGraphicsItem*> items = theScene->items(QRectF(0,no*200,140,140));
+//    for(int i = 0; i != items.size()/4; i++)
+//        for(int j = 0; j != 4 && (4*i+j) != items.size(); j++)
+//            items[i]->setPos(140*i,35*j+no*200);
+//}
 
-void MainWindow::reRules()
-{
-    QGraphicsScene* theScene = dynamic_cast<QGraphicsScene*>(sender());
-    QList<QGraphicsItem*> items = theScene->items();
-    for(int i = 0; i != items.size(); i++)
-        items[i]->setPos(80*i,0);
-}
+//void MainWindow::reRules()
+//{
+//    QGraphicsScene* theScene = dynamic_cast<QGraphicsScene*>(sender());
+//    QList<QGraphicsItem*> items = theScene->items();
+//    for(int i = 0; i != items.size(); i++)
+//        items[i]->setPos(80*i,0);
+//}
 
-void MainWindow::reGoal()
-{
-    QGraphicsScene* theScene = dynamic_cast<QGraphicsScene*>(sender());
-    QList<QGraphicsItem*> items = theScene->items();
-    for(int i = 0; i != items.size(); i++)
-        items[i]->setPos(80*i,0);
-}
+//void MainWindow::reGoal()
+//{
+//    QGraphicsScene* theScene = dynamic_cast<QGraphicsScene*>(sender());
+//    QList<QGraphicsItem*> items = theScene->items();
+//    for(int i = 0; i != items.size(); i++)
+//        items[i]->setPos(80*i,0);
+//}
 
 void MainWindow::clearPresent()
 {
-    presentCard.clear();
+    presentCard->clear();
+	presentCard->setFixedSize(CARD_W,CARD_L);
     for(int i = 0; i != droppedCards.size(); i++){
         delete droppedCards[i];
     }
 }
 
-void MainWindow::chooseConstraint(int no)
+void MainWindow::chooseConstraint()
 {
     if(dynamic_cast<QAvatar*>(sender())){
         int counter = 0;
         for(int i = 0; i != icons.size(); i++)
             if(icons[i]->isSelected())
                 counter++;
-        if(counter == no){
+        if(counter == 1){
             for(int i = 0; i != icons.size(); i++)
                 if(!icons[i]->isSelected())
                     icons[i]->setSelectable(false);
         }
         else{
+//            confirm->setEnabled(true);
             for(int i = 0; i != icons.size(); i++)
-                if(!icons[i]->isSelectable())
                     icons[i]->setSelectable(true);
         }
     }
     else if(QGraphicsScene* scene = dynamic_cast<QGraphicsScene*>(sender())){
         QList<QGraphicsItem*> items(scene->items());
-        if(items[0]->data(1) == qcardType::KEEPER)
-            items = scene->items(rkeepers[myNo]);
+        int no = (tmsg == DROP_KEEPER_C || tmsg == DROP_RULE_C || tmsg == DROP_CARD_C)?tinfo:1;
+        if(tmsg == DROP_KEEPER_C)
+            items = scene->items(rKeepers[myNo]);
         if(scene->selectedItems().size() == no){
             for(int i = 0; i != items.size(); i++)
                 if(!items[i]->isSelected())
@@ -686,126 +922,39 @@ void MainWindow::chooseConstraint(int no)
     }
 }
 
-void MainWindow::chooseConstraint(bool exchange)
-{
-    if(exchange){
-        QList<QGraphicsItem*> sel = keepers->selectedItems();
-        switch(sel.size()){
-        case 0:     enable(true);break;
-        case 1:
-            confirm->setEnabled(false);
-            if(rKeepers[myNo].contains(sel[0]->boundingRect())){
-                QList<QGraphicsItem*> items(keepers->items(rKeepers[myNo]));
-                for(int i = 0; i != items.size(); i++)
-                    if(!items[i]->isSelected())
-                        items[i]->setFlag(QGraphicsItem::ItemIsSelectable,false);
-            }
-            else{
-                QList<QGraphicsItem*> items(keepers->items());
-                for(int i = 0; i != items.size(); i++)
-                    if(!items[i]->isSelected() && !rKeepers[myNo].contains(items[i]->boundingRect()))
-                        items[i]->setFlag(QGraphicsItem::ItemIsSelectable,false);
-            }
-            break;
-        case 2:
-          confirm->setEnabled(true);
-          QList<QGraphicsItem*> items(keepers->items());
-          for(int i = 0; i != items.size(); i++)
-              if(!items[i]->isSelected())
-                  items[i]->setFlag(QGraphicsItem::ItemIsSelectable,false);
-          break;
-        }
-    }
-}
+//void MainWindow::chooseConstraint(bool exchange)
+//{
+//    if(exchange){
+//        QList<QGraphicsItem*> sel = keepers->selectedItems();
+//        switch(sel.size()){
+//        case 0:     enable(true);break;
+//        case 1:
+//            confirm->setEnabled(false);
+//            if(rKeepers[myNo].contains(sel[0]->boundingRect())){
+//                QList<QGraphicsItem*> items(keepers->items(rKeepers[myNo]));
+//                for(int i = 0; i != items.size(); i++)
+//                    if(!items[i]->isSelected())
+//                        items[i]->setFlag(QGraphicsItem::ItemIsSelectable,false);
+//            }
+//            else{
+//                QList<QGraphicsItem*> items(keepers->items());
+//                for(int i = 0; i != items.size(); i++)
+//                    if(!items[i]->isSelected() && !rKeepers[myNo].contains(items[i]->boundingRect()))
+//                        items[i]->setFlag(QGraphicsItem::ItemIsSelectable,false);
+//            }
+//            break;
+//        case 2:
+//          confirm->setEnabled(true);
+//          QList<QGraphicsItem*> items(keepers->items());
+//          for(int i = 0; i != items.size(); i++)
+//              if(!items[i]->isSelected())
+//                  items[i]->setFlag(QGraphicsItem::ItemIsSelectable,false);
+//          break;
+//        }
+//    }
+//}
 
 void MainWindow::error(){
-    QMessageBox::warning(NULL, "Oops~", "Something wrong! ", QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
+    QMessageBox::warning(NULL, "Oops~", "Something wrong!"+QString::number(tmsg), QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes);
     close();
 }
-
-//void MainWindow::awaitOthers()
-//{
-//    connect(this,SIGNAL(roomFull()),waiting,SLOT(enableStart()));
-//    //receiving information of myself
-//    if(msgBox.createMsg(REGISTER,q2s(myName))){
-//        if(msgBox.getMsg(tmsg,myNo,tname)){
-//            if(tmsg == ADD_PLAYER)
-//                playerName[myNo] = s2q(tname);
-//            else{
-//                msgBox.createMsg(NACK);
-//                error();
-//            }
-//        }
-//        else
-//            error();
-//        if(msgBox.getMsg(tmsg)){
-
-//        }
-//        else
-//            error();
-//    }
-//    else
-//        error();
-
-//    //receiving information of other players entered before
-//    //and adding the namelist to GUI
-//    for(int i = 0; i != myNo; i++){
-//        if(msgBox.getMsg(tmsg,relatedPlayer,tname)){
-//            if(tmsg == ADD_PLAYER){
-//                waiting->addPlayer(tname);
-//                playerName[relatedPlayer] = s2q(tname);
-//            }
-//            else{
-//                msgBox.createMsg(NACK);
-//                error();
-//            }
-//        }
-//        else
-//            error();
-//    }
-//    waiting->addPlayer(myName);
-
-//    //waiting for the room to be full
-//    if(myNo == PLAYER_NUM-1)
-//        emit roomFull();
-//    else
-//      for(int i = 0; myNo+i != PLAYER_NUM-1; i++){
-//          if(msgBox.getMsg(ADD_PLAYER,relatedPlayer,tname)){
-//              if(tmsg == ADD_PLAYER){
-//                  ing->addPlayer(tname);
-//                  playerName[relatedPlayer] = s2q(tname);
-//              }
-//              else{
-//                  msgBox.createMsg(NACK);
-//                  error();
-//              }
-//          }
-//          else
-//              error();
-//      }
-//      emit roomFull();
-//      if(!server)
-//          awaitStart();
-//}
-
-//void MainWindow::start_clicked()
-//{
-//    if(msgBox.createMsg(ACK))
-//        awaitStart();
-//    else
-//        error();
-//}
-
-//void MainWindow::awaitStart(){
-//    if(msgBox.getMsg(tmsg,tcards)){
-//        if(tmsg == GAME_START)
-//            emit gameStart();//game start
-//        else
-//            error();
-//    }
-//    else
-//        error();
-
-//}
-
-

@@ -1,9 +1,34 @@
 #ifndef CONFIG_H
 #define CONFIG_H
+#include <QString>
 
 const int BUFF_MAX = 512;
 const int CLIENT_MAX = 4;
 const int PORT = 1234; //默认PORT NUMBER = 1234
+
+const int WINDOW_W = 1024;
+const int WINDOW_L = 585;
+
+const int CARD_W = 100;
+const int CARD_L = 150;
+const int KEEPER_W = 112;
+const int KEEPER_L = 28;
+
+const int KEEPER_VW = 200;
+const int KEEPER_VL = 160;
+const int KNUM_ROW = 4;
+
+const int HAND_MAX = 6;
+const int HAND_L = 160;
+const int RULE_MAX = 4;
+
+const int ICON = 100;
+const float HAND_W = 700;
+const int HAND_S = 0;
+
+const QString SIMPLE_AI = "Create a simple AI";
+const QString HARD_AI = "Create a hard AI";
+
 enum MsgType{
     NACK,//错误信号, 客户端和服务器共用
     //服务器发送的消息类型

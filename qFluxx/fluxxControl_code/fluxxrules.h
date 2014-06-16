@@ -2,7 +2,7 @@
 #define FLUXXRULES_H
 
 #include <vector>
-#include "..\cardLib_code\cardLib.h"
+#include "../cardLib_code/cardLib.h"
 #define CLOCKWISE false
 #define ANTTCLOCKWISE true
 
@@ -21,6 +21,7 @@ public:
 	void setinflation(bool b) { Inflation = b; }
 	void setnohandbonus(bool b) { noHandbonus = b; }
 	void setrandomstart(bool b) { randomStart = b; }
+	void setanotherround(bool b) { anotherRound = b; }
 	//设定有关卡牌
 	void setdrawrule(const Card* c){ DrawRule = c; }
 	void setplayrule(const Card* c) { PlayRule = c; }
@@ -40,6 +41,7 @@ public:
 	const bool isinflation() const { return Inflation; }
 	const bool isnohandbonus() const { return noHandbonus; }
 	const bool israndomstart() const { return randomStart; }
+	const bool isanotherround() const { return anotherRound; }
 	//获取卡牌
 	const Card& firstgoal() const { return *firstGoal; }
 	const Card& secondgoal() const { return *secondGoal; }
@@ -85,6 +87,7 @@ private:
 	const Card* c_noHandbonus;
 	bool randomStart;//随机开场
 	const Card* c_Randomstart;
+	bool anotherRound;
 	CardLib& r_Cardlib;
 };
 
